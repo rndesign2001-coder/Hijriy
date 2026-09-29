@@ -42,7 +42,10 @@ class ScreensSmokeTest {
     private fun clickText(t: String) {
         println("STEP click: $t")
         val n = rule.onAllNodesWithText(t).onFirst()
+        // Aylantirish animatsiyasi soat yurishini talab qiladi
+        rule.mainClock.autoAdvance = true
         runCatching { n.performScrollTo() }
+        rule.mainClock.autoAdvance = false
         n.performClick()
         settle()
     }
