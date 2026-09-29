@@ -1,3 +1,5 @@
+import java.time.Duration
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -85,7 +87,7 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
-    timeout.set(java.time.Duration.ofMinutes(12))
+    timeout.set(Duration.ofMinutes(12))
     testLogging {
         events("started", "passed", "failed", "skipped")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
