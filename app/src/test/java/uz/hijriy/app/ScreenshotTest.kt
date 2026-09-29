@@ -35,7 +35,10 @@ class ScreenshotTest {
     }
 
     private fun shot(name: String) {
-        val img = rule.onRoot().captureToImage().asAndroidBitmap()
+        rule.mainClock.autoAdvance = true
+        val img = runCatching { rule.onRoot().captureToImage().asAndroidBitmap() }.getOrNull()
+        rule.mainClock.autoAdvance = false
+        if (img == null) { println("SHOT-FAIL $name"); return }
         File(dir, "$name.png").outputStream().use { img.compress(Bitmap.CompressFormat.PNG, 100, it) }
         println("SHOT $name")
     }

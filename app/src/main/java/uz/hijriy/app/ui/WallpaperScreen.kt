@@ -151,7 +151,7 @@ private fun DrawScope.drawBackground(kind: Int, photo: ImageBitmap?, dim: Float)
         0 -> { // Tungi masjid
             drawRect(Brush.verticalGradient(listOf(Color(0xFF050817), Color(0xFF151A4F), Color(0xFF3B2C7A), Color(0xFF6E3C8F))))
             with(StarField(140, 3)) { draw(Color.White, 0.25f, 0.7f, 3.2f) }
-            val mc = Offset(w * 0.76f, h * 0.14f)
+            val mc = Offset(w * 0.78f, h * 0.31f)
             drawCircle(Brush.radialGradient(listOf(Color(0x66FFF1C1), Color.Transparent), mc, w * 0.3f), w * 0.3f, mc)
             drawPath(crescentPath(mc.x, mc.y, w * 0.085f), Color(0xFFFFF1C1))
             drawPath(mosquePath(w * 1.05f, h + 4f, h * 0.2f, -w * 0.025f), Color(0xFF07091C))
@@ -219,14 +219,14 @@ fun DrawScope.renderPrayerWallpaper(
             val l = w * 0.08f; val r = w * 0.92f
             val cardTop = h * 0.26f
             val rowH = 128f
-            val cardH = 330f + prayers.size * rowH
+            val cardH = 370f + prayers.size * rowH
             drawRoundRect(Color.Black.copy(alpha = 0.38f), Offset(l, cardTop), Size(r - l, cardH), CornerRadius(56f))
             drawRoundRect(Color(0xFFF3D57E).copy(alpha = 0.8f), Offset(l, cardTop), Size(r - l, cardH), CornerRadius(56f), style = Stroke(4f))
             text("مواقيت الصلاة", l, cardTop + 34f, style(64f, FontWeight.Normal, QuranFont, Color(0xFFF3D57E), TextAlign.Center), r - l)
             text(title, l, cardTop + 150f, style(46f, align = TextAlign.Center), r - l)
-            text(dateLine.replace("\n", "  •  "), l, cardTop + 216f, style(30f, FontWeight.Medium, align = TextAlign.Center), r - l)
+            text(dateLine, l, cardTop + 214f, style(32f, FontWeight.Medium, align = TextAlign.Center), r - l)
             prayers.forEachIndexed { i, p ->
-                val y = cardTop + 300f + i * rowH
+                val y = cardTop + 340f + i * rowH
                 drawLine(Color.White.copy(alpha = 0.18f), Offset(l + 50f, y), Offset(r - 50f, y), 2f)
                 text(p.uz, l + 70f, y + 24f, style(66f, FontWeight.Medium))
                 val tt = fmtMin(t[p])
