@@ -309,7 +309,7 @@ private fun Converter(adj: Int) {
         val hDate = runCatching { HijriDate(hy.toInt(), hm + 1, hd.toInt()) }.getOrNull()
         val g2 = hDate?.let { Hijri.toGregorian(it, adj) }
         ResultBox(
-            if (g2 == null || hDate == null) null else Triple(
+            if (g2 == null) null else Triple(
                 Uz.gregorian(g2),
                 Uz.weekday(g2.dayOfWeek),
                 "Bu oy ${Hijri.monthLength(hDate.year, hDate.month)} kun" + relative(g2, today)

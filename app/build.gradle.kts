@@ -16,21 +16,14 @@ android {
         versionName = "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
     }
 
+    val releaseKeystore = System.getenv("HIJRIY_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
     signingConfigs {
-        create("release") {
-            val ks = System.getenv("HIJRIY_KEYSTORE")
-            if (ks != null && file(ks).exists()) {
-                storeFile = file(ks)
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
                 storePassword = System.getenv("HIJRIY_KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("HIJRIY_KEY_ALIAS") ?: "hijriy"
                 keyPassword = System.getenv("HIJRIY_KEY_PASSWORD") ?: System.getenv("HIJRIY_KEYSTORE_PASSWORD")
-            } else {
-                // Kalit yo'q bo'lsa — debug kalit bilan imzolanadi (o'rnatish uchun yetarli)
-                val dbg = signingConfigs.getByName("debug")
-                storeFile = dbg.storeFile
-                storePassword = dbg.storePassword
-                keyAlias = dbg.keyAlias
-                keyPassword = dbg.keyPassword
             }
         }
     }
@@ -40,7 +33,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            // Doimiy kalit bo'lmasa — debug kalit bilan imzolanadi (o'rnatish uchun yetarli)
+            signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
         }
     }
     compileOptions {

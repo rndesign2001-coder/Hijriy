@@ -44,7 +44,7 @@ jobs:
         run: |
           chmod +x gradlew
           set -o pipefail
-          ./gradlew --no-daemon --stacktrace testReleaseUnitTest assembleRelease 2>&1 | tee build.log
+          ./gradlew --no-daemon --continue testReleaseUnitTest assembleRelease 2>&1 | tee build.log
 
       - name: APK nomini tayyorlash
         id: apk
@@ -80,10 +80,13 @@ jobs:
           cp build.log /tmp/logs/build.log 2>/dev/null || echo "build.log yo'q" > /tmp/logs/build.log
           grep -E "^e: |error:|FAILED|What went wrong|Exception|expected:<" -A3 /tmp/logs/build.log | head -400 > /tmp/logs/errors.txt || true
           find app/build/test-results -name '*.xml' -exec cp {} /tmp/logs/ \; 2>/dev/null || true
-          git checkout --orphan ci-logs
-          git rm -rf . -q
-          cp /tmp/logs/* .
-          echo "${{ github.sha }}" > SHA.txt
+          echo "${{ github.sha }}" > /tmp/logs/SHA.txt
+          URL=$(git remote get-url origin)
+          AUTH=$(git config --get http.https://github.com/.extraheader || true)
+          cd /tmp/logs
+          git init -q -b ci-logs
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
           git add -A
           git commit -qm "CI log ${{ github.run_number }}"
-          git push -f origin ci-logs
+          git -c http.https://github.com/.extraheader="$AUTH" push -f "$URL" ci-logs
