@@ -83,3 +83,12 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+
+tasks.withType<Test>().configureEach {
+    timeout.set(java.time.Duration.ofMinutes(12))
+    testLogging {
+        events("started", "passed", "failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = true
+    }
+}

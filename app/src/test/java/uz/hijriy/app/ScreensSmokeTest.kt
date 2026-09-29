@@ -40,6 +40,7 @@ class ScreensSmokeTest {
     }
 
     private fun clickText(t: String) {
+        println("STEP click: $t")
         val n = rule.onAllNodesWithText(t).onFirst()
         runCatching { n.performScrollTo() }
         n.performClick()
@@ -47,6 +48,7 @@ class ScreensSmokeTest {
     }
 
     private fun waitFor(what: String, cond: () -> Boolean) {
+        println("STEP wait: $what")
         repeat(150) {
             settle()
             if (cond()) return

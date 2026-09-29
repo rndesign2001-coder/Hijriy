@@ -72,13 +72,14 @@ jobs:
           make_latest: true
 
       - name: Xato logini saqlash (ci-logs shoxchasi)
-        if: failure()
+        if: failure() || cancelled()
         run: |
           git config user.name "ci-bot"
           git config user.email "ci-bot@users.noreply.github.com"
           mkdir -p /tmp/logs
           cp build.log /tmp/logs/build.log 2>/dev/null || echo "build.log yo'q" > /tmp/logs/build.log
           grep -E "^e: |error:|FAILED|What went wrong|Exception|expected:<" -A3 /tmp/logs/build.log | head -400 > /tmp/logs/errors.txt || true
+          tail -150 /tmp/logs/build.log > /tmp/logs/tail.txt
           find app/build/test-results -name '*.xml' -exec cp {} /tmp/logs/ \; 2>/dev/null || true
           find app/build/reports/tests -name '*.html' | head -50 | xargs -I{} cp {} /tmp/logs/ 2>/dev/null || true
           echo "${{ github.sha }}" > /tmp/logs/SHA.txt
