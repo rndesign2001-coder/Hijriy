@@ -30,6 +30,10 @@ class HijriyApp : Application() {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     lateinit var settings: SettingsStore
         private set
+    lateinit var bookmarks: uz.hijriy.app.data.Bookmarks
+        private set
+    lateinit var qazo: uz.hijriy.app.data.QazoStore
+        private set
 
     private val _quran = MutableStateFlow<Quran?>(null)
     val quran: StateFlow<Quran?> = _quran.asStateFlow()
@@ -41,6 +45,9 @@ class HijriyApp : Application() {
         super.onCreate()
         instance = this
         settings = SettingsStore(this)
+        bookmarks = uz.hijriy.app.data.Bookmarks(settings)
+        qazo = uz.hijriy.app.data.QazoStore(settings)
+        scope.launch { uz.hijriy.app.data.TranslationRepo.loadLocal(this@HijriyApp) }
         createChannel()
         loadCachedWeather()
         scope.launch(Dispatchers.Default) { _quran.value = QuranRepo.load(this@HijriyApp) }
@@ -90,20 +97,13 @@ class HijriyApp : Application() {
     }
 
     private fun createChannel() {
-        val nm = getSystemService(NotificationManager::class.java)
-        val ch = NotificationChannel(CHANNEL_ID, "Namoz vaqtlari", NotificationManager.IMPORTANCE_HIGH).apply {
-            description = "Namoz vaqti kirganda eslatma"
-            enableVibration(true)
-            setSound(
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
-                AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
-            )
-        }
-        nm.createNotificationChannel(ch)
+        uz.hijriy.app.notify.Channels.ensure(this, settings.value.notifySound)
     }
 
+    /** Bildirishnoma yoki vidjetdan ochilganda ko'rsatiladigan sahifa. */
+    val pendingRoute = MutableStateFlow<String?>(null)
+
     companion object {
-        const val CHANNEL_ID = "prayer_times"
         lateinit var instance: HijriyApp
             private set
     }

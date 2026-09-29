@@ -1,5 +1,6 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -73,6 +74,7 @@ fun PrayerScreen(app: HijriyApp, nav: NavHostController) {
 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Namoz vaqtlari", s.locName, actions = {
+            IconButton(onClick = { nav.go("wallpaper") }) { Icon(Icons.Filled.Image, "Rasm tayyorlash") }
             IconButton(onClick = { nav.go("settings") }) { Icon(Icons.Filled.Tune, "Sozlamalar") }
         })
         Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

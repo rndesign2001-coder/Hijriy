@@ -139,6 +139,18 @@ fun QiblaScreen(app: HijriyApp, nav: NavHostController) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            androidx.compose.foundation.layout.Row(
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                listOf("Klassik", "Islomiy", "Zamonaviy").forEachIndexed { i, t ->
+                    androidx.compose.material3.FilterChip(
+                        selected = s.qiblaStyle == i,
+                        onClick = { app.settings.update { it.copy(qiblaStyle = i) } },
+                        label = { Text(t) }
+                    )
+                }
+            }
             Text(
                 if (!hasSensor) "Telefoningizda kompas sensori topilmadi" else if (aligned) "✅ Qibla tomonga qaradingiz" else
                     if (diff > 0) "O'ngga ${diff.roundToInt()}° buriling" else "Chapga ${(-diff).roundToInt()}° buriling",
@@ -148,7 +160,15 @@ fun QiblaScreen(app: HijriyApp, nav: NavHostController) {
             )
             VSpace(16.dp)
             Box(Modifier.widthIn(max = 380.dp).fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
-                Compass(dialRot, qibla.toFloat(), aligned)
+                androidx.compose.animation.Crossfade(s.qiblaStyle, label = "style") { st ->
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        when (st) {
+                            1 -> CompassIslamic(heading, qibla.toFloat(), aligned)
+                            2 -> CompassModern(heading, qibla.toFloat(), aligned)
+                            else -> Compass(dialRot, qibla.toFloat(), aligned)
+                        }
+                    }
+                }
             }
             VSpace(16.dp)
             SectionCard(Modifier.fillMaxWidth().widthIn(max = 480.dp)) {

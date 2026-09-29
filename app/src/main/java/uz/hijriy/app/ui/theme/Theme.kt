@@ -18,6 +18,8 @@ import uz.hijriy.app.R
 import uz.hijriy.app.data.ThemeMode
 
 val QuranFont = FontFamily(Font(R.font.amiri_quran, FontWeight.Normal))
+/** Sarlavhalar uchun serif shrift (Lora, OFL) — logodagi yozuvga mos. */
+val TitleFont = FontFamily(Font(R.font.lora_bold, FontWeight.Bold), Font(R.font.lora_medium, FontWeight.Medium))
 /** Madina mushafi qator tartibi shu shrift versiyasiga moslab tekislangan. */
 val MushafFont = FontFamily(Font(R.font.amiri_quran_mushaf, FontWeight.Normal))
 

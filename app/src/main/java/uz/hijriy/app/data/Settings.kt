@@ -49,6 +49,16 @@ data class Settings(
     val notifyEnabled: Boolean = false,
     val notifyPrayers: Set<Prayer> = setOf(Prayer.FAJR, Prayer.DHUHR, Prayer.ASR, Prayer.MAGHRIB, Prayer.ISHA),
     val notifyBefore: Int = 0,
+    /** Tanlangan eslatma ovozi (content:// URI), bo'sh — standart. */
+    val notifySound: String = "",
+    /** Juma kuni ertalab eslatma (Juma namozi, Kahf surasi). */
+    val fridayReminder: Boolean = false,
+    // Qibla ko'rinishi: 0 — klassik, 1 — islomiy, 2 — zamonaviy
+    val qiblaStyle: Int = 1,
+    // Tarjima: 0 — yo'q, 1 — lotin, 2 — kirill
+    val translation: Int = 0,
+    // Qori (Reciters ro'yxatidagi indeks)
+    val reciter: Int = 0,
 ) {
     val calc get() = CalcSettings(method, hanafi, customFajr, customIsha)
 
@@ -69,7 +79,8 @@ data class Settings(
         put("quranFont", quranFont.toDouble()); put("tajweed", tajweed); put("quranFlow", quranFlow); put("quranMushaf", quranMushaf)
         put("lastSura", lastSura); put("lastAyah", lastAyah); put("mushafPage", mushafPage)
         put("notifyEnabled", notifyEnabled); put("notifyPrayers", notifyPrayers.joinToString(",") { it.name })
-        put("notifyBefore", notifyBefore)
+        put("notifyBefore", notifyBefore); put("notifySound", notifySound); put("fridayReminder", fridayReminder)
+        put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter)
     }.toString()
 
     companion object {
@@ -112,6 +123,11 @@ data class Settings(
                         .mapNotNull { runCatching { Prayer.valueOf(it) }.getOrNull() }.toSet()
                         .ifEmpty { d.notifyPrayers },
                     notifyBefore = j.optInt("notifyBefore", 0),
+                    notifySound = j.optString("notifySound", ""),
+                    fridayReminder = j.optBoolean("fridayReminder", false),
+                    qiblaStyle = j.optInt("qiblaStyle", 1),
+                    translation = j.optInt("translation", 0),
+                    reciter = j.optInt("reciter", 0),
                 )
             } catch (e: Exception) {
                 Settings()

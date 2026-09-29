@@ -16,7 +16,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,7 +45,20 @@ fun NavHostController.go(route: String) = navigate(route) { launchSingleTop = tr
 
 @Composable
 fun AppRoot(app: HijriyApp) {
+    var intro by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
+    Box(Modifier.fillMaxSize()) {
+        AppContent(app)
+        if (intro) IntroScreen { intro = false }
+    }
+}
+
+@Composable
+private fun AppContent(app: HijriyApp) {
     val nav = rememberNavController()
+    val pending by app.pendingRoute.collectAsState()
+    androidx.compose.runtime.LaunchedEffect(pending) {
+        pending?.let { r -> runCatching { nav.navigate(r) { launchSingleTop = true } }; app.pendingRoute.value = null }
+    }
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
     val showBar = tabs.any { it.route == route }
@@ -83,6 +98,10 @@ fun AppRoot(app: HijriyApp) {
                 composable("location") { LocationScreen(app, nav) }
                 composable("names") { NamesScreen(nav) }
                 composable("tasbeh") { TasbehScreen(app, nav) }
+                composable("wallpaper") { WallpaperScreen(app, nav) }
+                composable("duas") { DuasScreen(app, nav) }
+                composable("qazo") { QazoScreen(app, nav) }
+                composable("search") { SearchScreen(app, nav) }
                 composable(
                     "mushaf/{page}",
                     arguments = listOf(navArgument("page") { type = NavType.IntType })

@@ -11,6 +11,8 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -61,12 +63,30 @@ class ScreensSmokeTest {
         throw AssertionError("Kutilgan holat bo'lmadi: $what")
     }
 
+    private fun skipIntro() {
+        settle()
+        val intro = rule.onAllNodesWithTag("intro").fetchSemanticsNodes()
+        if (intro.isNotEmpty()) rule.onAllNodesWithTag("intro").onFirst().performClick()
+        settle()
+    }
+
+    private fun clickSub(t: String) {
+        println("STEP clickSub: $t")
+        val n = rule.onAllNodesWithText(t, substring = true).onFirst()
+        rule.mainClock.autoAdvance = true
+        runCatching { n.performScrollTo() }
+        rule.mainClock.autoAdvance = false
+        n.performClick()
+        settle()
+    }
+
     private fun exists(t: String, substring: Boolean = false): Boolean =
         rule.onAllNodesWithText(t, substring = substring).fetchSemanticsNodes().isNotEmpty()
 
     @Test
     fun allScreensOpen() {
         rule.mainClock.autoAdvance = false
+        skipIntro()
         settle()
         val app = rule.activity.application as HijriyApp
         rule.waitUntil(30_000) { app.quran.value != null }
@@ -145,6 +165,7 @@ class ScreensSmokeTest {
     @Test
     fun mushafTasbehAndNames() {
         rule.mainClock.autoAdvance = false
+        skipIntro()
         settle()
         clickText("Mushaf")
         waitFor("mushaf 1-sahifa") { exists("١") }
@@ -167,14 +188,71 @@ class ScreensSmokeTest {
     }
 
     @Test
+    fun extrasScreens() {
+        rule.mainClock.autoAdvance = false
+        val app = rule.activity.application as HijriyApp
+        rule.waitUntil(30_000) { app.quran.value != null }
+        skipIntro()
+
+        // Rasm tayyorlagich
+        clickText("Rasm")
+        assertTrue(exists("Joylash uslubi"))
+        waitFor("namuna rasmi") { rule.onAllNodesWithContentDescription("Namuna").fetchSemanticsNodes().isNotEmpty() }
+        for (l in uz.hijriy.app.ui.WpLayouts) clickText(l)
+        clickText("Oltin shafaq")
+        rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
+
+        // Duolar
+        clickText("Duolar")
+        assertTrue(exists("Oyatul Kursiy"))
+        clickSub("Kechki zikrlar")
+        rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
+
+        // Qazo
+        clickText("Qazo")
+        rule.onAllNodesWithContentDescription("Qo'shish").onFirst().performClick(); settle()
+        assertEquals(1, app.qazo.counts.value[0])
+        rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
+
+        // Qidiruv
+        clickText("Qur'on")
+        rule.onAllNodesWithContentDescription("Oyatlardan qidirish").onFirst().performClick(); settle()
+        rule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("الرحمن الرحيم")
+        settle()
+        clickText("Qidirish")
+        waitFor("qidiruv natijasi") { exists("ta oyat topildi", substring = true) }
+    }
+
+    @Test
+    fun rendersAndWidget() {
+        rule.mainClock.autoAdvance = false
+        skipIntro()
+        val app = rule.activity.application as HijriyApp
+        val tm = androidx.compose.ui.text.TextMeasurer(
+            androidx.compose.ui.text.font.createFontFamilyResolver(rule.activity),
+            androidx.compose.ui.unit.Density(1f), androidx.compose.ui.unit.LayoutDirection.Ltr, 0
+        )
+        for (bg in 0..3) for (layout in uz.hijriy.app.ui.WpLayouts.indices) {
+            val img = uz.hijriy.app.ui.renderToBitmap(
+                tm, uz.hijriy.app.ui.WpOptions(bg = bg, layout = layout, sunrise = layout % 2 == 0),
+                app.settings.value, java.time.LocalDate.now(), null, 0.25f
+            )
+            assertEquals(270, img.width)
+        }
+        uz.hijriy.app.widget.PrayerWidget.build(rule.activity)
+        uz.hijriy.app.notify.PrayerScheduler.reschedule(rule.activity)
+    }
+
+    @Test
     fun readerOpensLongSuraInFlowModeAndDark() {
         rule.mainClock.autoAdvance = false
+        skipIntro()
         val app = rule.activity.application as HijriyApp
         app.settings.update { it.copy(quranFlow = true, themeMode = uz.hijriy.app.data.ThemeMode.DARK, lastSura = 2, lastAyah = 255) }
         settle()
         rule.waitUntil(30_000) { app.quran.value != null }
         settle()
-        clickText("Davom ettirish")
+        clickSub("Davom ettirish")
         assertTrue(exists("2. Baqara"))
     }
 

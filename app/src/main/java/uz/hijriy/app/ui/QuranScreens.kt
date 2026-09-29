@@ -1,5 +1,18 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import uz.hijriy.app.data.QuranAudio
+import uz.hijriy.app.data.Reciters
+import uz.hijriy.app.data.TranslationRepo
+import uz.hijriy.app.data.UzTranslit
 import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -101,7 +114,8 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
     val quran by app.quran.collectAsStateWithLifecycle()
     val s by app.settings.state.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
-    var byJuz by remember { mutableStateOf(false) }
+    var listTab by remember { mutableStateOf(0) }
+    val bookmarks by app.bookmarks.list.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { app.ensureQuran() }
     val ctx = LocalContext.current
     val mushaf by produceState<Mushaf?>(null) { value = withContext(Dispatchers.Default) { MushafRepo.load(ctx) } }
@@ -111,7 +125,9 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
     }
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Qur'oni Karim", "114 sura • 6236 oyat • 604 sahifa")
+        ScreenHeader("Qur'oni Karim", "114 sura • 6236 oyat • 604 sahifa", actions = {
+            IconButton(onClick = { nav.go("search") }) { Icon(Icons.Filled.Search, "Oyatlardan qidirish") }
+        })
         val q = quran
         if (q == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -132,12 +148,13 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
             )
         )
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically
         ) {
-            FilterChip(selected = !byJuz, onClick = { byJuz = false }, label = { Text("Suralar") })
-            FilterChip(selected = byJuz, onClick = { byJuz = true }, label = { Text("Juzlar") })
-            Box(Modifier.weight(1f))
+            FilterChip(selected = listTab == 0, onClick = { listTab = 0 }, label = { Text("Suralar") })
+            FilterChip(selected = listTab == 1, onClick = { listTab = 1 }, label = { Text("Juzlar") })
+            FilterChip(selected = listTab == 2, onClick = { listTab = 2 }, label = { Text("🔖 Xatcho'plar") })
+            Box(Modifier.width(8.dp))
             FilterChip(
                 selected = !s.quranMushaf, onClick = { app.settings.update { it.copy(quranMushaf = false) } },
                 label = { Text("Matn") }
@@ -169,7 +186,34 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                     }
                 }
             }
-            if (!byJuz) {
+            if (listTab == 2) {
+                if (bookmarks.isEmpty()) item {
+                    Text(
+                        "Hozircha xatcho'p yo'q. O'qish ekranida oyatni uzoq bosing yoki mushafda 🔖 tugmasini bosing.",
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 24.dp)
+                    )
+                }
+                items(bookmarks, key = { "${it.sura}/${it.ayah}/${it.page}" }) { b ->
+                    val bs = q.suras[b.sura - 1]
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                            .clickable { if (b.isPage) nav.go("mushaf/${b.page}") else nav.go("reader/${b.sura}?ayah=${b.ayah}") }
+                            .padding(vertical = 12.dp, horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(if (b.isPage) "📄" else "🔖", fontSize = 24.sp)
+                        HSpace(12.dp)
+                        Column(Modifier.weight(1f)) {
+                            Text(if (b.isPage) "Mushaf, ${b.page}-sahifa" else "${bs.uzName} surasi, ${b.ayah}-oyat", style = MaterialTheme.typography.titleMedium)
+                            Text(bs.ayahs[b.ayah - 1].text, fontFamily = QuranFont, fontSize = 18.sp, maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        IconButton(onClick = { app.bookmarks.remove(b) }) { Icon(Icons.Filled.Close, "O'chirish") }
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                }
+            } else if (listTab == 0) {
                 items(filtered, key = { it.number }) { sura ->
                     SuraRow(sura) { open(sura.number) }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -261,7 +305,7 @@ fun ayahAnnotated(a: Ayah, tajweed: Boolean, dark: Boolean, numberColor: Color, 
         }
     }
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah: Int) {
     val quran by app.quran.collectAsStateWithLifecycle()
@@ -271,6 +315,12 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
     var showSettings by remember { mutableStateOf(false) }
     var showLegend by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { app.ensureQuran() }
+    val play by QuranAudio.state.collectAsStateWithLifecycle()
+    val trState by TranslationRepo.state.collectAsStateWithLifecycle()
+    val bookmarks by app.bookmarks.list.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val ctx = LocalContext.current
+    DisposableEffect(Unit) { onDispose { QuranAudio.stop() } }
 
     val view = LocalView.current
     val activity = LocalContext.current as? Activity
@@ -323,6 +373,13 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
             }
     }
 
+    LaunchedEffect(play.ayah, play.sura) {
+        if (play.active && play.sura == sura.number && play.ayah > 0) {
+            val idx = 1 + if (s.quranFlow) (play.ayah - 1) / chunk else play.ayah - 1
+            runCatching { listState.animateScrollToItem(idx) }
+        }
+    }
+
     val arabicStyle = TextStyle(
         fontFamily = QuranFont,
         fontSize = s.quranFont.sp,
@@ -362,6 +419,16 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             val page = MushafRepo.load(app).pageOf(sura.number, ay.coerceIn(1, sura.count))
                             nav.go("mushaf/$page")
                         }) { Icon(Icons.AutoMirrored.Filled.MenuBook, "Mushaf ko'rinishi") }
+                        IconButton(onClick = {
+                            if (play.active && play.sura == sura.number) QuranAudio.togglePause()
+                            else {
+                                val first = listState.firstVisibleItemIndex
+                                val ay = if (first <= 0 || s.quranFlow) 1 else first
+                                QuranAudio.play(sura.number, ay, sura.count, Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)])
+                            }
+                        }) {
+                            Icon(if (play.playing && play.sura == sura.number) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Tilovat")
+                        }
                         IconButton(onClick = { showSettings = true }) { Icon(Icons.Filled.TextFields, "Ko'rinish") }
                         IconButton(onClick = { fullscreen = true }) { Icon(Icons.Filled.Fullscreen, "To'liq ekran") }
                     }
@@ -383,11 +450,47 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             if (g.size == 1) ayahAnnotated(g[0], s.tajweed, dark, numberColor)
                             else buildAnnotatedString { g.forEach { append(ayahAnnotated(it, s.tajweed, dark, numberColor)) } }
                         }
+                        val playingHere = play.active && play.sura == sura.number && g.any { it.number == play.ayah }
+                        val marked = !s.quranFlow && bookmarks.any { !it.isPage && it.sura == sura.number && it.ayah == g[0].number }
+                        val hl by androidx.compose.animation.animateColorAsState(
+                            if (playingHere) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent, label = "hl"
+                        )
                         Column(
                             Modifier.widthIn(max = 900.dp).fillMaxWidth()
-                                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { fullscreen = !fullscreen }) }
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(hl)
+                                .combinedClickable(
+                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {},
+                                    onDoubleClick = { fullscreen = !fullscreen },
+                                    onLongClick = {
+                                        if (!s.quranFlow) {
+                                            app.bookmarks.toggleAyah(sura.number, g[0].number)
+                                            android.widget.Toast.makeText(
+                                                ctx,
+                                                if (app.bookmarks.hasAyah(sura.number, g[0].number)) "🔖 ${sura.uzName} ${g[0].number}-oyat xatcho'pga qo'shildi" else "Xatcho'p olib tashlandi",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                )
+                                .padding(horizontal = 6.dp)
                         ) {
+                            if (marked) Text("🔖", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
                             Text(text, style = arabicStyle, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
+                            val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
+                            if (!s.quranFlow && s.translation > 0 && trList != null) {
+                                val raw = trList.getOrNull(g[0].number - 1) ?: ""
+                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                    Text(
+                                        "${g[0].number}. " + if (s.translation == 1) UzTranslit.toLatin(raw) else raw,
+                                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                                    )
+                                }
+                            }
                             if (!s.quranFlow) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
                         }
                     }
@@ -408,6 +511,35 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             )
                         }
                     }
+                }
+            }
+        }
+        if (play.active && play.sura == sura.number) {
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer, shadowElevation = 8.dp,
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(12.dp).fillMaxWidth()
+            ) {
+                Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)].name, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                        Text(
+                            when {
+                                play.error != null -> play.error!!
+                                play.loading -> "Yuklanmoqda…"
+                                play.ayah == 0 -> "Bismillah"
+                                else -> "${sura.uzName}, ${play.ayah}-oyat"
+                            },
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    IconButton(onClick = { QuranAudio.prev() }) { Icon(Icons.Filled.SkipPrevious, "Oldingi") }
+                    IconButton(onClick = { QuranAudio.togglePause() }) {
+                        if (play.loading) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                        else Icon(if (play.playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Ijro")
+                    }
+                    IconButton(onClick = { QuranAudio.next() }) { Icon(Icons.Filled.SkipNext, "Keyingi") }
+                    IconButton(onClick = { QuranAudio.stop() }) { Icon(Icons.Filled.Close, "To'xtatish") }
                 }
             }
         }
@@ -437,8 +569,41 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                     app.settings.update { it.copy(quranFlow = !it.quranFlow) }
                 }) { Switch(checked = s.quranFlow, onCheckedChange = { v -> app.settings.update { it.copy(quranFlow = v) } }) }
                 SettingRow(null, "Tajvid ranglari izohi", onClick = { showSettings = false; showLegend = true })
+                VSpace(8.dp)
+                Text("O'zbekcha tarjima (Muhammad Sodiq Muhammad Yusuf)", style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("Yo'q", "Lotin", "Kirill").forEachIndexed { i, t ->
+                        FilterChip(selected = s.translation == i, onClick = { app.settings.update { it.copy(translation = i) } }, label = { Text(t) })
+                    }
+                }
+                when (val st = trState) {
+                    is TranslationRepo.State.Ready -> Text("✓ Tarjima telefonda saqlangan", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    is TranslationRepo.State.Downloading -> {
+                        Text("Yuklanmoqda… ${st.percent}%", style = MaterialTheme.typography.bodySmall)
+                        androidx.compose.material3.LinearProgressIndicator(progress = { st.percent / 100f }, modifier = Modifier.fillMaxWidth())
+                    }
+                    else -> {
+                        if (st is TranslationRepo.State.Failed) Text(st.message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                        androidx.compose.material3.OutlinedButton(onClick = { scope.launch { TranslationRepo.download(ctx) } }) {
+                            Text("Tarjimani yuklab olish (~4 MB, bir marta)")
+                        }
+                    }
+                }
+                VSpace(10.dp)
+                Text("Qori (tilovat internet orqali)", style = MaterialTheme.typography.titleSmall)
+                Reciters.forEachIndexed { i, r ->
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
+                            .clickable { app.settings.update { it.copy(reciter = i) }; if (play.active) QuranAudio.stop() }
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        androidx.compose.material3.RadioButton(selected = s.reciter == i, onClick = { app.settings.update { it.copy(reciter = i) } })
+                        Text(r.name, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
                 Text(
-                    "Maslahat: ekranga ikki marta bosing — to'liq ekran rejimi. Telefonni yonboshlatsangiz, matn keng ekranga moslashadi.",
+                    "Maslahat: oyatga ikki marta bosing — to'liq ekran; uzoq bosing — xatcho'p. Telefonni yonboshlatsangiz, matn keng ekranga moslashadi.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )

@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val app = application as HijriyApp
+        intent?.getStringExtra(EXTRA_ROUTE)?.let { app.pendingRoute.value = it }
         setContent {
             val s by app.settings.state.collectAsStateWithLifecycle()
             HijriyTheme(s.themeMode, s.palette) {
@@ -31,5 +32,14 @@ class MainActivity : ComponentActivity() {
                 AppRoot(app)
             }
         }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra(EXTRA_ROUTE)?.let { (application as HijriyApp).pendingRoute.value = it }
+    }
+
+    companion object {
+        const val EXTRA_ROUTE = "open_route"
     }
 }

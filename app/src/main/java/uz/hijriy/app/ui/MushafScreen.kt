@@ -30,6 +30,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -174,6 +176,11 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
                             "${cur.number}-sahifa • ${q.juzOf(cur.firstSura, cur.firstAyah)}-juz",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                    val bms by app.bookmarks.list.collectAsStateWithLifecycle()
+                    val marked = bms.any { it.page == cur.number }
+                    IconButton(onClick = { app.bookmarks.togglePage(cur.number, cur.firstSura, cur.firstAyah) }) {
+                        Icon(if (marked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, "Xatcho'p", tint = if (marked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                     }
                     IconButton(onClick = { nav.go("reader/${cur.firstSura}?ayah=${cur.firstAyah}") }) {
                         Icon(Icons.AutoMirrored.Filled.Notes, "Matn ko'rinishi")

@@ -1,5 +1,9 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.VolunteerActivism
 import android.Manifest
 import android.app.AlarmManager
 import android.content.Intent
@@ -37,6 +41,10 @@ import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.LibraryMusic
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Settings
@@ -88,6 +96,25 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
     val notifPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         app.settings.update { it.copy(notifyEnabled = ok) }
         PrayerScheduler.reschedule(app)
+    }
+    val ringPicker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        val uri: Uri? = if (Build.VERSION.SDK_INT >= 33)
+            res.data?.getParcelableExtra(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI, Uri::class.java)
+        else @Suppress("DEPRECATION") res.data?.getParcelableExtra(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+        if (res.resultCode == android.app.Activity.RESULT_OK) {
+            app.settings.update { it.copy(notifySound = uri?.toString() ?: "") }
+            uz.hijriy.app.notify.Channels.ensure(app, uri?.toString() ?: "")
+        }
+    }
+    val audioPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val saved = importNotificationSound(ctx, uri)
+            if (saved != null) {
+                app.settings.update { it.copy(notifySound = saved.toString()) }
+                uz.hijriy.app.notify.Channels.ensure(app, saved.toString())
+                android.widget.Toast.makeText(ctx, "Azon ovozi o'rnatildi", android.widget.Toast.LENGTH_SHORT).show()
+            } else android.widget.Toast.makeText(ctx, "Faylni qo'shib bo'lmadi", android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
     fun update(block: (uz.hijriy.app.data.Settings) -> uz.hijriy.app.data.Settings) {
         app.settings.update(block)
@@ -249,6 +276,39 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                     }
                 }
 
+                SectionCard(Modifier.fillMaxWidth().padding(top = 10.dp), padding = 12.dp) {
+                    val soundTitle = remember(s.notifySound) {
+                        if (s.notifySound.isBlank()) "Standart ovoz"
+                        else runCatching { android.media.RingtoneManager.getRingtone(ctx, Uri.parse(s.notifySound))?.getTitle(ctx) }.getOrNull() ?: "Tanlangan ovoz"
+                    }
+                    SettingRow(Icons.Filled.MusicNote, "Eslatma ovozi", soundTitle, onClick = {
+                        ringPicker.launch(Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                            putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALL)
+                            putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, "Eslatma ovozi")
+                            putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                            putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                            if (s.notifySound.isNotBlank()) putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Uri.parse(s.notifySound))
+                        })
+                    })
+                    if (Build.VERSION.SDK_INT >= 29) SettingRow(
+                        Icons.Filled.LibraryMusic, "Azon faylini tanlash",
+                        "Telefondagi azon (mp3) faylini eslatma ovozi qilish",
+                        onClick = { audioPicker.launch(arrayOf("audio/*")) }
+                    )
+                    SettingRow(Icons.Filled.EventAvailable, "Juma kuni eslatma", "Juma ertalab 8:30 da — Juma namozi va Kahf surasi") {
+                        Switch(checked = s.fridayReminder, onCheckedChange = { v ->
+                            if (v && Build.VERSION.SDK_INT >= 33 &&
+                                ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                            ) notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            update { it.copy(fridayReminder = v) }
+                        })
+                    }
+                    SettingRow(
+                        Icons.Filled.Widgets, "Bosh ekran vidjeti",
+                        "Telefon bosh ekranini uzoq bosing → Vidjetlar → Hijriy Taqvim"
+                    )
+                }
+
                 SectionTitle("Ilova haqida")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
                     SettingRow(
@@ -311,6 +371,10 @@ fun MoreScreen(nav: NavHostController) {
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
                 SettingRow(Icons.Filled.Explore, "Qibla kompasi", "Ka'ba yo'nalishini aniqlash", onClick = { nav.go("qibla") })
                 SettingRow(Icons.Filled.Fingerprint, "Tasbeh", "Zikr sanagich, namozdan keyingi tasbeh", onClick = { nav.go("tasbeh") })
+                SettingRow(Icons.Filled.VolunteerActivism, "Duolar va zikrlar", "Tong, kech va namozdan keyingi zikrlar", onClick = { nav.go("duas") })
+                SettingRow(Icons.Filled.Image, "Rasm tayyorlash", "Namoz vaqtlari bilan chiroyli rasm yoki fon", onClick = { nav.go("wallpaper") })
+                SettingRow(Icons.Filled.Checklist, "Qazo namozlar", "Qazo namozlarni hisoblab borish", onClick = { nav.go("qazo") })
+                SettingRow(Icons.Filled.Search, "Qur'ondan qidirish", "Arabcha matn yoki o'zbekcha tarjima", onClick = { nav.go("search") })
                 SettingRow(Icons.Filled.AutoAwesome, "Allohning 99 ismi", "Arabcha, o'qilishi va o'zbekcha ma'nosi", onClick = { nav.go("names") })
                 SettingRow(Icons.Filled.WbSunny, "Ob-havo", "Hozirgi holat va 7 kunlik prognoz", onClick = { nav.go("weather") })
                 SettingRow(Icons.Filled.SwapHoriz, "Sana konvertori", "Milodiy ⇄ Hijriy", onClick = { nav.go("converter") })
@@ -323,3 +387,22 @@ fun MoreScreen(nav: NavHostController) {
         }
     }
 }
+
+
+/** Tanlangan audio faylni telefonning "Notifications" papkasiga nusxalaydi — shunda tizim uni eslatma ovozi sifatida chala oladi. */
+private fun importNotificationSound(ctx: android.content.Context, src: Uri): Uri? = runCatching {
+    if (Build.VERSION.SDK_INT < 29) return null
+    val resolver = ctx.contentResolver
+    val mime = resolver.getType(src) ?: "audio/mpeg"
+    val ext = android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "mp3"
+    val values = android.content.ContentValues().apply {
+        put(android.provider.MediaStore.Audio.Media.DISPLAY_NAME, "Azon_HijriyTaqvim_${System.currentTimeMillis()}.$ext")
+        put(android.provider.MediaStore.Audio.Media.MIME_TYPE, mime)
+        put(android.provider.MediaStore.Audio.Media.RELATIVE_PATH, "Notifications/")
+        put(android.provider.MediaStore.Audio.Media.IS_NOTIFICATION, 1)
+        put(android.provider.MediaStore.Audio.Media.TITLE, "Azon (Hijriy Taqvim)")
+    }
+    val dst = resolver.insert(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values) ?: return null
+    resolver.openInputStream(src)!!.use { input -> resolver.openOutputStream(dst)!!.use { input.copyTo(it) } }
+    dst
+}.getOrNull()
