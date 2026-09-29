@@ -1,5 +1,8 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,25 +54,23 @@ fun withAyahMarks(text: String, ranges: MutableList<AnnotatedString.Range<Placeh
 
 @Composable
 fun AyahMedallion(n: Int, color: Color) {
-    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val px = with(LocalDensity.current) { maxHeight.toPx() }
-        Canvas(Modifier.fillMaxSize()) {
-            val r = size.minDimension / 2f
-            drawCircle(color.copy(alpha = 0.10f), r * 0.86f)
-            drawCircle(color, r * 0.86f, style = Stroke(r * 0.09f))
-            drawCircle(color.copy(alpha = 0.55f), r * 0.68f, style = Stroke(r * 0.04f))
-            for (i in 0 until 8) {
-                val a = Math.toRadians(i * 45.0)
-                drawCircle(color, r * 0.08f, Offset(center.x + r * 0.93f * cos(a).toFloat(), center.y + r * 0.93f * sin(a).toFloat()))
-            }
+    val tm = rememberTextMeasurer()
+    val digits = remember(n) { Uz.arabicNumber(n) }
+    Canvas(Modifier.fillMaxSize()) {
+        val r = size.minDimension / 2f
+        drawCircle(color.copy(alpha = 0.10f), r * 0.86f)
+        drawCircle(color, r * 0.86f, style = Stroke(r * 0.09f))
+        drawCircle(color.copy(alpha = 0.55f), r * 0.68f, style = Stroke(r * 0.04f))
+        for (i in 0 until 8) {
+            val a = Math.toRadians(i * 45.0)
+            drawCircle(color, r * 0.08f, Offset(center.x + r * 0.93f * cos(a).toFloat(), center.y + r * 0.93f * sin(a).toFloat()))
         }
-        val digits = Uz.arabicNumber(n)
-        val k = when (digits.length) { 1 -> 0.52f; 2 -> 0.44f; else -> 0.34f }
-        Text(
-            digits, color = color, fontFamily = QuranFont, textAlign = TextAlign.Center,
-            fontSize = with(LocalDensity.current) { (px * k).toSp() },
-            lineHeight = with(LocalDensity.current) { (px * k * 1.1f).toSp() },
-        )
+        val k = when (digits.length) { 1 -> 0.62f; 2 -> 0.50f; else -> 0.40f }
+        val fontPx = size.height * k
+        val layout = tm.measure(digits, TextStyle(color = color, fontFamily = QuranFont, fontSize = fontPx.toSp()))
+        // Raqamlar asosiy chiziqdan ~0.35 em yuqorida markazlanadi
+        val top = center.y - (layout.firstBaseline - fontPx * 0.36f)
+        drawText(layout, topLeft = Offset(center.x - layout.size.width / 2f, top))
     }
 }
 
