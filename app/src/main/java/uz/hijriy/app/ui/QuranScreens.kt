@@ -335,7 +335,6 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
         Modifier
             .fillMaxSize()
             .background(if (dark) MaterialTheme.colorScheme.background else Color(0xFFFFFCF5))
-            .pointerInput(Unit) { detectTapGestures(onDoubleTap = { fullscreen = !fullscreen }) }
     ) {
         Column(Modifier.fillMaxSize()) {
             if (!fullscreen) {
@@ -384,7 +383,10 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             if (g.size == 1) ayahAnnotated(g[0], s.tajweed, dark, numberColor)
                             else buildAnnotatedString { g.forEach { append(ayahAnnotated(it, s.tajweed, dark, numberColor)) } }
                         }
-                        Column(Modifier.widthIn(max = 900.dp).fillMaxWidth()) {
+                        Column(
+                            Modifier.widthIn(max = 900.dp).fillMaxWidth()
+                                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { fullscreen = !fullscreen }) }
+                        ) {
                             Text(text, style = arabicStyle, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
                             if (!s.quranFlow) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
                         }

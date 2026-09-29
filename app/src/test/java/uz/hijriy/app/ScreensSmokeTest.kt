@@ -152,7 +152,9 @@ class ScreensSmokeTest {
         waitFor("mushaf 2-sahifa") { exists("٢") }
         rule.onRoot().performTouchInput { click(center) }
         settle()
-        assertTrue(exists("-sahifa", substring = true))
+        assertTrue("Mushaf paneli bosishda ochilishi kerak", exists("-sahifa", substring = true))
+        rule.onRoot().performTouchInput { click(center) }
+        settle()
         rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
 
         clickText("Tasbeh")

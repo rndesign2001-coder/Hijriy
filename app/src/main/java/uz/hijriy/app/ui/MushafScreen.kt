@@ -137,12 +137,14 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
         Modifier
             .fillMaxSize()
             .background(paper)
-            .pointerInput(Unit) { detectTapGestures(onTap = { controls = !controls }) }
     ) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), beyondViewportPageCount = 1) { idx ->
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    MushafPageView(m.pages[idx], q, dark)
+                    // Bosish sahifa ichida ushlanadi — varaqlagich uni "yutib" qo'ymaydi
+                    Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onTap = { controls = !controls }) }) {
+                        MushafPageView(m.pages[idx], q, dark)
+                    }
                 }
             }
         }
