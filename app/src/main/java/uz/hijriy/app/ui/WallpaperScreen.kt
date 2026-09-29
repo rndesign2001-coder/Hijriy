@@ -351,7 +351,8 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
     fun doSave() {
         busy = true
         scope.launch {
-            val ok = withContext(Dispatchers.Default) { saveToGallery(ctx, full()) }
+            val bmp = full()
+            val ok = withContext(Dispatchers.IO) { saveToGallery(ctx, bmp) }
             busy = false
             Toast.makeText(ctx, if (ok) "Galereyaga saqlandi (Pictures/Hijriy Taqvim)" else "Saqlab bo'lmadi", Toast.LENGTH_SHORT).show()
         }
@@ -359,9 +360,9 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
     val storagePerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { if (it) doSave() }
 
     LaunchedEffect(o, s, photo) {
-        preview = withContext(Dispatchers.Default) {
-            runCatching { renderToBitmap(tm, o, s, date, if (o.bg == -1) photo else null, 0.5f) }.getOrNull()
-        }
+        // Asosiy oqimda chiziladi (tez, ~50 ms) — matn keshini boshqa oqim bilan bo'lishmaslik uchun
+        kotlinx.coroutines.delay(60)
+        preview = runCatching { renderToBitmap(tm, o, s, date, if (o.bg == -1) photo else null, 0.5f) }.getOrNull()
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -399,7 +400,8 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
             FilledTonalButton(onClick = {
                 busy = true
                 scope.launch {
-                    val ok = withContext(Dispatchers.Default) { runCatching { WallpaperManager.getInstance(ctx).setBitmap(full()) }.isSuccess }
+                    val bmp = full()
+                    val ok = withContext(Dispatchers.IO) { runCatching { WallpaperManager.getInstance(ctx).setBitmap(bmp) }.isSuccess }
                     busy = false
                     Toast.makeText(ctx, if (ok) "Fon rasmi o'rnatildi" else "O'rnatib bo'lmadi", Toast.LENGTH_SHORT).show()
                 }
