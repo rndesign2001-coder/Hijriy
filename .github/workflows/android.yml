@@ -1,0 +1,89 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Imzolash kaliti (ixtiyoriy secret)
+        env:
+          KS_B64: ${{ secrets.HIJRIY_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/hijriy.jks"
+            echo "HIJRIY_KEYSTORE=$RUNNER_TEMP/hijriy.jks" >> "$GITHUB_ENV"
+            echo "Doimiy kalit bilan imzolanadi"
+          else
+            echo "::warning::HIJRIY_KEYSTORE_B64 secret yo'q — APK vaqtinchalik debug kalit bilan imzolanadi"
+          fi
+
+      - name: Testlar va APK
+        env:
+          HIJRIY_KEYSTORE_PASSWORD: ${{ secrets.HIJRIY_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace testReleaseUnitTest assembleRelease 2>&1 | tee build.log
+
+      - name: APK nomini tayyorlash
+        id: apk
+        run: |
+          V="1.0.${{ github.run_number }}"
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk "out/Hijriy-Taqvim-v$V.apk"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hijriy-Taqvim-v${{ steps.apk.outputs.version }}
+          path: out/*.apk
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.apk.outputs.version }}
+          name: Hijriy Taqvim v${{ steps.apk.outputs.version }}
+          body: |
+            Avtomatik yig'ilgan APK. Telefonga yuklab olib o'rnating.
+            Commit: ${{ github.sha }}
+          files: out/*.apk
+          make_latest: true
+
+      - name: Xato logini saqlash (ci-logs shoxchasi)
+        if: failure()
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          mkdir -p /tmp/logs
+          cp build.log /tmp/logs/build.log 2>/dev/null || echo "build.log yo'q" > /tmp/logs/build.log
+          grep -E "^e: |error:|FAILED|What went wrong|Exception|expected:<" -A3 /tmp/logs/build.log | head -400 > /tmp/logs/errors.txt || true
+          find app/build/test-results -name '*.xml' -exec cp {} /tmp/logs/ \; 2>/dev/null || true
+          git checkout --orphan ci-logs
+          git rm -rf . -q
+          cp /tmp/logs/* .
+          echo "${{ github.sha }}" > SHA.txt
+          git add -A
+          git commit -qm "CI log ${{ github.run_number }}"
+          git push -f origin ci-logs
