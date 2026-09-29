@@ -46,6 +46,21 @@ jobs:
           set -o pipefail
           ./gradlew --no-daemon --continue testDebugUnitTest assembleRelease 2>&1 | tee build.log
 
+      - name: Skrinshotlar (ci-shots shoxchasi)
+        if: always()
+        run: |
+          if [ -d app/build/shots ] && [ -n "$(ls app/build/shots)" ]; then
+            URL=$(git remote get-url origin)
+            AUTH=$(git config --get http.https://github.com/.extraheader || true)
+            cd app/build/shots
+            git init -q -b ci-shots
+            git config user.name "ci-bot"
+            git config user.email "ci-bot@users.noreply.github.com"
+            git add -A
+            git commit -qm "shots ${{ github.run_number }}"
+            git -c http.https://github.com/.extraheader="$AUTH" push -f "$URL" ci-shots
+          fi
+
       - name: APK nomini tayyorlash
         id: apk
         run: |
