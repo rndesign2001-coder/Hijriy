@@ -29,7 +29,8 @@ class ScreensSmokeTest {
     val rule = createAndroidComposeRule<MainActivity>()
 
     private fun settle() {
-        repeat(8) { rule.mainClock.advanceTimeByFrame() }
+        // Navigatsiya animatsiyalari (≈700 ms) to'liq tugashi uchun
+        repeat(3) { rule.mainClock.advanceTimeBy(500) }
         rule.waitForIdle()
     }
 
