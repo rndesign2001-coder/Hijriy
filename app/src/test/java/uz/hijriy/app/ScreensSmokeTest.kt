@@ -31,6 +31,7 @@ import uz.hijriy.app.data.TajweedRule
  */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-xxhdpi")
+@org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 class ScreensSmokeTest {
 
     @get:Rule
