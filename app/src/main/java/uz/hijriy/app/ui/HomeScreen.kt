@@ -206,7 +206,7 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                 NextPrayerGlass(pn, left)
                 VSpace(12.dp)
                 NameTicker(now.toEpochSecond(ZoneOffset.UTC)) { nav.go("names") }
-                VSpace(58.dp)   // masjid silueti uchun joy
+                VSpace(104.dp)   // quyosh/oy yo'li va masjid silueti uchun joy
             }
         }
 
@@ -298,7 +298,7 @@ private fun SkyHeader(phase: SkyPhase, t: DayTimes, minute: Int, now: LocalDateT
             if (phase.night) with(stars) { draw(Color.White.copy(alpha = 0.85f), tw, 0.7f, 1.7f) }
             // quyosh / oy yoyi
             val l = size.width * 0.08f; val r = size.width * 0.92f
-            val base = size.height - 58.dp.toPx(); val h = size.height * 0.34f
+            val base = size.height - 12.dp.toPx(); val h = 84.dp.toPx()
             val x = l + (r - l) * frac
             val y = base - h * sin(PI * frac).toFloat()
             drawArc(

@@ -54,7 +54,7 @@ object QuranRepo {
                     arName = s.getString("ar"),
                     translit = s.getString("tr"),
                     uzName = s.getString("uz"),
-                    meccan = s.getString("t") == "M",
+                    meccan = s.getString("t") == "K",   // K — Makkiy, D — Madaniy
                     ayahs = (0 until aArr.length()).map { k ->
                         val a = aArr.getJSONArray(k)
                         Ayah(k + 1, a.getString(0), ints(a.getJSONArray(1)))

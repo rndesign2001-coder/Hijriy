@@ -141,7 +141,10 @@ private fun DuaCard(d: Dua, q: Quran?, done: Int, onTap: () -> Unit) {
         if (ar.isNotBlank()) {
             VSpace(10.dp)
             androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl) {
-                Text(ar, fontFamily = QuranFont, fontSize = 24.sp, lineHeight = 46.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+                Text(
+                    withAyahMarks(ar), fontFamily = QuranFont, fontSize = 24.sp, lineHeight = 46.sp, textAlign = TextAlign.Start,
+                    inlineContent = rememberAyahInline(MaterialTheme.colorScheme.primary), modifier = Modifier.fillMaxWidth()
+                )
             }
         }
         VSpace(8.dp)

@@ -264,6 +264,9 @@ class ScreensSmokeTest {
         assertEquals(114, q.suras.size)
         assertEquals(6236, q.suras.sumOf { it.count })
         assertEquals(30, q.juz.size)
+        assertTrue("Fotiha — Makkiy", q.suras[0].meccan)
+        assertTrue("Baqara — Madaniy", !q.suras[1].meccan)
+        assertEquals(28, q.suras.count { !it.meccan })
         var ann = 0
         for (s in q.suras) for (a in s.ayahs) {
             assertTrue(a.ann.size % 3 == 0)

@@ -301,7 +301,7 @@ fun ayahAnnotated(a: Ayah, tajweed: Boolean, dark: Boolean, numberColor: Color, 
         }
         if (withNumber) {
             append(" ")
-            withStyle(SpanStyle(color = numberColor)) { append("۝" + Uz.arabicNumber(a.number)) }
+            appendAyahMark(a.number)
             append(" ")
         }
     }
@@ -381,6 +381,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
         }
     }
 
+    val ayahInline = rememberAyahInline(numberColor)
     val arabicStyle = TextStyle(
         fontFamily = QuranFont,
         fontSize = s.quranFont.sp,
@@ -479,7 +480,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                                 .padding(horizontal = 6.dp)
                         ) {
                             if (marked) Text("🔖", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-                            Text(text, style = arabicStyle, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
+                            Text(text, style = arabicStyle, inlineContent = ayahInline, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
                             val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
                             if (!s.quranFlow && s.translation > 0 && trList != null) {
                                 val raw = trList.getOrNull(g[0].number - 1) ?: ""

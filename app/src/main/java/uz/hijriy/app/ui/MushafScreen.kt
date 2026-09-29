@@ -92,7 +92,6 @@ import uz.hijriy.app.ui.theme.LocalExtra
 import uz.hijriy.app.ui.theme.MushafFont
 import uz.hijriy.app.ui.theme.QuranFont
 
-private val AYAH_MARK = Regex("۝[٠-٩]+")
 
 @Composable
 fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
@@ -220,6 +219,7 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean) {
     val ink = MaterialTheme.colorScheme.onSurface
     val frame = MaterialTheme.colorScheme.primary
     val accent = LocalExtra.current.palette.accent
+    val inline = rememberAyahInline(frame)
     BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 6.dp)) {
         val portrait = maxHeight >= maxWidth
         val innerW: Dp = maxWidth - 28.dp
@@ -267,7 +267,7 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean) {
                     Box(Modifier.width(lineW).height(lineH), contentAlignment = Alignment.Center) {
                         when (l.type) {
                             2 -> SuraBanner(q.suras.getOrNull((l.text.toIntOrNull() ?: 1) - 1)?.arName ?: "", style, frame, accent, lineW)
-                            else -> MushafTextLine(l, style, lineW, frame)
+                            else -> MushafTextLine(l, style, lineW, inline)
                         }
                     }
                 }
@@ -284,22 +284,21 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean) {
 }
 
 @Composable
-private fun MushafTextLine(l: MushafLine, style: TextStyle, lineW: Dp, markColor: Color) {
+private fun MushafTextLine(l: MushafLine, style: TextStyle, lineW: Dp, inline: Map<String, androidx.compose.foundation.text.InlineTextContent>) {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val text: AnnotatedString = remember(l.text, markColor) {
-        buildAnnotatedString {
-            append(l.text)
-            AYAH_MARK.findAll(l.text).forEach { addStyle(SpanStyle(color = markColor), it.range.first, it.range.last + 1) }
-        }
+    val built = remember(l.text) {
+        val ranges = mutableListOf<AnnotatedString.Range<androidx.compose.ui.text.Placeholder>>()
+        withAyahMarks(l.text, ranges) to ranges.toList()
     }
+    val text = built.first
     val natural = remember(text, style) {
-        measurer.measure(text, style, softWrap = false, maxLines = 1).size.width.toFloat().coerceAtLeast(1f)
+        measurer.measure(text, style, softWrap = false, maxLines = 1, placeholders = built.second).size.width.toFloat().coerceAtLeast(1f)
     }
     val target = with(density) { lineW.toPx() }
     val scale = if (l.type == 0) target / natural else minOf(1f, target / natural)
     Text(
-        text, style = style, softWrap = false, maxLines = 1,
+        text, style = style, softWrap = false, maxLines = 1, inlineContent = inline,
         modifier = Modifier.wrapContentWidth(unbounded = true).graphicsLayer { scaleX = scale }
     )
 }

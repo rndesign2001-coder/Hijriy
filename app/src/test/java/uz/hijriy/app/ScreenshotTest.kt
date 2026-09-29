@@ -85,7 +85,9 @@ class ScreenshotTest {
         click("Fotiha"); settle(); shot("12_reader")
         back()
         app.settings.update { it.copy(themeMode = uz.hijriy.app.data.ThemeMode.LIGHT) }
-        click("Asosiy"); click("Mushaf"); settle(3000); shot("13_mushaf")
+        app.pendingRoute.value = "mushaf/50"; settle(3000); shot("13_mushaf")
+        back()
+        app.pendingRoute.value = "duas"; settle(); shot("14_duas_dark")
     }
 
     @Test
