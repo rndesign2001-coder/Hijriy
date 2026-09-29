@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -142,7 +145,14 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
             HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), beyondViewportPageCount = 1) { idx ->
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     // Bosish sahifa ichida ushlanadi — varaqlagich uni "yutib" qo'ymaydi
-                    Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onTap = { controls = !controls }) }) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .testTag("mushaf_page_${idx + 1}")
+                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                controls = !controls
+                            }
+                    ) {
                         MushafPageView(m.pages[idx], q, dark)
                     }
                 }

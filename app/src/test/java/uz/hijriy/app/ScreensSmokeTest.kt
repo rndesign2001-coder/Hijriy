@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -150,11 +151,9 @@ class ScreensSmokeTest {
         rule.onRoot().performTouchInput { swipeRight() }
         settle()
         waitFor("mushaf 2-sahifa") { exists("٢") }
-        rule.onRoot().performTouchInput { click(center) }
+        rule.onNodeWithTag("mushaf_page_2").performClick()
         settle()
-        assertTrue("Mushaf paneli bosishda ochilishi kerak", exists("-sahifa", substring = true))
-        rule.onRoot().performTouchInput { click(center) }
-        settle()
+        assertTrue("Mushaf paneli bosishda ochilishi kerak", exists("2-sahifa", substring = true))
         rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
 
         clickText("Tasbeh")
