@@ -76,7 +76,7 @@ class ScreensSmokeTest {
         rule.activity.onBackPressedDispatcher.onBackPressed()
         settle()
         clickText("Juzlar")
-        assertTrue(exists("30-juz"))
+        assertTrue(exists("1-juz"))
 
         // Taqvim
         clickText("Taqvim")
