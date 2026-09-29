@@ -17,7 +17,13 @@ Kotlin + Jetpack Compose. APK har `main` ga push qilinganda GitHub Actions'da av
 - **Allohning 99 ismi** — bosh sahifada aylanib turadi, to'liq ro'yxat o'zbekcha ma'nolari bilan.
 - **Tasbeh** — zikr sanagich, namozdan keyingi 33/33/34 tasbeh rejimi, tebranish.
 - **Ramazon** — saharlik va iftorlik vaqti hamda sanoq (Ramazon oyida bosh sahifada).
-- **Dizayn** — kunduzgi/tungi/tizim rejimi, 4 mavzu rangi (Zumrad, Firuza, Oltin, Binafsha).
+- **Qori tilovati** — 6 qori (Al-Afasiy, Husariy, Abdulbosit, Sudays, Minshoviy, Shotiriy), o'qilayotgan oyat belgilanadi.
+- **O'zbekcha tarjima** — Muhammad Sodiq Muhammad Yusuf tarjimasi (bir marta yuklab olinadi), lotin yoki kirill.
+- **Xatcho'plar va qidiruv** — oyat/sahifa xatcho'plari, arabcha matn va tarjima bo'yicha qidirish.
+- **Rasm tayyorlash** — namoz vaqtlari bilan rasm: 4 ta fon + galereya, 4 uslub, shrift/rang tanlash, saqlash, ulashish, fon rasmi.
+- **Duolar va zikrlar**, **qazo namozlar hisoblagichi**, **Juma eslatmasi**, eslatma ovozi yoki o'z azon faylingiz.
+- **Bosh ekran vidjeti** — keyingi namoz va jonli teskari sanoq.
+- **Dizayn** — islomiy kirish animatsiyasi, kun vaqtiga qarab o'zgaruvchi osmonli bosh sahifa, qiblaning 3 uslubi, kunduzgi/tungi rejim, 4 mavzu rangi.
 
 ## Ma'lumot manbalari
 
