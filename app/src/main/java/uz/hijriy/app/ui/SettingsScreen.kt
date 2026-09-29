@@ -115,7 +115,10 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
                         Palettes.forEachIndexed { i, p ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                Modifier.clip(RoundedCornerShape(12.dp)).clickable { update { it.copy(palette = i) } }.padding(4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Box(
                                     Modifier
                                         .size(52.dp)
@@ -124,8 +127,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                                         .border(
                                             3.dp, if (s.palette == i) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                             CircleShape
-                                        )
-                                        .clickable { update { it.copy(palette = i) } },
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) { if (s.palette == i) Icon(Icons.Filled.Check, null, tint = Color.White) }
                                 Text(p.title, style = MaterialTheme.typography.labelMedium)
