@@ -39,8 +39,12 @@ data class Settings(
     val quranFont: Float = 30f,
     val tajweed: Boolean = true,
     val quranFlow: Boolean = false,
+    /** Qur'on ro'yxatidan ochilganda mushaf (sahifa) ko'rinishi. */
+    val quranMushaf: Boolean = false,
     val lastSura: Int = 0,
     val lastAyah: Int = 1,
+    /** Mushaf rejimida oxirgi ochilgan sahifa (0 — hali ochilmagan). */
+    val mushafPage: Int = 0,
     // Bildirishnoma
     val notifyEnabled: Boolean = false,
     val notifyPrayers: Set<Prayer> = setOf(Prayer.FAJR, Prayer.DHUHR, Prayer.ASR, Prayer.MAGHRIB, Prayer.ISHA),
@@ -62,8 +66,8 @@ data class Settings(
             adjust.forEach { (p, a) -> if (!a.isDefault) put(p.name, JSONObject().put("o", a.offset).put("f", a.fixed)) }
         })
         put("hijriAdjust", hijriAdjust); put("themeMode", themeMode.name); put("palette", palette)
-        put("quranFont", quranFont.toDouble()); put("tajweed", tajweed); put("quranFlow", quranFlow)
-        put("lastSura", lastSura); put("lastAyah", lastAyah)
+        put("quranFont", quranFont.toDouble()); put("tajweed", tajweed); put("quranFlow", quranFlow); put("quranMushaf", quranMushaf)
+        put("lastSura", lastSura); put("lastAyah", lastAyah); put("mushafPage", mushafPage)
         put("notifyEnabled", notifyEnabled); put("notifyPrayers", notifyPrayers.joinToString(",") { it.name })
         put("notifyBefore", notifyBefore)
     }.toString()
@@ -99,8 +103,10 @@ data class Settings(
                     quranFont = j.optDouble("quranFont", 30.0).toFloat(),
                     tajweed = j.optBoolean("tajweed", true),
                     quranFlow = j.optBoolean("quranFlow", false),
+                    quranMushaf = j.optBoolean("quranMushaf", false),
                     lastSura = j.optInt("lastSura", 0),
                     lastAyah = j.optInt("lastAyah", 1),
+                    mushafPage = j.optInt("mushafPage", 0),
                     notifyEnabled = j.optBoolean("notifyEnabled", false),
                     notifyPrayers = j.optString("notifyPrayers", "").split(",")
                         .mapNotNull { runCatching { Prayer.valueOf(it) }.getOrNull() }.toSet()

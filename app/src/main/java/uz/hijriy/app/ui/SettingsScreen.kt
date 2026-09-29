@@ -28,7 +28,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Explore
@@ -308,6 +310,8 @@ fun MoreScreen(nav: NavHostController) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
                 SettingRow(Icons.Filled.Explore, "Qibla kompasi", "Ka'ba yo'nalishini aniqlash", onClick = { nav.go("qibla") })
+                SettingRow(Icons.Filled.Fingerprint, "Tasbeh", "Zikr sanagich, namozdan keyingi tasbeh", onClick = { nav.go("tasbeh") })
+                SettingRow(Icons.Filled.AutoAwesome, "Allohning 99 ismi", "Arabcha, o'qilishi va o'zbekcha ma'nosi", onClick = { nav.go("names") })
                 SettingRow(Icons.Filled.WbSunny, "Ob-havo", "Hozirgi holat va 7 kunlik prognoz", onClick = { nav.go("weather") })
                 SettingRow(Icons.Filled.SwapHoriz, "Sana konvertori", "Milodiy ⇄ Hijriy", onClick = { nav.go("converter") })
                 SettingRow(Icons.AutoMirrored.Filled.MenuBook, "Qur'oni Karim", "Tajvidli va oddiy o'qish", onClick = {

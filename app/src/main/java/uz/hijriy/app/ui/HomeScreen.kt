@@ -18,7 +18,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
@@ -163,6 +166,14 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                     trackColor = Color.White.copy(alpha = 0.18f),
                 )
             }
+            VSpace(14.dp)
+            NameTicker(now.toEpochSecond(java.time.ZoneOffset.UTC)) { nav.go("names") }
+        }
+
+        // Ramazon oyida: saharlik va iftorlik
+        if (hijri.month == 9) {
+            VSpace(12.dp)
+            RamadanCard(hijri.day, times[Prayer.FAJR], times[Prayer.MAGHRIB], now)
         }
 
         VSpace(14.dp)
@@ -235,6 +246,9 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
         val tiles = listOf(
             Triple("Qibla", Icons.Filled.Explore, "qibla"),
             Triple("Qur'on", Icons.AutoMirrored.Filled.MenuBook, "quran"),
+            Triple("Mushaf", Icons.Filled.AutoStories, "mushaf/${if (s.mushafPage > 0) s.mushafPage else 1}"),
+            Triple("Tasbeh", Icons.Filled.Fingerprint, "tasbeh"),
+            Triple("99 ism", Icons.Filled.AutoAwesome, "names"),
             Triple("Konvertor", Icons.Filled.SwapHoriz, "converter"),
             Triple("Taqvim", Icons.Filled.CalendarMonth, "calendar"),
             Triple("Ob-havo", Icons.Filled.WbSunny, "weather"),
@@ -254,7 +268,10 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
         if (s.lastSura > 0) {
             val q by app.quran.collectAsStateWithLifecycle()
             q?.suras?.getOrNull(s.lastSura - 1)?.let { sura ->
-                SectionCard(Modifier.fillMaxWidth(), onClick = { nav.go("reader/${sura.number}?ayah=${s.lastAyah}") }) {
+                SectionCard(Modifier.fillMaxWidth(), onClick = {
+                    if (s.quranMushaf && s.mushafPage > 0) nav.go("mushaf/${s.mushafPage}")
+                    else nav.go("reader/${sura.number}?ayah=${s.lastAyah}")
+                }) {
                     Text("Davom ettirish", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                     Text("${sura.number}. ${sura.uzName} surasi, ${s.lastAyah}-oyat", style = MaterialTheme.typography.titleMedium)
                 }
@@ -272,6 +289,35 @@ private fun Tile(label: String, icon: ImageVector, modifier: Modifier, onClick: 
             IconBadge(icon, size = 44.dp)
             VSpace(8.dp)
             Text(label, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+private fun RamadanCard(day: Int, fajr: Int, maghrib: Int, now: LocalDateTime) {
+    val minuteNow = now.hour * 60 + now.minute
+    val (label, target) = when {
+        minuteNow < fajr -> "Saharlikkacha" to fajr
+        minuteNow < maghrib -> "Iftorgacha" to maghrib
+        else -> "Ertangi saharlikkacha" to fajr + 24 * 60
+    }
+    val left = (target - minuteNow) * 60L - now.second
+    SectionCard(Modifier.fillMaxWidth()) {
+        Text("🌙 Ramazon muborak! $day-kun", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        VSpace(8.dp)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text("Saharlik (og'iz yopish)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(fmtMin(fajr), style = MaterialTheme.typography.headlineSmall)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(Uz.countdown(left), style = MaterialTheme.typography.titleMedium)
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text("Iftorlik (og'iz ochish)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(fmtMin(maghrib), style = MaterialTheme.typography.headlineSmall)
+            }
         }
     }
 }

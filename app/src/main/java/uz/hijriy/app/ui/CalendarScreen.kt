@@ -282,7 +282,9 @@ private fun Converter(adj: Int) {
             NumberField("Yil", gy, { gy = it }, Modifier.weight(1f))
         }
         VSpace(12.dp)
-        val g = runCatching { LocalDate.of(gy.toInt(), gm + 1, gd.toInt()) }.getOrNull()
+        val gYear = gy.toIntOrNull()
+        val g = if (gYear == null || gYear < 623 || gYear > 9999) null
+        else runCatching { LocalDate.of(gYear, gm + 1, gd.toInt()) }.getOrNull()
         ResultBox(
             if (g == null) null else {
                 val h = Hijri.fromGregorian(g, adj)
@@ -292,7 +294,8 @@ private fun Converter(adj: Int) {
                     Uz.weekday(g.dayOfWeek) + (if (!Hijri.isUmmAlQuraRange(g)) " • arifmetik hisob" else "") +
                         (IslamicDays.find(h)?.let { " • ${it.name}" } ?: "") + relative(g, today)
                 )
-            }
+            },
+            errorText = if (gYear == null || gYear < 623) "Yilni to'liq kiriting (masalan, 2001)" else "Bunday sana yo'q"
         )
         TextButton(onClick = { gd = today.dayOfMonth.toString(); gm = today.monthValue - 1; gy = today.year.toString() }) { Text("Bugungi sana") }
     }
@@ -306,7 +309,9 @@ private fun Converter(adj: Int) {
             NumberField("Yil", hy, { hy = it }, Modifier.weight(1f))
         }
         VSpace(12.dp)
-        val hDate = runCatching { HijriDate(hy.toInt(), hm + 1, hd.toInt()) }.getOrNull()
+        val hYear = hy.toIntOrNull()
+        val hDate = if (hYear == null || hYear < 1 || hYear > 9000) null
+        else runCatching { HijriDate(hYear, hm + 1, hd.toInt()) }.getOrNull()
         val g2 = hDate?.let { Hijri.toGregorian(it, adj) }
         ResultBox(
             if (g2 == null) null else Triple(
@@ -314,7 +319,11 @@ private fun Converter(adj: Int) {
                 Uz.weekday(g2.dayOfWeek),
                 "Bu oy ${Hijri.monthLength(hDate.year, hDate.month)} kun" + relative(g2, today)
             ),
-            errorText = if (hDate != null && hDate.day > 0) "Bu oyda ${Hijri.monthLength(hDate.year, hDate.month)} kun bor" else "Sanani kiriting"
+            errorText = when {
+                hYear == null || hYear < 1 -> "Yilni kiriting (masalan, 1421)"
+                hDate != null && hDate.day > 0 -> "Bu oyda ${Hijri.monthLength(hDate.year, hDate.month)} kun bor"
+                else -> "Kunni kiriting"
+            }
         )
     }
     VSpace(10.dp)

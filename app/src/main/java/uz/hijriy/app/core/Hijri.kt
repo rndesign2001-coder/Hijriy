@@ -5,8 +5,8 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 data class HijriDate(val year: Int, val month: Int, val day: Int) {
-    val monthName: String get() = Hijri.MONTHS_UZ[month - 1]
-    val monthNameAr: String get() = Hijri.MONTHS_AR[month - 1]
+    val monthName: String get() = Hijri.MONTHS_UZ[(month - 1).coerceIn(0, 11)]
+    val monthNameAr: String get() = Hijri.MONTHS_AR[(month - 1).coerceIn(0, 11)]
     override fun toString(): String = "$day $monthName $year"
 }
 
@@ -83,7 +83,7 @@ object Hijri {
         val jd = floor(e + UNIX_JD) + 0.5
         val y = floor((30 * (jd - EPOCH_JD) + 10646) / 10631).toInt()
         val m = minOf(12, (ceil((jd - (29 + tabToJd(y, 1, 1))) / 29.5) + 1).toInt()).coerceAtLeast(1)
-        val d = (jd - tabToJd(y, m, 1)).toInt() + 1
+        val d = ((jd - tabToJd(y, m, 1)).toInt() + 1).coerceIn(1, 30)
         return HijriDate(y, m, d)
     }
 }

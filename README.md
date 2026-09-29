@@ -13,6 +13,10 @@ Kotlin + Jetpack Compose. APK har `main` ga push qilinganda GitHub Actions'da av
 - **Ob-havo** — hozirgi holat, namlik, shamol, bosim, UV, 7 kunlik prognoz, quyosh chiqishi/botishi (Open-Meteo, kalitsiz).
 - **O'zbekistonning 14 hududi, 209 tuman/shahri** + GPS orqali aniqlash.
 - **Qur'oni Karim** — oflayn, 2 variant: tajvid ranglari bilan va oddiy; shrift o'lchami, yaxlit/oyatma-oyat rejim, to'liq ekran, ekranni aylantirish, oxirgi o'qilgan joy.
+- **Mushaf rejimi** — Madina mushafi (604 sahifa, har sahifa 15 qator, asl qator bo'linishi) varaqlab o'qish, sahifaga o'tish, oxirgi sahifani eslab qolish.
+- **Allohning 99 ismi** — bosh sahifada aylanib turadi, to'liq ro'yxat o'zbekcha ma'nolari bilan.
+- **Tasbeh** — zikr sanagich, namozdan keyingi 33/33/34 tasbeh rejimi, tebranish.
+- **Ramazon** — saharlik va iftorlik vaqti hamda sanoq (Ramazon oyida bosh sahifada).
 - **Dizayn** — kunduzgi/tungi/tizim rejimi, 4 mavzu rangi (Zumrad, Firuza, Oltin, Binafsha).
 
 ## Ma'lumot manbalari
@@ -22,6 +26,7 @@ Kotlin + Jetpack Compose. APK har `main` ga push qilinganda GitHub Actions'da av
 | Qur'on matni | Tanzil.net Usmoniy matni (`quran` npm paketi orqali) |
 | Tajvid belgilari | [cpfair/quran-tajweed](https://github.com/cpfair/quran-tajweed) (CC BY 4.0) — 60 057 belgi, matn bilan 100% mosligi tekshirilgan |
 | Shrift | Amiri Quran (SIL OFL) |
+| Mushaf qator tartibi | [quran-madina-html](https://www.npmjs.com/package/quran-madina-html) (ISC) — Madina mushafi 1405 h. |
 | Hijriy jadval | Ummul-Quro (hijri-converter) |
 | Hududlar | `hududlar` (rasmiy ro'yxat) + tuman markazlari koordinatalari |
 | Ob-havo | Open-Meteo.com |
@@ -36,6 +41,8 @@ Kalit bo'lmasa APK har safar vaqtinchalik kalit bilan imzolanadi (yangi versiyan
 
 - `HIJRIY_KEYSTORE_B64` — `hijriy.jks` faylining base64 ko'rinishi
 - `HIJRIY_KEYSTORE_PASSWORD` — kalit paroli
+
+Kalit faylini (`.jks`) repoga **qo'shmang** — repozitoriya ochiq.
 
 ## Lokal build
 

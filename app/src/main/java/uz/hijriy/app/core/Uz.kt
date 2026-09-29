@@ -16,7 +16,8 @@ object Uz {
     fun gregorianFull(d: LocalDate) = "${weekday(d.dayOfWeek)}, ${gregorian(d)}"
 
     private const val AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"
-    fun arabicNumber(n: Int): String = n.toString().map { AR_DIGITS[it - '0'] }.joinToString("")
+    fun arabicNumber(n: Int): String =
+        n.toString().map { c -> if (c in '0'..'9') AR_DIGITS[c - '0'] else c }.joinToString("")
 
     fun duration(minutes: Int): String {
         val h = minutes / 60

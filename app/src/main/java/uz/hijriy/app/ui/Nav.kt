@@ -81,6 +81,12 @@ fun AppRoot(app: HijriyApp) {
                 composable("qibla") { QiblaScreen(app, nav) }
                 composable("settings") { SettingsScreen(app, nav) }
                 composable("location") { LocationScreen(app, nav) }
+                composable("names") { NamesScreen(nav) }
+                composable("tasbeh") { TasbehScreen(app, nav) }
+                composable(
+                    "mushaf/{page}",
+                    arguments = listOf(navArgument("page") { type = NavType.IntType })
+                ) { e -> MushafScreen(app, nav, e.arguments?.getInt("page") ?: 1) }
                 composable(
                     "reader/{sura}?ayah={ayah}",
                     arguments = listOf(

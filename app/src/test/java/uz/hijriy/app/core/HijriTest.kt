@@ -2,6 +2,7 @@ package uz.hijriy.app.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
@@ -56,5 +57,19 @@ class HijriTest {
             assertEquals(e, Hijri.toGregorian(Hijri.fromGregorian(e)))
             e = e.plusDays(41)
         }
+    }
+
+    /** Regress: yil maydoniga "2", "20", "200" yozilganda ilova qulardi. */
+    @Test
+    fun partialYearsNeverCrash() {
+        for (y in 1..9999) {
+            for (m in intArrayOf(1, 7, 12)) {
+                val h = Hijri.fromGregorian(LocalDate.of(y, m, 1))
+                assertTrue("$y-$m → $h", h.month in 1..12 && h.day in 1..30)
+                h.monthName; h.monthNameAr; Uz.arabicNumber(h.year); Uz.arabicNumber(h.day)
+            }
+        }
+        for (y in 1..3000) Hijri.toGregorian(HijriDate(y, 1, 1))
+        assertEquals("-٥", Uz.arabicNumber(-5))
     }
 }

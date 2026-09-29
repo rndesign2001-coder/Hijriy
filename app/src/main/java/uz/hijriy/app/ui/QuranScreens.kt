@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
@@ -52,6 +53,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -77,12 +79,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import uz.hijriy.app.HijriyApp
 import uz.hijriy.app.core.Uz
 import uz.hijriy.app.data.Ayah
+import uz.hijriy.app.data.Mushaf
+import uz.hijriy.app.data.MushafRepo
 import uz.hijriy.app.data.Sura
 import uz.hijriy.app.data.TajweedRule
 import uz.hijriy.app.ui.theme.LocalExtra
@@ -97,9 +103,15 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
     var query by remember { mutableStateOf("") }
     var byJuz by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { app.ensureQuran() }
+    val ctx = LocalContext.current
+    val mushaf by produceState<Mushaf?>(null) { value = withContext(Dispatchers.Default) { MushafRepo.load(ctx) } }
+    fun open(sura: Int, ayah: Int = 1) {
+        val m = mushaf
+        if (s.quranMushaf && m != null) nav.go("mushaf/${m.pageOf(sura, ayah)}") else nav.go("reader/$sura?ayah=$ayah")
+    }
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Qur'oni Karim", "114 sura • 6236 oyat")
+        ScreenHeader("Qur'oni Karim", "114 sura • 6236 oyat • 604 sahifa")
         val q = quran
         if (q == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -119,9 +131,21 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                 focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
             )
         )
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically
+        ) {
             FilterChip(selected = !byJuz, onClick = { byJuz = false }, label = { Text("Suralar") })
             FilterChip(selected = byJuz, onClick = { byJuz = true }, label = { Text("Juzlar") })
+            Box(Modifier.weight(1f))
+            FilterChip(
+                selected = !s.quranMushaf, onClick = { app.settings.update { it.copy(quranMushaf = false) } },
+                label = { Text("Matn") }
+            )
+            FilterChip(
+                selected = s.quranMushaf, onClick = { app.settings.update { it.copy(quranMushaf = true) } },
+                label = { Text("Mushaf") }
+            )
         }
         val norm = { x: String -> x.lowercase().replace("'", "").replace("‘", "").replace("’", "").replace("-", "").replace(" ", "") }
         val filtered = remember(q, query) {
@@ -136,7 +160,9 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                     val ls = q.suras.getOrNull(s.lastSura - 1)
                     if (ls != null) SectionCard(
                         Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                        onClick = { nav.go("reader/${ls.number}?ayah=${s.lastAyah}") }
+                        onClick = {
+                            if (s.quranMushaf && s.mushafPage > 0) nav.go("mushaf/${s.mushafPage}") else open(ls.number, s.lastAyah)
+                        }
                     ) {
                         Text("📖 Davom ettirish", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
                         Text("${ls.uzName} surasi • ${s.lastAyah}-oyat", style = MaterialTheme.typography.titleMedium)
@@ -145,7 +171,7 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
             }
             if (!byJuz) {
                 items(filtered, key = { it.number }) { sura ->
-                    SuraRow(sura) { nav.go("reader/${sura.number}") }
+                    SuraRow(sura) { open(sura.number) }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 }
             } else {
@@ -155,7 +181,7 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                         Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .clickable { nav.go("reader/$su?ayah=$ay") }
+                            .clickable { open(su, ay) }
                             .padding(vertical = 12.dp, horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -331,6 +357,12 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             onClick = { app.settings.update { it.copy(tajweed = !it.tajweed) } },
                             label = { Text("Tajvid") }
                         )
+                        IconButton(onClick = {
+                            val first = listState.firstVisibleItemIndex
+                            val ay = if (first <= 0) 1 else if (s.quranFlow) (first - 1) * chunk + 1 else first
+                            val page = MushafRepo.load(app).pageOf(sura.number, ay.coerceIn(1, sura.count))
+                            nav.go("mushaf/$page")
+                        }) { Icon(Icons.AutoMirrored.Filled.MenuBook, "Mushaf ko'rinishi") }
                         IconButton(onClick = { showSettings = true }) { Icon(Icons.Filled.TextFields, "Ko'rinish") }
                         IconButton(onClick = { fullscreen = true }) { Icon(Icons.Filled.Fullscreen, "To'liq ekran") }
                     }
