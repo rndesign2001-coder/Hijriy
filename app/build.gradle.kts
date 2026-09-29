@@ -88,6 +88,7 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     timeout.set(Duration.ofMinutes(12))
+    systemProperty("robolectric.pixelCopyRenderMode", "hardware")
     testLogging {
         events("started", "passed", "failed", "skipped")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
