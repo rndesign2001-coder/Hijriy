@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.data.UzTranslitTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-30T00:55:13.046Z" hostname="runnervm8df0l" time="0.001">
+  <properties/>
+  <testcase name="cyrillicToLatin" classname="uz.hijriy.app.data.UzTranslitTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

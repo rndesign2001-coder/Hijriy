@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.ScreensSmokeTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-30T00:54:25.687Z" hostname="runnervm8df0l" time="33.579">
+  <properties/>
+  <testcase name="readerOpensLongSuraInFlowModeAndDark" classname="uz.hijriy.app.ScreensSmokeTest" time="21.628"/>
+  <testcase name="extrasScreens" classname="uz.hijriy.app.ScreensSmokeTest" time="4.797"/>
+  <testcase name="rendersAndWidget" classname="uz.hijriy.app.ScreensSmokeTest" time="1.062"/>
+  <testcase name="allScreensOpen" classname="uz.hijriy.app.ScreensSmokeTest" time="3.971"/>
+  <testcase name="dataAssetsAreComplete" classname="uz.hijriy.app.ScreensSmokeTest" time="0.371"/>
+  <testcase name="mushafTasbehAndNames" classname="uz.hijriy.app.ScreensSmokeTest" time="1.75"/>
+  <system-out><![CDATA[STEP clickSub: Davom ettirish
+STEP click: Rasm
+STEP wait: namuna rasmi
+STEP click: Klassik
+STEP click: Shisha karta
+STEP click: Pastki panel
+STEP click: Arabcha sarlavha
+STEP click: Oltin shafaq
+STEP click: Duolar
+STEP clickSub: Kechki zikrlar
+STEP click: Qazo
+STEP click: Qur'on
+STEP click: Qidirish
+STEP wait: qidiruv natijasi
+STEP click: Namoz
+STEP click: Peshin
+STEP click: +5
+STEP click: Saqlash
+STEP click: Oylik jadval
+STEP click: Qur'on
+STEP click: Fotiha
+STEP click: Tajvid
+STEP click: Juzlar
+STEP click: Taqvim
+STEP click: Hijriy
+STEP click: Konvertor
+STEP click: Sentabr
+STEP click: Mart
+STEP click: Yana
+STEP click: Qibla kompasi
+STEP click: Ob-havo
+STEP click: Sozlamalar
+STEP click: Tungi
+STEP click: Firuza
+STEP click: Joylashuv
+STEP click: Samarqand viloyati
+STEP click: Urgut tumani
+STEP click: Mushaf
+STEP wait: mushaf 1-sahifa
+STEP wait: mushaf 2-sahifa
+STEP click: Tasbeh
+STEP click: / 33
+STEP click: / 33
+STEP click: / 33
+STEP click: 99 ism
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,265 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:mergeDebugShaders
+> Task :app:processDebugManifestForPackage
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:buildKotlinToolingMetadata
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:checkReleaseAarMetadata
+> Task :app:generateReleaseResValues
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:processDebugResources
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:generateDebugUnitTestConfig
+> Task :app:packageReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:parseReleaseLocalResources
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:processReleaseManifestForPackage
+> Task :app:javaPreCompileRelease
+> Task :app:extractProguardFiles
+> Task :app:mergeReleaseJniLibFolders
+> Task :app:mergeReleaseNativeLibs
+> Task :app:checkReleaseDuplicateClasses
+
+> Task :app:stripReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so.
+
+> Task :app:mergeReleaseArtProfile
+> Task :app:mergeReleaseStartupProfile
+> Task :app:extractReleaseNativeSymbolTables
+> Task :app:mergeReleaseShaders
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:collectReleaseDependencies
+> Task :app:mergeReleaseResources
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :app:processReleaseResources
+> Task :app:convertLinkedResourcesToProtoRelease
+> Task :app:compileDebugKotlin
+> Task :app:compileReleaseKotlin
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:processReleaseJavaRes
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:mergeReleaseJavaResource
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+
+> Task :app:testDebugUnitTest
+
+ScreensSmokeTest > readerOpensLongSuraInFlowModeAndDark STARTED
+
+ScreensSmokeTest > readerOpensLongSuraInFlowModeAndDark STANDARD_OUT
+    STEP clickSub: Davom ettirish
+
+ScreensSmokeTest > readerOpensLongSuraInFlowModeAndDark PASSED
+
+ScreensSmokeTest > extrasScreens STARTED
+
+ScreensSmokeTest > extrasScreens STANDARD_OUT
+    STEP click: Rasm
+    STEP wait: namuna rasmi
+    STEP click: Klassik
+    STEP click: Shisha karta
+    STEP click: Pastki panel
+    STEP click: Arabcha sarlavha
+    STEP click: Oltin shafaq
+    STEP click: Duolar
+    STEP clickSub: Kechki zikrlar
+    STEP click: Qazo
+    STEP click: Qur'on
+
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:minifyReleaseWithR8
+
+> Task :app:testDebugUnitTest
+    STEP click: Qidirish
+    STEP wait: qidiruv natijasi
+
+ScreensSmokeTest > extrasScreens PASSED
+
+ScreensSmokeTest > rendersAndWidget STARTED
+
+ScreensSmokeTest > rendersAndWidget PASSED
+
+ScreensSmokeTest > allScreensOpen STARTED
+
+ScreensSmokeTest > allScreensOpen STANDARD_OUT
+    STEP click: Namoz
+    STEP click: Peshin
+    STEP click: +5
+    STEP click: Saqlash
+    STEP click: Oylik jadval
+    STEP click: Qur'on
+    STEP click: Fotiha
+    STEP click: Tajvid
+    STEP click: Juzlar
+    STEP click: Taqvim
+    STEP click: Hijriy
+    STEP click: Konvertor
+    STEP click: Sentabr
+    STEP click: Mart
+    STEP click: Yana
+    STEP click: Qibla kompasi
+    STEP click: Ob-havo
+    STEP click: Sozlamalar
+    STEP click: Tungi
+    STEP click: Firuza
+    STEP click: Joylashuv
+    STEP click: Samarqand viloyati
+    STEP click: Urgut tumani
+
+ScreensSmokeTest > allScreensOpen PASSED
+
+ScreensSmokeTest > dataAssetsAreComplete STARTED
+
+ScreensSmokeTest > dataAssetsAreComplete PASSED
+
+ScreensSmokeTest > mushafTasbehAndNames STARTED
+
+ScreensSmokeTest > mushafTasbehAndNames STANDARD_OUT
+    STEP click: Mushaf
+    STEP wait: mushaf 1-sahifa
+    STEP wait: mushaf 2-sahifa
+    STEP click: Tasbeh
+    STEP click: / 33
+    STEP click: / 33
+    STEP click: / 33
+    STEP click: 99 ism
+
+ScreensSmokeTest > mushafTasbehAndNames PASSED
+
+ScreenshotTest > wallpapers STARTED
+
+ScreenshotTest > wallpapers PASSED
+
+ScreenshotTest > screens STARTED
+
+ScreenshotTest > screens STANDARD_OUT
+    SHOT 01_intro
+    SHOT 02_home
+    SHOT 02b_home_pastki
+    SHOT 03_prayer
+    SHOT 04_qibla_islomiy
+    SHOT 05_qibla_klassik
+    SHOT 06_qibla_zamonaviy
+    SHOT 07_tasbeh
+    SHOT 08_duas
+    SHOT 09_wallpaper
+    SHOT 10_home_dark
+    SHOT 11_quran_list
+    SHOT 12_reader
+    SHOT 13_mushaf
+    SHOT 14_duas_dark
+
+ScreenshotTest > screens PASSED
+
+AsmaulHusnaTest > ninetyNineNames STARTED
+
+AsmaulHusnaTest > ninetyNineNames PASSED
+
+HijriTest > invalidDateRejected STARTED
+
+HijriTest > invalidDateRejected PASSED
+
+HijriTest > adjustmentShiftsBothWays STARTED
+
+HijriTest > adjustmentShiftsBothWays PASSED
+
+HijriTest > tabularFallbackRoundTrips STARTED
+
+HijriTest > tabularFallbackRoundTrips PASSED
+
+HijriTest > partialYearsNeverCrash STARTED
+
+HijriTest > partialYearsNeverCrash PASSED
+
+HijriTest > ummAlQuraVectors STARTED
+
+HijriTest > ummAlQuraVectors PASSED
+
+HijriTest > userExample_21March2001 STARTED
+
+HijriTest > userExample_21March2001 PASSED
+
+PrayerTimesTest > qiblaTashkent STARTED
+
+PrayerTimesTest > qiblaTashkent PASSED
+
+PrayerTimesTest > adjustmentsOffsetAndFixed STARTED
+
+PrayerTimesTest > adjustmentsOffsetAndFixed PASSED
+
+PrayerTimesTest > tashkentOfficial_2026_09_29 STARTED
+
+PrayerTimesTest > tashkentOfficial_2026_09_29 PASSED
+
+PrayerTimesTest > tashkentRamadanFajr STARTED
+
+PrayerTimesTest > tashkentRamadanFajr PASSED
+
+PrayerTimesTest > wholeYearIsOrderedEverywhere STARTED
+
+PrayerTimesTest > wholeYearIsOrderedEverywhere PASSED
+
+UzTranslitTest > cyrillicToLatin STARTED
+
+UzTranslitTest > cyrillicToLatin PASSED
+
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:compileReleaseArtProfile
+> Task :app:shrinkReleaseRes
+> Task :app:convertShrunkResourcesToBinaryRelease
+> Task :app:optimizeReleaseResources
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1790729615724.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/Hijriy/Hijriy/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2m 26s
+75 actionable tasks: 75 executed
