@@ -26,16 +26,33 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Imzolash kaliti (ixtiyoriy secret)
+      - name: Imzolash kaliti (secret)
         env:
           KS_B64: ${{ secrets.HIJRIY_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.HIJRIY_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.HIJRIY_KEY_ALIAS }}
         run: |
-          if [ -n "$KS_B64" ]; then
-            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/hijriy.jks"
-            echo "HIJRIY_KEYSTORE=$RUNNER_TEMP/hijriy.jks" >> "$GITHUB_ENV"
-            echo "Doimiy kalit bilan imzolanadi"
-          else
+          mkdir -p /tmp/logs
+          R=/tmp/logs/keystore.txt
+          if [ -z "$KS_B64" ]; then
+            echo "HIJRIY_KEYSTORE_B64 yo'q — debug kalit" | tee $R
             echo "::warning::HIJRIY_KEYSTORE_B64 secret yo'q — APK vaqtinchalik debug kalit bilan imzolanadi"
+            exit 0
+          fi
+          KS="$RUNNER_TEMP/hijriy.jks"
+          printf '%s' "$KS_B64" | tr -d ' \r\n\t' | base64 -d > "$KS" 2>/dev/null || true
+          echo "b64 uzunligi: ${#KS_B64}, jks hajmi: $(stat -c %s "$KS")" | tee $R
+          [ -n "$KS_PASS" ] && echo "parol bor (${#KS_PASS} belgi)" | tee -a $R || echo "PAROL SECRET YO'Q" | tee -a $R
+          if keytool -list -keystore "$KS" -storepass "$KS_PASS" > /tmp/kl.txt 2>&1; then
+            A="${KS_ALIAS:-$(grep -m1 -E 'PrivateKeyEntry' /tmp/kl.txt | cut -d, -f1)}"
+            echo "alias: $A" | tee -a $R
+            keytool -list -v -keystore "$KS" -storepass "$KS_PASS" -alias "$A" | grep -E "SHA256|Owner" | tee -a $R
+            echo "HIJRIY_KEYSTORE=$KS" >> "$GITHUB_ENV"
+            echo "HIJRIY_KEY_ALIAS=$A" >> "$GITHUB_ENV"
+            echo "Doimiy kalit bilan imzolanadi" | tee -a $R
+          else
+            cat /tmp/kl.txt | tee -a $R
+            echo "::error::Kalit ochilmadi (base64 yoki parol noto'g'ri) — debug kalit ishlatiladi"
           fi
 
       - name: Testlar va APK
@@ -92,6 +109,7 @@ jobs:
           git config user.name "ci-bot"
           git config user.email "ci-bot@users.noreply.github.com"
           mkdir -p /tmp/logs
+          SIGNER=$(ls -d $ANDROID_HOME/build-tools/*/apksigner | tail -1); for a in out/*.apk; do $SIGNER verify --print-certs "$a" >> /tmp/logs/keystore.txt 2>&1 || true; done
           cp build.log /tmp/logs/build.log 2>/dev/null || echo "build.log yo'q" > /tmp/logs/build.log
           grep -E "^e: |error:|FAILED|What went wrong|Exception|expected:<" -A3 /tmp/logs/build.log | head -400 > /tmp/logs/errors.txt || true
           tail -150 /tmp/logs/build.log > /tmp/logs/tail.txt
