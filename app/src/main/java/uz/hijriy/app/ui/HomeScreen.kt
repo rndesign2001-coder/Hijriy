@@ -246,7 +246,7 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                 CountdownRing(pn, left, progress) { nav.go("prayer") }
                 VSpace(10.dp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HeroChip(if (pn.current != null) "Hozir: ${pn.current.uz}" else "Hozir: Tun", Color(0xFF7CFFB2))
+                    HeroChip("Hozir: ${(pn.current ?: Prayer.ISHA).uz}", Color(0xFF7CFFB2))
                     HeroChip(phase.title, Gold)
                 }
                 VSpace(HeroOverlap + 92.dp)   // quyosh yo'li va masjid silueti uchun joy

@@ -108,7 +108,7 @@ private fun AppContent(app: HijriyApp) {
             }
         }
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(bottom = if (showBar) pad.calculateBottomPadding() else androidx.compose.ui.unit.Dp(0f))) {
+        Box(Modifier.fillMaxSize().padding(bottom = if (showBar) (pad.calculateBottomPadding() - 20.dp).coerceAtLeast(0.dp) else 0.dp)) {
             NavHost(nav, startDestination = "home") {
                 composable("home") { HomeScreen(app, nav) }
                 composable("prayer") { PrayerScreen(app, nav) }

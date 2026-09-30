@@ -69,6 +69,8 @@ class ScreenshotTest {
         }
         rule.waitUntil(30_000) { app.quran.value != null }
         settle(); shot("02_home")
+        rule.onAllNodesWithText("Konvertor").onFirst().let { rule.mainClock.autoAdvance = true; runCatching { it.performScrollTo() }; rule.mainClock.autoAdvance = false }
+        settle(); shot("02b_home_pastki")
         click("Namoz"); shot("03_prayer")
         click("Yana"); click("Qibla kompasi")
         shot("04_qibla_islomiy")
