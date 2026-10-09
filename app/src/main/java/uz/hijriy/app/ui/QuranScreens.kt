@@ -417,8 +417,8 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         Column(Modifier.weight(1f)) {
                             Text("${sura.number}. ${sura.uzName}", style = MaterialTheme.typography.titleMedium, maxLines = 1)
                             Text(
-                                "${if (sura.meccan) "Makkiy" else "Madaniy"} • ${sura.count} oyat • ${q.juzOf(sura.number, 1)}-juz",
-                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+                                "${if (sura.meccan) "Makka" else "Madina"}, ${sura.count} oyat",
+                                maxLines = 1, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         FilterChip(
@@ -730,10 +730,9 @@ private fun ReaderModeBar(
             .horizontalScroll(rememberScrollState()).padding(horizontal = 10.dp).padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterChip(selected = !reading && !translation, onClick = onArabicOnly, label = { Text("Faqat arabcha") })
+        FilterChip(selected = !reading && !translation, onClick = onArabicOnly, label = { Text("Arabcha") })
         FilterChip(selected = reading, onClick = onReading, label = { Text("O'qilishi") })
         FilterChip(selected = translation, onClick = onTranslation, label = { Text("Tarjima") })
-        Box(Modifier.width(4.dp))
         FontStepButton("A−", "Kichraytirish", onSmaller)
         FontStepButton("A+", "Kattalashtirish", onBigger)
     }

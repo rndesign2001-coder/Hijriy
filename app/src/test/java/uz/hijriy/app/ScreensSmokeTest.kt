@@ -115,7 +115,7 @@ class ScreensSmokeTest {
         assertTrue(exists("1. Fotiha"))
         clickText("O'qilishi")
         assertTrue(exists("Alhamdu lillahi robbil", substring = true))
-        clickText("Faqat arabcha")
+        clickText("Arabcha")
         assertTrue(!exists("Alhamdu lillahi robbil", substring = true))
         clickText("Tajvid")
         rule.activity.onBackPressedDispatcher.onBackPressed()
