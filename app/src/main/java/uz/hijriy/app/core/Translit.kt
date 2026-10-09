@@ -328,7 +328,11 @@ object Translit {
             }
             var code = cons.code
             if (unmarked && ch == 'ن' && (HIGH_MEEM in m || LOW_MEEM in m)) code = "m"
-            val isArticleLam = article && ch == 'ل' && units.getOrNull(i - 1)?.ch == WASLA
+            val nextU = units.getOrNull(i + 1)
+            val isArticleLam = (article && ch == 'ل' && units.getOrNull(i - 1)?.ch == WASLA) ||
+                // لَلْـَٔاخِرَةُ: ta'kid lomi + vaslsiz "al" + hamza
+                (ch == 'ل' && SUKUN in m && i in 1..2 && (0 until i).all { j -> units[j].ch in "وفبلك" && vowelOf(units[j].marks) != null } &&
+                    nextU != null && (nextU.ch in hamzas || HAMZA_ABOVE in nextU.marks))
             val c = C(
                 code, cons.heavy, double = SHADDA in m, hamza = isHamza && ch != 'ع', ayn = ch == 'ع',
                 taMarbuta = ch == 'ة', article = isArticleLam, unmarked = unmarked,

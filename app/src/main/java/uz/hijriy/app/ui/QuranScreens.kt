@@ -1,5 +1,13 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.combinedClickable
@@ -216,7 +224,7 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
             } else if (listTab == 0) {
                 items(filtered, key = { it.number }) { sura ->
                     SuraRow(sura) { open(sura.number) }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    VSpace(10.dp)
                 }
             } else {
                 itemsIndexed(q.juz) { i, (su, ay) ->
@@ -224,9 +232,10 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
                             .clickable { open(su, ay) }
-                            .padding(vertical = 12.dp, horizontal = 4.dp),
+                            .padding(vertical = 16.dp, horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         NumberBadge(i + 1)
@@ -238,9 +247,9 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Text("الجزء ${Uz.arabicNumber(i + 1)}", fontFamily = QuranFont, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                        Text("الجزء ${Uz.arabicNumber(i + 1)}", fontFamily = QuranFont, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary)
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    VSpace(10.dp)
                 }
             }
         }
@@ -249,12 +258,14 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
 
 @Composable
 private fun NumberBadge(n: Int) {
+    val gold = Color(0xFFD4AF37)
     Box(
-        Modifier.size(42.dp).clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+        Modifier.size(48.dp).clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f))
+            .border(2.dp, gold, CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Text("$n", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        Text("$n", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = gold)
     }
 }
 
@@ -263,21 +274,22 @@ private fun SuraRow(sura: Sura, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 4.dp),
+            .padding(vertical = 16.dp, horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         NumberBadge(sura.number)
-        HSpace(14.dp)
+        HSpace(16.dp)
         Column(Modifier.weight(1f)) {
-            Text(sura.uzName, style = MaterialTheme.typography.titleMedium)
+            Text(sura.uzName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text(
-                "${if (sura.meccan) "Makkiy" else "Madaniy"} • ${sura.count} oyat",
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+                "${if (sura.meccan) "Makka" else "Madina"}, ${sura.count} oyat",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Text(sura.arName, fontFamily = QuranFont, fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
+        Text(sura.arName, fontFamily = QuranFont, fontSize = 26.sp, color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -434,6 +446,17 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         IconButton(onClick = { fullscreen = true }) { Icon(Icons.Filled.Fullscreen, "To'liq ekran") }
                     }
                 }
+                if (!s.quranFlow) ReaderModeBar(
+                    reading = s.quranReading, translation = s.translation > 0,
+                    onArabicOnly = { app.settings.update { it.copy(quranReading = false, translation = 0) } },
+                    onReading = { app.settings.update { it.copy(quranReading = !it.quranReading) } },
+                    onTranslation = {
+                        app.settings.update { it.copy(translation = if (it.translation > 0) 0 else if (it.script == 1) 2 else 1) }
+                        if (trState !is TranslationRepo.State.Ready && trState !is TranslationRepo.State.Downloading) scope.launch { TranslationRepo.download(ctx) }
+                    },
+                    onSmaller = { app.settings.update { it.copy(quranFont = (it.quranFont - 2f).coerceAtLeast(18f)) } },
+                    onBigger = { app.settings.update { it.copy(quranFont = (it.quranFont + 2f).coerceAtMost(56f)) } },
+                )
             } else {
                 androidx.compose.foundation.layout.Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             }
@@ -442,13 +465,14 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 32.dp),
+                    contentPadding = PaddingValues(start = if (s.quranFlow) 18.dp else 12.dp, end = if (s.quranFlow) 18.dp else 12.dp, top = 8.dp, bottom = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(if (s.quranFlow) 0.dp else 12.dp),
                 ) {
                     item(key = "head") { SuraHeader(sura, q.bismillah, s.tajweed, dark, s.quranReading && !s.quranFlow) }
                     itemsIndexed(groups, key = { i, _ -> "g$i" }) { _, g ->
-                        val text = remember(g, s.tajweed, dark, numberColor) {
-                            if (g.size == 1) ayahAnnotated(g[0], s.tajweed, dark, numberColor)
+                        val text = remember(g, s.tajweed, dark, numberColor, s.quranFlow) {
+                            if (g.size == 1) ayahAnnotated(g[0], s.tajweed, dark, numberColor, withNumber = s.quranFlow)
                             else buildAnnotatedString { g.forEach { append(ayahAnnotated(it, s.tajweed, dark, numberColor)) } }
                         }
                         val playingHere = play.active && play.sura == sura.number && g.any { it.number == play.ayah }
@@ -456,47 +480,56 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         val hl by androidx.compose.animation.animateColorAsState(
                             if (playingHere) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent, label = "hl"
                         )
-                        Column(
-                            Modifier.widthIn(max = 900.dp).fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(hl)
-                                .combinedClickable(
-                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = {},
-                                    onDoubleClick = { fullscreen = !fullscreen },
-                                    onLongClick = {
-                                        if (!s.quranFlow) {
-                                            app.bookmarks.toggleAyah(sura.number, g[0].number)
-                                            android.widget.Toast.makeText(ctx, uiText(ctx, if (app.bookmarks.hasAyah(sura.number, g[0].number)) "🔖 ${sura.uzName} ${g[0].number}-oyat xatcho'pga qo'shildi" else "Xatcho'p olib tashlandi"),
-                                                android.widget.Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-                                )
-                                .padding(horizontal = 6.dp)
-                        ) {
-                            if (marked) Text("🔖", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-                            Text(text, style = arabicStyle, inlineContent = ayahInline, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
-                            if (!s.quranFlow && s.quranReading) {
-                                val rd = remember(g[0]) { uz.hijriy.app.core.Translit.ayah(g[0].text) }
-                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                                    ReadingText(rd, Modifier.padding(bottom = 8.dp))
-                                }
-                            }
-                            val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
-                            if (!s.quranFlow && s.translation > 0 && trList != null) {
-                                val raw = trList.getOrNull(g[0].number - 1) ?: ""
-                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                                    Text(
-                                        "${g[0].number}. " + if (s.translation == 1) UzTranslit.toLatin(raw) else raw,
-                                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                        val toggleMark = {
+                            app.bookmarks.toggleAyah(sura.number, g[0].number)
+                            android.widget.Toast.makeText(ctx, uiText(ctx, if (app.bookmarks.hasAyah(sura.number, g[0].number)) "🔖 ${sura.uzName} ${g[0].number}-oyat xatcho'pga qo'shildi" else "Xatcho'p olib tashlandi"),
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        if (s.quranFlow) {
+                            Column(
+                                Modifier.widthIn(max = 900.dp).fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(hl)
+                                    .combinedClickable(
+                                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                        indication = null, onClick = {}, onDoubleClick = { fullscreen = !fullscreen },
                                     )
-                                }
+                                    .padding(horizontal = 6.dp)
+                            ) {
+                                Text(text, style = arabicStyle, inlineContent = ayahInline, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
                             }
-                            if (!s.quranFlow) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+                        } else {
+                            val a = g[0]
+                            val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
+                            val trText = if (s.translation > 0 && trList != null) trList.getOrNull(a.number - 1)?.let { raw ->
+                                if (s.translation == 1) UzTranslit.toLatin(raw) else raw
+                            } else null
+                            val rd = if (s.quranReading) remember(a) { uz.hijriy.app.core.Translit.ayah(a.text) } else null
+                            val cyr = LocalCyr.current
+                            AyahCard(
+                                number = a.number, arabic = text, arabicStyle = arabicStyle, inline = ayahInline,
+                                reading = rd, translation = trText, fontSize = s.quranFont, marked = marked,
+                                playing = play.playing && playingHere, highlight = hl,
+                                onPlay = {
+                                    if (playingHere && play.active) QuranAudio.togglePause()
+                                    else QuranAudio.play(sura.number, a.number, sura.count, Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)])
+                                },
+                                onCopy = {
+                                    val body = ayahShareText(sura, a, rd, trText, cyr)
+                                    (ctx.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager)
+                                        .setPrimaryClip(android.content.ClipData.newPlainText("oyat", body))
+                                    android.widget.Toast.makeText(ctx, uiText(ctx, "Nusxa olindi"), android.widget.Toast.LENGTH_SHORT).show()
+                                },
+                                onShare = {
+                                    val body = ayahShareText(sura, a, rd, trText, cyr)
+                                    val i = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain")
+                                        .putExtra(android.content.Intent.EXTRA_TEXT, body)
+                                    ctx.startActivity(android.content.Intent.createChooser(i, uiText(ctx, "Ulashish")))
+                                },
+                                onBookmark = toggleMark,
+                                onDoubleTap = { fullscreen = !fullscreen },
+                            )
                         }
                     }
                     item(key = "nav") {
@@ -674,5 +707,112 @@ private fun SuraHeader(sura: Sura, bism: Ayah, tajweed: Boolean, dark: Boolean, 
             }
         }
         VSpace(6.dp)
+    }
+}
+
+
+private fun ayahShareText(sura: Sura, a: Ayah, rd: uz.hijriy.app.core.Translit.Result?, tr: String?, cyr: Boolean): String = buildString {
+    append(a.text).append(" ﴿").append(a.number).append("﴾")
+    if (rd != null) append("\n\n").append(if (cyr) rd.cyrillic else rd.latin)
+    if (tr != null) append("\n\n").append(tr)
+    append("\n\n— ").append(sura.uzName).append(", ").append(a.number).append(if (cyr) "-оят" else "-oyat")
+}
+
+/** Ko'rinish tanlovi: faqat arabcha / o'qilishi / tarjima va shrift o'lchami. */
+@Composable
+private fun ReaderModeBar(
+    reading: Boolean, translation: Boolean,
+    onArabicOnly: () -> Unit, onReading: () -> Unit, onTranslation: () -> Unit,
+    onSmaller: () -> Unit, onBigger: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)
+            .horizontalScroll(rememberScrollState()).padding(horizontal = 10.dp).padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically
+    ) {
+        FilterChip(selected = !reading && !translation, onClick = onArabicOnly, label = { Text("Faqat arabcha") })
+        FilterChip(selected = reading, onClick = onReading, label = { Text("O'qilishi") })
+        FilterChip(selected = translation, onClick = onTranslation, label = { Text("Tarjima") })
+        Box(Modifier.width(4.dp))
+        FontStepButton("A−", "Kichraytirish", onSmaller)
+        FontStepButton("A+", "Kattalashtirish", onBigger)
+    }
+}
+
+@Composable
+private fun FontStepButton(label: String, desc: String, onClick: () -> Unit) {
+    Box(
+        Modifier.size(width = 44.dp, height = 34.dp).clip(RoundedCornerShape(10.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
+            .clickable(onClickLabel = desc, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) { androidx.compose.material3.Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold) }
+}
+
+/** Bir oyat kartasi: raqam, amallar, arabcha matn, o'qilishi va tarjimasi. */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun AyahCard(
+    number: Int, arabic: AnnotatedString, arabicStyle: TextStyle, inline: Map<String, androidx.compose.foundation.text.InlineTextContent>,
+    reading: uz.hijriy.app.core.Translit.Result?, translation: String?, fontSize: Float,
+    marked: Boolean, playing: Boolean, highlight: Color,
+    onPlay: () -> Unit, onCopy: () -> Unit, onShare: () -> Unit, onBookmark: () -> Unit, onDoubleTap: () -> Unit,
+) {
+    val gold = Color(0xFFD4AF37)
+    val cyr = LocalCyr.current
+    val sub = (fontSize * 0.62f).coerceIn(14f, 30f)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Column(
+            Modifier.widthIn(max = 900.dp).fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .background(highlight)
+                .combinedClickable(
+                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                    indication = null, onClick = {}, onDoubleClick = onDoubleTap, onLongClick = onBookmark,
+                )
+                .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 16.dp)
+                .semantics(mergeDescendants = false) { testTag = "ayah_$number" }
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                        .border(2.dp, gold, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) { androidx.compose.material3.Text("$number", color = gold, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall) }
+                Box(Modifier.weight(1f))
+                IconButton(onClick = onPlay) { Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Oyat tilovati", tint = gold) }
+                IconButton(onClick = onCopy) { Icon(Icons.Filled.ContentCopy, "Nusxa olish", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+                IconButton(onClick = onShare) { Icon(Icons.Filled.Share, "Ulashish", tint = MaterialTheme.colorScheme.onSurfaceVariant) }
+                IconButton(onClick = onBookmark) {
+                    Icon(if (marked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, "Xatcho'p", tint = gold)
+                }
+            }
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                Text(
+                    arabic, style = arabicStyle.copy(textAlign = TextAlign.Start), inlineContent = inline,
+                    modifier = Modifier.fillMaxWidth().padding(end = 8.dp, top = 6.dp, bottom = 4.dp)
+                )
+            }
+            if (reading != null) {
+                androidx.compose.material3.Text(
+                    if (cyr) reading.cyrillic else reading.latin,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = sub.sp, lineHeight = (sub * 1.45f).sp
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(end = 8.dp, top = 6.dp)
+                )
+            }
+            if (translation != null) {
+                androidx.compose.material3.Text(
+                    translation,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = sub.sp, lineHeight = (sub * 1.45f).sp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                    modifier = Modifier.padding(end = 8.dp, top = 8.dp)
+                )
+            }
+        }
     }
 }

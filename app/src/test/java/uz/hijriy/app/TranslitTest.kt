@@ -69,6 +69,7 @@ class TranslitTest {
         assertTrue(q("2:5").latin.contains("hudam mir robbihim"))
         assertTrue(q("26:176").latin.contains("as-haabul aykatil"))
         assertEquals("ʼAllamal qurʼaan", q("55:2").latin)
+        assertTrue(q("93:4").latin, q("93:4").latin.startsWith("Valalaaxirotu"))
     }
 
     @Test
