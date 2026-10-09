@@ -45,6 +45,67 @@ object UzTranslit {
         }
         return sb.toString()
     }
+
+    // ---------------- Lotin → kirill ----------------
+    private const val APOS = "'’ʻʼ‘`"
+    private val lat = mapOf(
+        'a' to 'а', 'b' to 'б', 'd' to 'д', 'f' to 'ф', 'g' to 'г', 'h' to 'ҳ', 'i' to 'и', 'j' to 'ж', 'k' to 'к',
+        'l' to 'л', 'm' to 'м', 'n' to 'н', 'o' to 'о', 'p' to 'п', 'q' to 'қ', 'r' to 'р', 's' to 'с', 't' to 'т',
+        'u' to 'у', 'v' to 'в', 'x' to 'х', 'y' to 'й', 'z' to 'з', 'c' to 'ц', 'w' to 'в',
+    )
+    private const val LAT_VOWELS = "aeiou"
+    /** Kirillda boshqacha yoziladigan so'zlar (asosan rus tilidan o'zlashganlar). */
+    private val words = mapOf(
+        "yanvar" to "январь", "fevral" to "февраль", "aprel" to "апрель", "iyun" to "июнь", "iyul" to "июль",
+        "sentabr" to "сентябрь", "oktabr" to "октябрь", "noyabr" to "ноябрь", "dekabr" to "декабрь",
+        "sentyabr" to "сентябрь", "oktyabr" to "октябрь", "mushaf" to "мусҳаф",
+    )
+    private val keep = setOf("GPS", "UV", "hPa", "MWL", "ISNA", "APK", "AAB", "PNG", "JPG", "MP3", "km", "Wi-Fi")
+    private val WORD = Regex("[A-Za-z]+(?:[$APOS][A-Za-z]+)*(?<=[oOgG])[$APOS]|[A-Za-z]+(?:[$APOS][A-Za-z]+)*")
+
+    /** O'zbek lotin yozuvini kirillga o'giradi (rasmiy qoidalar: o'→ў, g'→ғ, sh, ch, yo/yu/ya/ye, e/э, ' → ъ). */
+    fun toCyrillic(s: String): String {
+        if (s.isEmpty() || s.none { it in 'A'..'Z' || it in 'a'..'z' } || "://" in s) return s
+        return WORD.replace(s) { m -> word(m.value) }
+    }
+
+    private fun word(w: String): String {
+        if (w in keep) return w
+        words[w.lowercase()]?.let { r ->
+            return when {
+                w.length > 1 && w.all { !it.isLetter() || it.isUpperCase() } -> r.uppercase()
+                w[0].isUpperCase() -> r.replaceFirstChar { it.uppercaseChar() }
+                else -> r
+            }
+        }
+        val allUpper = w.length > 1 && w.filter { it.isLetter() }.all { it.isUpperCase() }
+        val sb = StringBuilder(w.length)
+        var i = 0
+        while (i < w.length) {
+            val ch = w[i]; val lo = ch.lowercaseChar()
+            val n1 = if (i + 1 < w.length) w[i + 1] else ' '
+            val n1l = n1.lowercaseChar()
+            val prev = if (i > 0) w[i - 1].lowercaseChar() else ' '
+            var take = 1
+            val out: Char = when {
+                ch in APOS && prev == 's' && n1l == 'h' -> { i++; continue } // Is'hoq → Исҳоқ
+                ch in APOS -> 'ъ'
+                lo == 'o' && n1 in APOS -> { take = 2; 'ў' }
+                lo == 'g' && n1 in APOS -> { take = 2; 'ғ' }
+                lo == 's' && n1l == 'h' -> { take = 2; 'ш' }
+                lo == 'c' && n1l == 'h' -> { take = 2; 'ч' }
+                lo == 'y' && n1l == 'o' && (i + 2 >= w.length || w[i + 2] !in APOS) -> { take = 2; 'ё' }
+                lo == 'y' && n1l == 'u' -> { take = 2; 'ю' }
+                lo == 'y' && n1l == 'a' -> { take = 2; 'я' }
+                lo == 'y' && n1l == 'e' -> { take = 2; 'е' }
+                lo == 'e' -> if (i == 0 || prev in LAT_VOWELS) 'э' else 'е'
+                else -> lat[lo] ?: ch
+            }
+            sb.append(if (ch.isUpperCase() || allUpper) out.uppercaseChar() else out)
+            i += take
+        }
+        return sb.toString()
+    }
 }
 
 /** Qur'on ma'nolarining o'zbekcha tarjimasi (Muhammad Sodiq Muhammad Yusuf). Bir marta yuklab olinadi. */

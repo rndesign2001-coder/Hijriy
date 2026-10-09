@@ -1,6 +1,6 @@
 # Hijriy Taqvim — namozxonlar uchun Android ilova
 
-Kotlin + Jetpack Compose. APK har `main` ga push qilinganda GitHub Actions'da avtomatik yig'iladi va **Releases** bo'limiga chiqariladi.
+Kotlin + Jetpack Compose. APK va AAB (Google Play uchun) har `main` ga push qilinganda GitHub Actions'da avtomatik yig'iladi va **Releases** bo'limiga chiqariladi.
 
 ## Imkoniyatlar
 
@@ -23,6 +23,7 @@ Kotlin + Jetpack Compose. APK har `main` ga push qilinganda GitHub Actions'da av
 - **Rasm tayyorlash** — namoz vaqtlari bilan rasm: 4 ta fon + galereya, 4 uslub, shrift/rang tanlash, saqlash, ulashish, fon rasmi.
 - **Duolar va zikrlar**, **qazo namozlar hisoblagichi**, **Juma eslatmasi**, eslatma ovozi yoki o'z azon faylingiz.
 - **Bosh ekran vidjeti** — keyingi namoz va jonli teskari sanoq.
+- **Lotin va kirill yozuvi** — butun interfeys (bildirishnomalar, vidjet, rasm tayyorlagich ham) bir tugma bilan kirillga o'tadi.
 - **Dizayn** — islomiy kirish animatsiyasi, kun vaqtiga qarab o'zgaruvchi osmonli bosh sahifa, qiblaning 3 uslubi, kunduzgi/tungi rejim, 4 mavzu rangi.
 
 ## Ma'lumot manbalari

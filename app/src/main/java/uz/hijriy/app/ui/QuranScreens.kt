@@ -59,7 +59,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -469,9 +468,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                                     onLongClick = {
                                         if (!s.quranFlow) {
                                             app.bookmarks.toggleAyah(sura.number, g[0].number)
-                                            android.widget.Toast.makeText(
-                                                ctx,
-                                                if (app.bookmarks.hasAyah(sura.number, g[0].number)) "🔖 ${sura.uzName} ${g[0].number}-oyat xatcho'pga qo'shildi" else "Xatcho'p olib tashlandi",
+                                            android.widget.Toast.makeText(ctx, uiText(ctx, if (app.bookmarks.hasAyah(sura.number, g[0].number)) "🔖 ${sura.uzName} ${g[0].number}-oyat xatcho'pga qo'shildi" else "Xatcho'p olib tashlandi"),
                                                 android.widget.Toast.LENGTH_SHORT
                                             ).show()
                                         }

@@ -134,14 +134,14 @@ private val AppTypography = Typography().let { t ->
 val ArabicTitle = TextStyle(fontFamily = QuranFont, fontSize = 22.sp)
 
 @Composable
-fun HijriyTheme(mode: ThemeMode, paletteIndex: Int, content: @Composable () -> Unit) {
+fun HijriyTheme(mode: ThemeMode, paletteIndex: Int, cyr: Boolean = false, content: @Composable () -> Unit) {
     val dark = when (mode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
     val p = Palettes[paletteIndex.coerceIn(0, Palettes.lastIndex)]
-    androidx.compose.runtime.CompositionLocalProvider(LocalExtra provides Extra(dark, p)) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalExtra provides Extra(dark, p), uz.hijriy.app.ui.LocalCyr provides cyr) {
         MaterialTheme(colorScheme = scheme(p, dark), typography = AppTypography, content = content)
     }
 }

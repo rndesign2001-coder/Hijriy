@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         intent?.getStringExtra(EXTRA_ROUTE)?.let { app.pendingRoute.value = it }
         setContent {
             val s by app.settings.state.collectAsStateWithLifecycle()
-            HijriyTheme(s.themeMode, s.palette) {
+            HijriyTheme(s.themeMode, s.palette, s.script == 1) {
                 val dark = LocalExtra.current.dark
                 val view = LocalView.current
                 SideEffect {

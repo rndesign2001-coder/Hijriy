@@ -48,7 +48,6 @@ import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -214,6 +213,11 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                             Icon(Icons.Filled.KeyboardArrowDown, null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
                         }
                     }
+                    ScriptToggle(s.script == 1) {
+                        app.settings.update { it.copy(script = 1 - it.script) }
+                        uz.hijriy.app.widget.PrayerWidget.updateAll(app)
+                    }
+                    HSpace(8.dp)
                     GlassIcon(Icons.Filled.Explore, "Qibla") { nav.go("qibla") }
                     HSpace(8.dp)
                     GlassIcon(Icons.Filled.Settings, "Sozlamalar") { nav.go("settings") }
@@ -349,6 +353,24 @@ private fun GlassIcon(icon: ImageVector, desc: String, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) { Icon(icon, desc, tint = Color.White, modifier = Modifier.size(22.dp)) }
+}
+
+/** Lotin ⇄ kirill tezkor almashtirgich (yozuv o'zgarmasligi uchun material3.Text). */
+@Composable
+private fun ScriptToggle(cyr: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier.height(42.dp).clip(RoundedCornerShape(50))
+            .background(Color.White.copy(alpha = 0.16f))
+            .border(1.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(50))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.material3.Text(
+            if (cyr) "Ўз → O'z" else "O'z → Ўз", color = Color.White,
+            style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 @Composable

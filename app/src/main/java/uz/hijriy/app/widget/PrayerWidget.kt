@@ -1,5 +1,7 @@
 package uz.hijriy.app.widget
 
+import uz.hijriy.app.ui.tr
+
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -46,8 +48,9 @@ class PrayerWidget : AppWidgetProvider() {
             val minuteNow = now.hour * 60 + now.minute
             val v = RemoteViews(context.packageName, R.layout.widget_prayer)
             val h = Hijri.fromGregorian(today, s.hijriAdjust)
-            v.setTextViewText(R.id.location, s.locName)
-            v.setTextViewText(R.id.hijri, "${h.day} ${h.monthName} ${h.year}")
+            val cyr = s.script == 1
+            v.setTextViewText(R.id.location, tr(s.locName, cyr))
+            v.setTextViewText(R.id.hijri, tr("${h.day} ${h.monthName} ${h.year}", cyr))
             var nextIdx = prayers.indexOfFirst { t[it] > minuteNow }
             val nextDate: LocalDate
             val nextMinute: Int
@@ -57,12 +60,13 @@ class PrayerWidget : AppWidgetProvider() {
             val currentIdx = prayers.indexOfLast { t[it] <= minuteNow }
             prayers.forEachIndexed { i, p ->
                 v.setTextViewText(times[i], fmtMin(t[p]))
+                v.setTextViewText(names[i], tr(p.uz, cyr))
                 val active = i == currentIdx
                 v.setInt(cells[i], "setBackgroundResource", if (active) R.drawable.widget_cell_active else R.drawable.widget_cell)
                 v.setTextColor(times[i], if (active) 0xFF0B3D2E.toInt() else 0xFFFFFFFF.toInt())
                 v.setTextColor(names[i], if (active) 0xFF0B3D2E.toInt() else 0xE6FFFFFF.toInt())
             }
-            v.setTextViewText(R.id.next, "Keyingi: ${prayers[nextIdx].uz} ${fmtMin(nextMinute)}")
+            v.setTextViewText(R.id.next, tr("Keyingi: ${prayers[nextIdx].uz} ${fmtMin(nextMinute)}", cyr))
             val nextAt = nextDate.atStartOfDay(zone).plusMinutes(nextMinute.toLong()).toInstant().toEpochMilli()
             val base = SystemClock.elapsedRealtime() + (nextAt - System.currentTimeMillis())
             v.setChronometer(R.id.countdown, base, null, true)

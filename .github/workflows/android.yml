@@ -61,7 +61,7 @@ jobs:
         run: |
           chmod +x gradlew
           set -o pipefail
-          ./gradlew --no-daemon --continue testDebugUnitTest assembleRelease 2>&1 | tee build.log
+          ./gradlew --no-daemon --continue testDebugUnitTest assembleRelease bundleRelease 2>&1 | tee build.log
 
       - name: Skrinshotlar (ci-shots shoxchasi)
         if: always()
@@ -84,13 +84,14 @@ jobs:
           V="1.0.${{ github.run_number }}"
           mkdir -p out
           cp app/build/outputs/apk/release/app-release.apk "out/Hijriy-Taqvim-v$V.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "out/Hijriy-Taqvim-v$V.aab"
           echo "version=$V" >> "$GITHUB_OUTPUT"
           ls -la out
 
       - uses: actions/upload-artifact@v4
         with:
           name: Hijriy-Taqvim-v${{ steps.apk.outputs.version }}
-          path: out/*.apk
+          path: out/*
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -98,9 +99,11 @@ jobs:
           tag_name: v${{ steps.apk.outputs.version }}
           name: Hijriy Taqvim v${{ steps.apk.outputs.version }}
           body: |
-            Avtomatik yig'ilgan APK. Telefonga yuklab olib o'rnating.
+            Avtomatik yig'ilgan APK (telefonga o'rnatish uchun) va AAB (Google Play'ga yuklash uchun).
             Commit: ${{ github.sha }}
-          files: out/*.apk
+          files: |
+            out/*.apk
+            out/*.aab
           make_latest: true
 
       - name: Xato logini saqlash (ci-logs shoxchasi)
@@ -110,6 +113,7 @@ jobs:
           git config user.email "ci-bot@users.noreply.github.com"
           mkdir -p /tmp/logs
           SIGNER=$(ls -d $ANDROID_HOME/build-tools/*/apksigner | tail -1); for a in out/*.apk; do $SIGNER verify --print-certs "$a" >> /tmp/logs/keystore.txt 2>&1 || true; done
+          for b in out/*.aab; do echo "AAB: $b" >> /tmp/logs/keystore.txt; keytool -printcert -jarfile "$b" 2>&1 | grep -E "Owner|SHA256" >> /tmp/logs/keystore.txt || true; done
           cp build.log /tmp/logs/build.log 2>/dev/null || echo "build.log yo'q" > /tmp/logs/build.log
           grep -E "^e: |error:|FAILED|What went wrong|Exception|expected:<" -A3 /tmp/logs/build.log | head -400 > /tmp/logs/errors.txt || true
           tail -150 /tmp/logs/build.log > /tmp/logs/tail.txt

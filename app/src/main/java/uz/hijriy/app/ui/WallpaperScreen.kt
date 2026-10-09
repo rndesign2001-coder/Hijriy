@@ -53,7 +53,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -197,7 +196,8 @@ fun DrawScope.renderPrayerWallpaper(
     val hj = Hijri.fromGregorian(date, s.hijriAdjust)
     fun style(sz: Float, weight: FontWeight = FontWeight.Bold, fam: FontFamily = font, col: Color = color, align: TextAlign = TextAlign.Start) =
         TextStyle(color = col, fontSize = sz.sp, fontFamily = fam, fontWeight = weight, shadow = shadow, textAlign = align)
-    fun text(str: String, x: Float, y: Float, st: TextStyle, width: Float? = null) {
+    fun text(raw: String, x: Float, y: Float, st: TextStyle, width: Float? = null) {
+        val str = tr(raw, s.script == 1)
         if (width != null) drawText(tm, str, Offset(x, y), st, size = Size(width, h))
         else drawText(tm, str, Offset(x, y), st)
     }
@@ -344,7 +344,7 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
         if (uri != null) scope.launch {
             val p = withContext(Dispatchers.IO) { loadPhoto(ctx, uri) }
             if (p != null) { photo = p; o = o.copy(bg = -1) }
-            else Toast.makeText(ctx, "Rasmni ochib bo'lmadi", Toast.LENGTH_SHORT).show()
+            else android.widget.Toast.makeText(ctx, uiText(ctx, "Rasmni ochib bo'lmadi"), Toast.LENGTH_SHORT).show()
         }
     }
     fun full(): Bitmap = renderToBitmap(tm, o, s, date, if (o.bg == -1) photo else null).asAndroidBitmap()
@@ -354,7 +354,7 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
             val bmp = full()
             val ok = withContext(Dispatchers.IO) { saveToGallery(ctx, bmp) }
             busy = false
-            Toast.makeText(ctx, if (ok) "Galereyaga saqlandi (Pictures/Hijriy Taqvim)" else "Saqlab bo'lmadi", Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(ctx, uiText(ctx, if (ok) "Galereyaga saqlandi (Pictures/Hijriy Taqvim)" else "Saqlab bo'lmadi"), Toast.LENGTH_SHORT).show()
         }
     }
     val storagePerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { if (it) doSave() }
@@ -403,7 +403,7 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
                     val bmp = full()
                     val ok = withContext(Dispatchers.IO) { runCatching { WallpaperManager.getInstance(ctx).setBitmap(bmp) }.isSuccess }
                     busy = false
-                    Toast.makeText(ctx, if (ok) "Fon rasmi o'rnatildi" else "O'rnatib bo'lmadi", Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(ctx, uiText(ctx, if (ok) "Fon rasmi o'rnatildi" else "O'rnatib bo'lmadi"), Toast.LENGTH_SHORT).show()
                 }
             }, enabled = !busy, modifier = Modifier.padding(top = 6.dp)) { Icon(Icons.Filled.Wallpaper, null); HSpace(6.dp); Text("Telefon fon rasmi qilish") }
 

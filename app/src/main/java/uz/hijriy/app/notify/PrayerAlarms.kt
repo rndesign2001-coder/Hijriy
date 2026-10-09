@@ -155,8 +155,8 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         val title = if (s.notifyBefore > 0 && left > 0) "${p.uz} namoziga $left daqiqa qoldi" else "${p.uz} vaqti kirdi"
         val n = NotificationCompat.Builder(context, Channels.ensure(context, s.notifySound))
             .setSmallIcon(R.drawable.ic_notify)
-            .setContentTitle(title)
-            .setContentText("${p.uz}: ${fmtMin(minute)} • ${s.locName}")
+            .setContentTitle(uz.hijriy.app.ui.tr(title, s.script == 1))
+            .setContentText(uz.hijriy.app.ui.tr("${p.uz}: ${fmtMin(minute)} • ${s.locName}", s.script == 1))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
@@ -171,11 +171,11 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         val jumaTime = fmtMin(s.times(LocalDate.now())[Prayer.DHUHR])
         val n = NotificationCompat.Builder(context, Channels.ensure(context, s.notifySound))
             .setSmallIcon(R.drawable.ic_notify)
-            .setContentTitle("Juma muborak! 🕌")
-            .setContentText("Juma namozi (peshin $jumaTime). Kahf surasini o'qishni unutmang.")
-            .setStyle(NotificationCompat.BigTextStyle().bigText(
-                "Juma namozi (peshin vaqti $jumaTime). Juma kuni Kahf surasini o'qish, g'usl qilish va Rasulullohga ko'p salovot aytish sunnatdir. Kahf surasini ochish uchun bosing."
-            ))
+            .setContentTitle(uz.hijriy.app.ui.tr("Juma muborak! 🕌", s.script == 1))
+            .setContentText(uz.hijriy.app.ui.tr("Juma namozi (peshin $jumaTime). Kahf surasini o'qishni unutmang.", s.script == 1))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(uz.hijriy.app.ui.tr(
+                "Juma namozi (peshin vaqti $jumaTime). Juma kuni Kahf surasini o'qish, g'usl qilish va Rasulullohga ko'p salovot aytish sunnatdir. Kahf surasini ochish uchun bosing.", s.script == 1
+            )))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(PrayerScheduler.openApp(context, "reader/18", 2))

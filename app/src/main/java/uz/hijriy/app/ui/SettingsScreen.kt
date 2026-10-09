@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
@@ -59,7 +60,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -112,8 +112,8 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
             if (saved != null) {
                 app.settings.update { it.copy(notifySound = saved.toString()) }
                 uz.hijriy.app.notify.Channels.ensure(app, saved.toString())
-                android.widget.Toast.makeText(ctx, "Azon ovozi o'rnatildi", android.widget.Toast.LENGTH_SHORT).show()
-            } else android.widget.Toast.makeText(ctx, "Faylni qo'shib bo'lmadi", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(ctx, uiText(ctx, "Azon ovozi o'rnatildi"), android.widget.Toast.LENGTH_SHORT).show()
+            } else android.widget.Toast.makeText(ctx, uiText(ctx, "Faylni qo'shib bo'lmadi"), android.widget.Toast.LENGTH_SHORT).show()
         }
     }
     fun update(block: (uz.hijriy.app.data.Settings) -> uz.hijriy.app.data.Settings) {
@@ -131,6 +131,14 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 // ---------- Ko'rinish ----------
                 SectionTitle("Ko'rinish")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
+                    SettingRow(Icons.Filled.Translate, "Yozuv", if (s.script == 1) "Кирилл" else "Lotin")
+                    Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("Lotin" to 0, "Кирилл" to 1).forEach { (t, v) ->
+                            FilterChip(selected = s.script == v, onClick = { update { it.copy(script = v) }; uz.hijriy.app.widget.PrayerWidget.updateAll(app) },
+                                label = { androidx.compose.material3.Text(t) })
+                        }
+                    }
+                    VSpace(8.dp)
                     SettingRow(Icons.Filled.Brightness4, "Rejim", s.themeMode.title)
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ThemeMode.entries.forEach { m ->

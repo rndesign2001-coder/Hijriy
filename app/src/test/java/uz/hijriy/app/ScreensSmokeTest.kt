@@ -164,6 +164,23 @@ class ScreensSmokeTest {
     }
 
     @Test
+    fun cyrillicInterface() {
+        rule.mainClock.autoAdvance = false
+        skipIntro()
+        val app = rule.activity.application as HijriyApp
+        app.settings.update { it.copy(script = 1) }
+        settle()
+        assertTrue(exists("Кейинги", substring = true))
+        assertTrue(exists("Бомдод"))
+        clickText("Яна")
+        clickText("Созламалар")
+        assertTrue(exists("Ёзув"))
+        clickText("Lotin")
+        assertEquals(0, app.settings.value.script)
+        assertTrue(exists("Yozuv"))
+    }
+
+    @Test
     fun mushafTasbehAndNames() {
         rule.mainClock.autoAdvance = false
         skipIntro()
