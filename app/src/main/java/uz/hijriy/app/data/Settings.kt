@@ -61,6 +61,9 @@ data class Settings(
     val reciter: Int = 0,
     // Interfeys yozuvi: 0 — lotin, 1 — kirill
     val script: Int = 0,
+    // O'qilishi (transliteratsiya): Qur'onda va duolarda
+    val quranReading: Boolean = false,
+    val duaReading: Boolean = true,
 ) {
     val calc get() = CalcSettings(method, hanafi, customFajr, customIsha)
 
@@ -82,7 +85,7 @@ data class Settings(
         put("lastSura", lastSura); put("lastAyah", lastAyah); put("mushafPage", mushafPage)
         put("notifyEnabled", notifyEnabled); put("notifyPrayers", notifyPrayers.joinToString(",") { it.name })
         put("notifyBefore", notifyBefore); put("notifySound", notifySound); put("fridayReminder", fridayReminder)
-        put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter); put("script", script)
+        put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter); put("script", script); put("quranReading", quranReading); put("duaReading", duaReading)
     }.toString()
 
     companion object {
@@ -131,6 +134,8 @@ data class Settings(
                     translation = j.optInt("translation", 0),
                     reciter = j.optInt("reciter", 0),
                     script = j.optInt("script", 0),
+                    quranReading = j.optBoolean("quranReading", false),
+                    duaReading = j.optBoolean("duaReading", true),
                 )
             } catch (e: Exception) {
                 Settings()

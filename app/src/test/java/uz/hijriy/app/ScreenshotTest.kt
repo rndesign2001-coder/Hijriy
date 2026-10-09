@@ -86,6 +86,7 @@ class ScreenshotTest {
         app.settings.update { it.copy(script = 1) }; settle(); shot("10b_home_kirill")
         click("Намоз"); shot("10c_prayer_kirill")
         app.settings.update { it.copy(script = 0) }; settle()
+        app.settings.update { it.copy(quranReading = true) }
         click("Qur'on"); shot("11_quran_list")
         click("Fotiha"); settle(); shot("12_reader")
         back()

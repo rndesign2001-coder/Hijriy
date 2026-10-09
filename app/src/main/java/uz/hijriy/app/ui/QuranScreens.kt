@@ -445,7 +445,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                     contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    item(key = "head") { SuraHeader(sura, q.bismillah, s.tajweed, dark) }
+                    item(key = "head") { SuraHeader(sura, q.bismillah, s.tajweed, dark, s.quranReading && !s.quranFlow) }
                     itemsIndexed(groups, key = { i, _ -> "g$i" }) { _, g ->
                         val text = remember(g, s.tajweed, dark, numberColor) {
                             if (g.size == 1) ayahAnnotated(g[0], s.tajweed, dark, numberColor)
@@ -478,6 +478,12 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         ) {
                             if (marked) Text("🔖", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
                             Text(text, style = arabicStyle, inlineContent = ayahInline, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
+                            if (!s.quranFlow && s.quranReading) {
+                                val rd = remember(g[0]) { uz.hijriy.app.core.Translit.ayah(g[0].text) }
+                                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                    ReadingText(rd, Modifier.padding(bottom = 8.dp))
+                                }
+                            }
                             val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
                             if (!s.quranFlow && s.translation > 0 && trList != null) {
                                 val raw = trList.getOrNull(g[0].number - 1) ?: ""
@@ -567,6 +573,14 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 SettingRow(null, "Yaxlit matn", "Oyatlar sahifadagidek ketma-ket", onClick = {
                     app.settings.update { it.copy(quranFlow = !it.quranFlow) }
                 }) { Switch(checked = s.quranFlow, onCheckedChange = { v -> app.settings.update { it.copy(quranFlow = v) } }) }
+                SettingRow(null, "O'qilishi (lotin / kirill)", "Har oyat ostida talaffuzi — yozuv sozlamasiga mos", onClick = {
+                    app.settings.update { it.copy(quranReading = !it.quranReading) }
+                }) { Switch(checked = s.quranReading, onCheckedChange = { v -> app.settings.update { it.copy(quranReading = v) } }) }
+                Text(
+                    "O'qilishi tajvid qoidalari asosida taxminiy berilgan. To'g'ri talaffuzni ustozdan o'rganing.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                )
                 SettingRow(null, "Tajvid ranglari izohi", onClick = { showSettings = false; showLegend = true })
                 VSpace(8.dp)
                 Text("O'zbekcha tarjima (Muhammad Sodiq Muhammad Yusuf)", style = MaterialTheme.typography.titleSmall)
@@ -634,7 +648,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
 }
 
 @Composable
-private fun SuraHeader(sura: Sura, bism: Ayah, tajweed: Boolean, dark: Boolean) {
+private fun SuraHeader(sura: Sura, bism: Ayah, tajweed: Boolean, dark: Boolean, reading: Boolean = false) {
     val p = LocalExtra.current.palette
     Column(Modifier.fillMaxWidth().widthIn(max = 900.dp).padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
@@ -654,6 +668,10 @@ private fun SuraHeader(sura: Sura, bism: Ayah, tajweed: Boolean, dark: Boolean) 
                 fontFamily = QuranFont, fontSize = 26.sp, lineHeight = 52.sp,
                 color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center
             )
+            if (reading) {
+                val rd = remember(bism) { uz.hijriy.app.core.Translit.ayah(bism.text) }
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { ReadingText(rd) }
+            }
         }
         VSpace(6.dp)
     }

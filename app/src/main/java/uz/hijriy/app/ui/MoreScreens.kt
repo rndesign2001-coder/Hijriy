@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
@@ -78,6 +79,7 @@ import uz.hijriy.app.ui.theme.TitleFont
 @Composable
 fun DuasScreen(app: HijriyApp, nav: NavHostController) {
     val quran by app.quran.collectAsStateWithLifecycle()
+    val s by app.settings.state.collectAsStateWithLifecycle()
     var tab by remember { mutableIntStateOf(0) }
     val counters = remember { mutableStateMapOf<String, Int>() }
     LaunchedEffect(Unit) { app.ensureQuran() }
@@ -86,11 +88,19 @@ fun DuasScreen(app: HijriyApp, nav: NavHostController) {
         ScrollableTabRow(selectedTabIndex = tab, containerColor = MaterialTheme.colorScheme.background, edgePadding = 12.dp) {
             Duas.sections.forEachIndexed { i, sec -> Tab(tab == i, { tab = i }, text = { Text("${sec.emoji} ${sec.title}") }) }
         }
+        androidx.compose.foundation.layout.Row(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            androidx.compose.material3.FilterChip(
+                selected = s.duaReading,
+                onClick = { app.settings.update { it.copy(duaReading = !it.duaReading) } },
+                label = { Text("O'qilishi (lotin / kirill)") },
+                leadingIcon = if (s.duaReading) { { androidx.compose.material3.Icon(Icons.Filled.Check, null) } } else null
+            )
+        }
         val sec = Duas.sections[tab]
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             itemsIndexed(sec.items, key = { i, d -> "${sec.title}/$i/${d.title}" }) { i, d ->
                 val key = "${sec.title}/$i"
-                DuaCard(d, quran, counters[key] ?: 0) { counters[key] = ((counters[key] ?: 0) + 1).let { if (it > d.count) 0 else it } }
+                DuaCard(d, quran, counters[key] ?: 0, s.duaReading) { counters[key] = ((counters[key] ?: 0) + 1).let { if (it > d.count) 0 else it } }
             }
             item {
                 Text(
@@ -112,8 +122,29 @@ private fun duaArabic(d: Dua, q: Quran?): String {
     }
 }
 
+/** Duoning o'qilishi: Qur'ondan bo'lsa oyatma-oyat (raqami bilan), aks holda duo matnidan. */
+private fun duaReading(d: Dua, q: Quran?): uz.hijriy.app.core.Translit.Result? {
+    if (d.quran.isEmpty()) return if (d.ar.isBlank()) null else uz.hijriy.app.core.Translit.dua(d.ar)
+    if (q == null) return null
+    val lat = StringBuilder(); val cyr = StringBuilder()
+    d.quran.forEachIndexed { k, (s, a1, a2) ->
+        if (k > 0) { lat.append("\n\n"); cyr.append("\n\n") }
+        val sura = q.suras[s - 1]
+        if (d.quran.size > 1 || s >= 112) {
+            val b = uz.hijriy.app.core.Translit.ayah(q.bismillah.text)
+            lat.append(b.latin).append(".\n"); cyr.append(b.cyrillic).append(".\n")
+        }
+        for (a in a1..a2) {
+            val r = uz.hijriy.app.core.Translit.ayah(sura.ayahs[a - 1].text)
+            if (a > a1) { lat.append(' '); cyr.append(' ') }
+            lat.append(r.latin).append(" ($a)"); cyr.append(r.cyrillic).append(" ($a)")
+        }
+    }
+    return uz.hijriy.app.core.Translit.Result(lat.toString(), cyr.toString())
+}
+
 @Composable
-private fun DuaCard(d: Dua, q: Quran?, done: Int, onTap: () -> Unit) {
+private fun DuaCard(d: Dua, q: Quran?, done: Int, reading: Boolean = true, onTap: () -> Unit) {
     val complete = done >= d.count
     val bg by animateColorAsState(
         if (complete) MaterialTheme.colorScheme.primary.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceContainer, label = "bg"
@@ -145,6 +176,10 @@ private fun DuaCard(d: Dua, q: Quran?, done: Int, onTap: () -> Unit) {
                     inlineContent = rememberAyahInline(MaterialTheme.colorScheme.primary), modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
+        if (reading) {
+            val rd = remember(d, q) { duaReading(d, q) }
+            if (rd != null) { VSpace(8.dp); ReadingText(rd) }
         }
         VSpace(8.dp)
         Text(d.meaning, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

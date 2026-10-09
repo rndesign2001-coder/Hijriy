@@ -1,6 +1,12 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -95,3 +101,31 @@ fun uiText(ctx: android.content.Context, s: String): String {
     val app = ctx.applicationContext as? uz.hijriy.app.HijriyApp ?: return s
     return tr(s, app.settings.value.script == 1)
 }
+
+/** Arabcha matnning o'qilishi — joriy yozuvda (lotin yoki kirill), yumshoq fon va chap chiziq bilan. */
+@Composable
+fun ReadingText(r: uz.hijriy.app.core.Translit.Result, modifier: Modifier = Modifier, prefix: String = "") {
+    val cyr = LocalCyr.current
+    val cs = androidx.compose.material3.MaterialTheme.colorScheme
+    androidx.compose.foundation.layout.Row(
+        modifier
+            .fillMaxWidthCompat()
+            .then(Modifier.background(cs.primary.copy(alpha = 0.06f), androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        androidx.compose.foundation.layout.Box(
+            Modifier.padding(top = 3.dp).width(3.dp).height(16.dp)
+                .background(cs.primary.copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(2.dp))
+        )
+        androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+        androidx.compose.material3.Text(
+            prefix + if (cyr) r.cyrillic else r.latin,
+            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge.copy(
+                fontStyle = FontStyle.Italic, lineHeight = androidx.compose.ui.unit.TextUnit(24f, androidx.compose.ui.unit.TextUnitType.Sp)
+            ),
+            color = cs.onSurface.copy(alpha = 0.85f)
+        )
+    }
+}
+
+private fun Modifier.fillMaxWidthCompat() = this.fillMaxWidth()

@@ -223,6 +223,7 @@ class ScreensSmokeTest {
         // Duolar
         clickText("Duolar")
         assertTrue(exists("Oyatul Kursiy"))
+        waitFor("duo o'qilishi") { exists("Allohu laa ilaaha illaa huval hayyul qoyyuum", substring = true) }
         clickSub("Kechki zikrlar")
         rule.activity.onBackPressedDispatcher.onBackPressed(); settle()
 

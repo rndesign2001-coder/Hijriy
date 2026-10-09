@@ -36,7 +36,7 @@ object Duas {
                 ),
                 Dua(
                     "Sayyidul istig'for",
-                    "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+                    "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
                     "Allohim, Sen mening Robbimsan, Sendan o'zga iloh yo'q. Meni Sen yaratding, men Sening bandangman. Qo'limdan kelgancha Senga bergan ahdim va va'dam ustidaman. " +
                         "Qilgan ishlarimning yomonligidan Sendan panoh so'rayman. Menga bergan ne'matingni tan olaman, gunohimni ham tan olaman. Meni kechir, chunki gunohlarni Sendan boshqa hech kim kechirmaydi.",
                     1, "Buxoriy"
@@ -55,13 +55,13 @@ object Duas {
                 ),
                 Dua(
                     "Tavakkul",
-                    "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+                    "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
                     "Menga Alloh kifoya. Undan o'zga iloh yo'q. Unga tavakkul qildim. U ulug' Arshning Robbidir.",
                     7, "Abu Dovud"
                 ),
                 Dua(
                     "Tahlil",
-                    "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+                    "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
                     "Yolg'iz Allohdan o'zga iloh yo'q, Uning sherigi yo'q. Mulk ham, hamd ham Unikidir. U har narsaga qodirdir.",
                     10, "Buxoriy, Muslim"
                 ),
@@ -111,7 +111,7 @@ object Duas {
                 Dua("Allohu akbar", "اللَّهُ أَكْبَرُ", "Alloh eng buyukdir.", 33, "Muslim"),
                 Dua(
                     "Yuzinchi zikr",
-                    "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+                    "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
                     "Yolg'iz Allohdan o'zga iloh yo'q, Uning sherigi yo'q. Mulk ham, hamd ham Unikidir. U har narsaga qodirdir.",
                     1, "Muslim"
                 ),
