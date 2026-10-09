@@ -60,7 +60,7 @@ object UzTranslit {
         "sentabr" to "сентябрь", "oktabr" to "октябрь", "noyabr" to "ноябрь", "dekabr" to "декабрь",
         "sentyabr" to "сентябрь", "oktyabr" to "октябрь", "mushaf" to "мусҳаф",
     )
-    private val keep = setOf("GPS", "UV", "hPa", "MWL", "ISNA", "APK", "AAB", "PNG", "JPG", "MP3", "km", "Wi-Fi")
+    private val keep = setOf("N", "GPS", "UV", "hPa", "MWL", "ISNA", "APK", "AAB", "PNG", "JPG", "MP3", "km", "Wi-Fi")
     private val WORD = Regex("[A-Za-z]+(?:[$APOS][A-Za-z]+)*(?<=[oOgG])[$APOS]|[A-Za-z]+(?:[$APOS][A-Za-z]+)*")
 
     /** O'zbek lotin yozuvini kirillga o'giradi (rasmiy qoidalar: o'→ў, g'→ғ, sh, ch, yo/yu/ya/ye, e/э, ' → ъ). */
