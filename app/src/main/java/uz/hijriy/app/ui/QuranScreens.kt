@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -559,7 +560,12 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(12.dp).fillMaxWidth()
             ) {
                 Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showSettings = true }
+                    ) {
                         Text(Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)].name, style = MaterialTheme.typography.labelLarge, maxLines = 1)
                         Text(
                             when {
@@ -592,7 +598,13 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
 
     if (showSettings) {
         ModalBottomSheet(onDismissRequest = { showSettings = false }) {
-            Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 32.dp)
+                    .navigationBarsPadding()
+            ) {
                 Text("Ko'rinish", style = MaterialTheme.typography.titleLarge)
                 VSpace(12.dp)
                 Text("Shrift o'lchami: ${s.quranFont.toInt()}", style = MaterialTheme.typography.bodyMedium)
@@ -635,23 +647,28 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         }
                     }
                 }
-                VSpace(10.dp)
-                Text("Qori (tilovat internet orqali)", style = MaterialTheme.typography.titleSmall)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                Text("Qori (tilovat internet orqali)", style = MaterialTheme.typography.titleMedium)
+                VSpace(4.dp)
                 Reciters.forEachIndexed { i, r ->
+                    val selectReciter = {
+                        app.settings.update { it.copy(reciter = i) }
+                        if (play.active) QuranAudio.stop()
+                    }
                     Row(
                         Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
-                            .clickable { app.settings.update { it.copy(reciter = i) }; if (play.active) QuranAudio.stop() }
-                            .padding(vertical = 2.dp),
+                            .clickable(onClick = selectReciter)
+                            .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        androidx.compose.material3.RadioButton(selected = s.reciter == i, onClick = { app.settings.update { it.copy(reciter = i) } })
+                        androidx.compose.material3.RadioButton(selected = s.reciter == i, onClick = selectReciter)
                         Text(r.name, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
                 Text(
                     "Maslahat: oyatga ikki marta bosing — to'liq ekran; uzoq bosing — xatcho'p. Telefonni yonboshlatsangiz, matn keng ekranga moslashadi.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 10.dp)
                 )
             }
         }
