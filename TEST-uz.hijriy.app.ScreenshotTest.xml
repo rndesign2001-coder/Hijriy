@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.ScreenshotTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:05:14.927Z" hostname="runnervmmprz5" time="20.086">
+  <properties/>
+  <testcase name="wallpapers" classname="uz.hijriy.app.ScreenshotTest" time="1.796"/>
+  <testcase name="screens" classname="uz.hijriy.app.ScreenshotTest" time="18.29"/>
+  <system-out><![CDATA[SHOT 01_intro
+SHOT 02_home
+SHOT 02b_home_pastki
+SHOT 03_prayer
+SHOT 04_qibla_islomiy
+SHOT 05_qibla_klassik
+SHOT 06_qibla_zamonaviy
+SHOT 07_tasbeh
+SHOT 08_duas
+SHOT 09_wallpaper
+SHOT 10_home_dark
+SHOT 10b_home_kirill
+SHOT 10c_prayer_kirill
+SHOT 11_quran_list
+SHOT 12_reader
+SHOT 13_mushaf
+SHOT 14_duas_dark
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

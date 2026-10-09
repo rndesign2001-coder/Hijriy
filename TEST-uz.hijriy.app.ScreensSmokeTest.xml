@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.ScreensSmokeTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:04:33.905Z" hostname="runnervmmprz5" time="40.993">
+  <properties/>
+  <testcase name="readerOpensLongSuraInFlowModeAndDark" classname="uz.hijriy.app.ScreensSmokeTest" time="25.085"/>
+  <testcase name="extrasScreens" classname="uz.hijriy.app.ScreensSmokeTest" time="6.214"/>
+  <testcase name="rendersAndWidget" classname="uz.hijriy.app.ScreensSmokeTest" time="1.615"/>
+  <testcase name="allScreensOpen" classname="uz.hijriy.app.ScreensSmokeTest" time="4.611"/>
+  <testcase name="dataAssetsAreComplete" classname="uz.hijriy.app.ScreensSmokeTest" time="0.497"/>
+  <testcase name="mushafTasbehAndNames" classname="uz.hijriy.app.ScreensSmokeTest" time="2.156"/>
+  <testcase name="cyrillicInterface" classname="uz.hijriy.app.ScreensSmokeTest" time="0.815"/>
+  <system-out><![CDATA[STEP clickSub: Davom ettirish
+STEP click: Rasm
+STEP wait: namuna rasmi
+STEP click: Klassik
+STEP click: Shisha karta
+STEP click: Pastki panel
+STEP click: Arabcha sarlavha
+STEP click: Oltin shafaq
+STEP click: Duolar
+STEP wait: duo o'qilishi
+STEP clickSub: Kechki zikrlar
+STEP click: Qazo
+STEP click: Qur'on
+STEP click: Qidirish
+STEP wait: qidiruv natijasi
+STEP click: Namoz
+STEP click: Peshin
+STEP click: +5
+STEP click: Saqlash
+STEP click: Oylik jadval
+STEP click: Qur'on
+STEP click: Fotiha
+STEP click: O'qilishi
+STEP click: Arabcha
+STEP click: Tajvid
+STEP click: Juzlar
+STEP click: Taqvim
+STEP click: Hijriy
+STEP click: Konvertor
+STEP click: Oktabr
+STEP click: Mart
+STEP click: Yana
+STEP click: Qibla kompasi
+STEP click: Ob-havo
+STEP click: Sozlamalar
+STEP click: Tungi
+STEP click: Firuza
+STEP click: Joylashuv
+STEP click: Samarqand viloyati
+STEP click: Urgut tumani
+STEP click: Mushaf
+STEP wait: mushaf 1-sahifa
+STEP wait: mushaf 2-sahifa
+STEP click: Tasbeh
+STEP click: / 33
+STEP click: / 33
+STEP click: / 33
+STEP click: 99 ism
+STEP click: Яна
+STEP click: Созламалар
+STEP click: Lotin
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

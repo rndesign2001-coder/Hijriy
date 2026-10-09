@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.core.HijriTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-09T10:05:37.059Z" hostname="runnervmmprz5" time="0.264">
+  <properties/>
+  <testcase name="invalidDateRejected" classname="uz.hijriy.app.core.HijriTest" time="0.004"/>
+  <testcase name="adjustmentShiftsBothWays" classname="uz.hijriy.app.core.HijriTest" time="0.005"/>
+  <testcase name="tabularFallbackRoundTrips" classname="uz.hijriy.app.core.HijriTest" time="0.004"/>
+  <testcase name="partialYearsNeverCrash" classname="uz.hijriy.app.core.HijriTest" time="0.206"/>
+  <testcase name="ummAlQuraVectors" classname="uz.hijriy.app.core.HijriTest" time="0.039"/>
+  <testcase name="userExample_21March2001" classname="uz.hijriy.app.core.HijriTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

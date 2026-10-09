@@ -1,0 +1,150 @@
+ScreensSmokeTest > mushafTasbehAndNames STARTED
+
+ScreensSmokeTest > mushafTasbehAndNames STANDARD_OUT
+    STEP click: Mushaf
+    STEP wait: mushaf 1-sahifa
+    STEP wait: mushaf 2-sahifa
+    STEP click: Tasbeh
+    STEP click: / 33
+    STEP click: / 33
+    STEP click: / 33
+    STEP click: 99 ism
+
+ScreensSmokeTest > mushafTasbehAndNames PASSED
+
+ScreensSmokeTest > cyrillicInterface STARTED
+
+ScreensSmokeTest > cyrillicInterface STANDARD_OUT
+    STEP click: Яна
+    STEP click: Созламалар
+    STEP click: Lotin
+
+ScreensSmokeTest > cyrillicInterface PASSED
+
+ScreenshotTest > wallpapers STARTED
+
+ScreenshotTest > wallpapers PASSED
+
+ScreenshotTest > screens STARTED
+
+ScreenshotTest > screens STANDARD_OUT
+    SHOT 01_intro
+    SHOT 02_home
+    SHOT 02b_home_pastki
+    SHOT 03_prayer
+    SHOT 04_qibla_islomiy
+    SHOT 05_qibla_klassik
+    SHOT 06_qibla_zamonaviy
+    SHOT 07_tasbeh
+    SHOT 08_duas
+    SHOT 09_wallpaper
+    SHOT 10_home_dark
+    SHOT 10b_home_kirill
+    SHOT 10c_prayer_kirill
+    SHOT 11_quran_list
+    SHOT 12_reader
+    SHOT 13_mushaf
+    SHOT 14_duas_dark
+
+ScreenshotTest > screens PASSED
+
+TranslitTest > parsesWholeQuran STARTED
+
+TranslitTest > parsesWholeQuran PASSED
+
+TranslitTest > fatiha STARTED
+
+TranslitTest > fatiha PASSED
+
+TranslitTest > duas STARTED
+
+TranslitTest > duas PASSED
+
+TranslitTest > shortSuras STARTED
+
+TranslitTest > shortSuras PASSED
+
+AsmaulHusnaTest > ninetyNineNames STARTED
+
+AsmaulHusnaTest > ninetyNineNames PASSED
+
+HijriTest > invalidDateRejected STARTED
+
+HijriTest > invalidDateRejected PASSED
+
+HijriTest > adjustmentShiftsBothWays STARTED
+
+HijriTest > adjustmentShiftsBothWays PASSED
+
+HijriTest > tabularFallbackRoundTrips STARTED
+
+HijriTest > tabularFallbackRoundTrips PASSED
+
+HijriTest > partialYearsNeverCrash STARTED
+
+HijriTest > partialYearsNeverCrash PASSED
+
+HijriTest > ummAlQuraVectors STARTED
+
+HijriTest > ummAlQuraVectors PASSED
+
+HijriTest > userExample_21March2001 STARTED
+
+HijriTest > userExample_21March2001 PASSED
+
+PrayerTimesTest > qiblaTashkent STARTED
+
+PrayerTimesTest > qiblaTashkent PASSED
+
+PrayerTimesTest > adjustmentsOffsetAndFixed STARTED
+
+PrayerTimesTest > adjustmentsOffsetAndFixed PASSED
+
+PrayerTimesTest > tashkentOfficial_2026_09_29 STARTED
+
+PrayerTimesTest > tashkentOfficial_2026_09_29 PASSED
+
+PrayerTimesTest > tashkentRamadanFajr STARTED
+
+PrayerTimesTest > tashkentRamadanFajr PASSED
+
+PrayerTimesTest > wholeYearIsOrderedEverywhere STARTED
+
+PrayerTimesTest > wholeYearIsOrderedEverywhere PASSED
+
+UzTranslitTest > cyrillicToLatin STARTED
+
+UzTranslitTest > cyrillicToLatin PASSED
+
+UzTranslitTest > latinToCyrillic STARTED
+
+UzTranslitTest > latinToCyrillic PASSED
+
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:buildReleasePreBundle
+> Task :app:compileReleaseArtProfile
+> Task :app:packageReleaseBundle
+> Task :app:shrinkReleaseRes
+> Task :app:shrinkBundleReleaseResources
+> Task :app:convertShrunkResourcesToBinaryRelease
+> Task :app:optimizeReleaseResources
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+> Task :app:signReleaseBundle
+> Task :app:produceReleaseBundleIdeListingFile
+> Task :app:createReleaseBundleListingFileRedirect
+> Task :app:bundleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1791540205682.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/Hijriy/Hijriy/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 3m 22s
+86 actionable tasks: 86 executed
