@@ -1,0 +1,38 @@
+[
+ {
+  "title": "File:Kaaba Al-Musharrafah.jpg",
+  "name": "bg_kaaba_sunset",
+  "fx": 0.7,
+  "fy": 0.5
+ },
+ {
+  "title": "File:Al Masjid an Nabawi 3.jpg",
+  "name": "bg_nabawi_dusk",
+  "fx": 0.56,
+  "fy": 0.5
+ },
+ {
+  "title": "File:Masjid al-Haram 2022.jpg",
+  "name": "bg_haram_evening",
+  "fx": 0.47,
+  "fy": 0.5
+ },
+ {
+  "title": "File:المسجد النبوي الشريف.jpg",
+  "name": "bg_nabawi_sunset",
+  "fx": 0.5,
+  "fy": 0.5
+ },
+ {
+  "title": "File:Mecca.JPG",
+  "name": "bg_haram_night",
+  "fx": 0.55,
+  "fy": 0.5
+ },
+ {
+  "title": "File:المسجد النبوي في المدينة المنورة، ليلاً.jpg",
+  "name": "bg_nabawi_night",
+  "fx": 0.72,
+  "fy": 0.5
+ }
+]
