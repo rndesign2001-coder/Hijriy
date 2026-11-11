@@ -985,7 +985,7 @@ private fun SunWeatherCard(weather: WeatherState, t: DayTimes, now: LocalDateTim
                 val px = xOf(min.toFloat()); val py = yOf(min.toFloat())
                 drawCircle(if (hi) Gold else Color.White.copy(alpha = 0.8f), (if (hi) 4.5f else 3f).dp.toPx(), Offset(px, py))
                 val lay = textMeasurer.measure(label, TextStyle(color = Color.White.copy(alpha = 0.9f), fontSize = 10.sp, fontWeight = FontWeight.SemiBold))
-                val ty = if (py > horizon - 4f) horizon + 6.dp.toPx() else py - lay.size.height - 6.dp.toPx()
+                val ty = if (py > horizon - 4f) py + 6.dp.toPx() else py - lay.size.height - 6.dp.toPx()
                 drawText(lay, topLeft = Offset((px - lay.size.width / 2).coerceIn(0f, size.width - lay.size.width), ty))
             }
             mark(fajr, "Bomdod ${fmtMin(fajr)}", false)

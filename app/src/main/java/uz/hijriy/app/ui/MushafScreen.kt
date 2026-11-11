@@ -279,9 +279,9 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean, spans: Lis
         val portrait = maxHeight >= maxWidth
         val frameW = 9.dp
         val innerW: Dp = maxWidth - frameW * 2 - 16.dp
-        val headerH = 22.dp
-        val footerH = if (spans != null) 40.dp else 8.dp
-        val numberH = 22.dp
+        val headerH = 30.dp
+        val footerH = if (spans != null) 44.dp else 8.dp
+        val numberH = 30.dp
         val availH: Dp = maxHeight - headerH - footerH - numberH - frameW * 2 - 18.dp
         val byWidth = with(density) { innerW.toPx() * 24f / 410f }
         val byHeight = with(density) { (availH / 15).toPx() / 1.78f }
@@ -340,14 +340,14 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean, spans: Lis
                 }
                 if (spans != null) {
                     // Tajvid izohi
-                    Column(Modifier.width(lineW).height(footerH).padding(top = 4.dp), verticalArrangement = Arrangement.Center) {
+                    Column(Modifier.width(lineW).height(footerH).padding(top = 4.dp), verticalArrangement = Arrangement.SpaceEvenly) {
                         mushafLegend.chunked(4).forEach { row ->
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            Row(Modifier.fillMaxWidth().height(17.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                                 row.forEach { (c, t) ->
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Box(Modifier.size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c))
                                         Box(Modifier.width(3.dp))
-                                        androidx.compose.material3.Text(t, fontSize = 8.5.sp, color = ink.copy(alpha = 0.75f), maxLines = 1)
+                                        androidx.compose.material3.Text(t, fontSize = 8.5.sp, lineHeight = 10.sp, color = ink.copy(alpha = 0.75f), maxLines = 1)
                                     }
                                 }
                             }
@@ -357,7 +357,7 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean, spans: Lis
             }
             // Sahifa raqami
             Box(Modifier.fillMaxWidth().height(numberH), contentAlignment = Alignment.Center) {
-                androidx.compose.material3.Text(Uz.arabicNumber(page.number), fontFamily = QuranFont, fontSize = 15.sp, color = if (dark) gold else band)
+                androidx.compose.material3.Text(Uz.arabicNumber(page.number), fontFamily = QuranFont, fontSize = 14.sp, lineHeight = 18.sp, color = if (dark) gold else band)
             }
         }
     }
@@ -366,10 +366,16 @@ private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean, spans: Lis
 @Composable
 private fun Cartouche(text: String, band: Color, gold: Color) {
     Box(
-        Modifier.clip(RoundedCornerShape(50)).background(band.copy(alpha = 0.10f))
-            .border(1.dp, gold, RoundedCornerShape(50)).padding(horizontal = 10.dp),
+        Modifier.height(26.dp).clip(RoundedCornerShape(50)).background(band.copy(alpha = 0.10f))
+            .border(1.dp, gold, RoundedCornerShape(50)).padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center
-    ) { androidx.compose.material3.Text(text, fontFamily = QuranFont, fontSize = 12.sp, color = band) }
+    ) {
+        androidx.compose.material3.Text(
+            text, fontFamily = QuranFont, fontSize = 11.sp, color = band, maxLines = 1,
+            style = TextStyle(lineHeight = 14.sp, lineHeightStyle = androidx.compose.ui.text.style.LineHeightStyle(
+                androidx.compose.ui.text.style.LineHeightStyle.Alignment.Center, androidx.compose.ui.text.style.LineHeightStyle.Trim.Both))
+        )
+    }
 }
 
 @Composable
