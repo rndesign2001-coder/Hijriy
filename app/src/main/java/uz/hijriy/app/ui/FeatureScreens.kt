@@ -2,6 +2,7 @@ package uz.hijriy.app.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -388,8 +389,10 @@ private fun dirName(b: Double): String = listOf("Shimol", "Shimoli-sharq", "Shar
 
 @Composable
 private fun MosqueRadar(list: List<Mosque>, radiusKm: Double, qibla: Double) {
-    val sweep by androidx.compose.animation.core.rememberInfiniteTransition(label = "radar").animateFloat(
-        0f, 360f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(4000, easing = androidx.compose.animation.core.LinearEasing)), label = "sw"
+    val sweep: Float by androidx.compose.animation.core.rememberInfiniteTransition(label = "radar").animateFloat(
+        initialValue = 0f, targetValue = 360f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(4000, easing = androidx.compose.animation.core.LinearEasing)),
+        label = "sw"
     )
     Canvas(Modifier.fillMaxWidth().aspectRatio(1.25f)) {
         val r = size.height / 2 - 8.dp.toPx(); val c = center

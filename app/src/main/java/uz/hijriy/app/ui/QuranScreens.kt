@@ -616,7 +616,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 SettingRow(null, "Yaxlit matn", "Oyatlar sahifadagidek ketma-ket", onClick = {
                     app.settings.update { it.copy(quranFlow = !it.quranFlow) }
                 }) { Switch(checked = s.quranFlow, onCheckedChange = { v -> app.settings.update { it.copy(quranFlow = v) } }) }
-                SettingRow(null, "O'qilishi (lotin / kirill)", "Har oyat ostida talaffuzi — yozuv sozlamasiga mos", onClick = {
+                SettingRow(null, "O'qilishi (lotin / kirill)", "Har oyat ostida talaffuzi — yozuvi o'qish panelida tanlanadi", onClick = {
                     app.settings.update { it.copy(quranReading = !it.quranReading) }
                 }) { Switch(checked = s.quranReading, onCheckedChange = { v -> app.settings.update { it.copy(quranReading = v) } }) }
                 Text(
