@@ -169,6 +169,35 @@ fun SettingRow(
     }
 }
 
+/** [SettingRow] — 3D ikonka bilan. */
+@Composable
+fun SettingRow(
+    icon: HI,
+    title: String,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit)? = null,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        HIcon(icon, MaterialTheme.colorScheme.primary, size = 36.dp)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            if (subtitle != null) Text(
+                subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (trailing != null) trailing()
+    }
+}
+
 @Composable
 fun SectionTitle(text: String) {
     Text(

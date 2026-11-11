@@ -83,17 +83,9 @@ fun MosqueMapScreen(app: HijriyApp, nav: NavHostController) {
         }
     }
     val mosqueIcon = remember {
-        val px = (34 * ctx.resources.displayMetrics.density).toInt()
-        val img = androidx.compose.ui.graphics.ImageBitmap(px, px)
-        androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
-            androidx.compose.ui.unit.Density(ctx.resources.displayMetrics.density), androidx.compose.ui.unit.LayoutDirection.Ltr,
-            androidx.compose.ui.graphics.Canvas(img), androidx.compose.ui.geometry.Size(px.toFloat(), px.toFloat())
-        ) {
-            drawCircle(Color(0xFF0B5D48)); drawCircle(Color(0xFFE9C46A), style = androidx.compose.ui.graphics.drawscope.Stroke(size.width * 0.06f))
-            val pad = size.width * 0.2f
-            inset(pad, pad, pad, pad) { drawHIcon(HI.MOSQUE, Color.White, Color(0xFFE9C46A)) }
-        }
-        BitmapDrawable(ctx.resources, img.asAndroidBitmap())
+        val px = (40 * ctx.resources.displayMetrics.density).toInt()
+        val src = android.graphics.BitmapFactory.decodeResource(ctx.resources, HI.MOSQUE.res)
+        BitmapDrawable(ctx.resources, android.graphics.Bitmap.createScaledBitmap(src, px, px, true))
     }
 
     fun search() {

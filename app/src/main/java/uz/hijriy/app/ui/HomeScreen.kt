@@ -249,7 +249,7 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                             .padding(horizontal = 12.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.AutoAwesome, null, tint = Gold, modifier = Modifier.size(14.dp))
+                        HIcon(HI.NAMES, Gold, size = 18.dp)
                         HSpace(6.dp)
                         Text(it.name, color = Color.White, style = MaterialTheme.typography.labelLarge)
                     }
@@ -684,7 +684,7 @@ private fun NamesCard(epoch: Long, onClick: () -> Unit) {
             .padding(horizontal = 6.dp, vertical = 10.dp)
     ) {
         Row(Modifier.padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.AutoAwesome, null, tint = Gold, modifier = Modifier.size(16.dp))
+            HIcon(HI.NAMES, Gold, size = 26.dp)
             HSpace(6.dp)
             Text("Asmaul husna", color = Gold, fontFamily = TitleFont, fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.weight(1f))
             Text("99 ism ›", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.labelMedium, modifier = Modifier.clickable(onClick = onClick))
@@ -727,7 +727,7 @@ private fun AnimatedTile(t: HomeTile, index: Int, modifier: Modifier, onClick: (
                 .drawBehind { drawGirih(t.color.copy(alpha = if (dark) 0.16f else 0.10f), size.width / 1.6f, 0.8.dp.toPx()) }
                 .border(1.dp, Brush.verticalGradient(listOf(Gold.copy(alpha = 0.9f), t.color.copy(alpha = 0.25f))), arch),
             contentAlignment = Alignment.Center
-        ) { HIcon(t.icon, tint, modifier = Modifier.padding(top = 6.dp), size = 28.dp, accent = GoldDeep) }
+        ) { HIcon(t.icon, tint, modifier = Modifier.padding(top = 7.dp), size = 36.dp) }
         VSpace(7.dp)
         Text(t.label, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -750,7 +750,7 @@ private fun ContinueCard(title: String, sub: String, arName: String, onClick: ()
         Box(
             Modifier.size(48.dp).clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha = 0.16f)),
             contentAlignment = Alignment.Center
-        ) { Icon(Icons.AutoMirrored.Filled.MenuBook, null, tint = Gold, modifier = Modifier.size(26.dp)) }
+        ) { HIcon(HI.QURAN, Gold, size = 40.dp) }
         HSpace(12.dp)
         Column(Modifier.weight(1f)) {
             Text("Davom ettirish", color = Gold, style = MaterialTheme.typography.labelLarge)

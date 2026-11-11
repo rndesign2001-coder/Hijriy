@@ -5,7 +5,8 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.inset
-import uz.hijriy.app.ui.drawHIcon
+import uz.hijriy.app.ui.res
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -144,6 +145,9 @@ class ScreenshotTest {
             "JOURNAL" to "Kundalik", "SUNRISE" to "Quyosh chiqishi", "SUNSET" to "Shom / botishi", "FAJR" to "Bomdod", "DHUHR" to "Peshin",
             "ASR" to "Asr", "ISHA" to "Xufton", "HOME" to "Asosiy (panel)", "PRAYER" to "Namoz (panel)", "MORE" to "Yana (panel)",
             "FOCUS" to "Fokus", "PHOTO" to "Fon", "LOCATION" to "Joylashuv", "ZAKAT" to "Zakot", "KAABA" to "Haj va Umra",
+            "BELL" to "Eslatma", "BOOKMARK" to "Xatcho'p", "CHARITY" to "Sadaqa", "COINS" to "Tangalar", "GLOBE" to "Dunyo",
+            "MAP" to "Xarita", "CHECKLIST" to "Ro'yxat", "SHIELD" to "Maxfiylik", "SEARCH" to "Qidiruv", "HOURGLASS" to "Vaqt",
+            "HEADPHONES" to "Qori", "MUHAMMAD" to "Salovot", "BOOKMOON" to "Yozuv", "CALMOSQUE" to "Taqvim 2",
         )
         val tm = androidx.compose.ui.text.TextMeasurer(
             androidx.compose.ui.text.font.createFontFamilyResolver(rule.activity),
@@ -151,7 +155,7 @@ class ScreenshotTest {
         )
         rule.runOnUiThread {
             val all = uz.hijriy.app.ui.HI.entries
-            val cols = 6; val cw = 260f; val ch = 300f; val top = 120f
+            val cols = 8; val cw = 260f; val ch = 300f; val top = 120f
             val rows = (all.size + cols - 1) / cols
             val img = androidx.compose.ui.graphics.ImageBitmap((cols * cw).toInt(), (top + rows * ch + 40).toInt())
             androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
@@ -165,11 +169,8 @@ class ScreenshotTest {
                     val x = (i % cols) * cw; val y = top + (i / cols) * ch
                     drawRoundRect(androidx.compose.ui.graphics.Color.White, androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f))
                     drawRoundRect(androidx.compose.ui.graphics.Color(0x33C8962E), androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f), style = androidx.compose.ui.graphics.drawscope.Stroke(2f))
-                    translate(x + (cw - 160f) / 2, y + 34f) {
-                        inset(0f, 0f, size.width - 160f, size.height - 160f) {
-                            run { drawHIcon(ic, androidx.compose.ui.graphics.Color(0xFF0B5D48), androidx.compose.ui.graphics.Color(0xFFC8962E)) }
-                        }
-                    }
+                    val bmp = androidx.compose.ui.graphics.ImageBitmap.imageResource(rule.activity.resources, ic.res)
+                    drawImage(bmp, dstOffset = androidx.compose.ui.unit.IntOffset((x + (cw - 170f) / 2).toInt(), (y + 26f).toInt()), dstSize = androidx.compose.ui.unit.IntSize(170, 170))
                     val l1 = tm.measure(labels[ic.name] ?: ic.name, androidx.compose.ui.text.TextStyle(fontSize = androidx.compose.ui.unit.TextUnit(24f, androidx.compose.ui.unit.TextUnitType.Sp), color = androidx.compose.ui.graphics.Color(0xFF1B1B1B)))
                     drawText(l1, topLeft = androidx.compose.ui.geometry.Offset(x + (cw - l1.size.width) / 2, y + 206f))
                     val l2 = tm.measure("HI.${ic.name}", androidx.compose.ui.text.TextStyle(fontSize = androidx.compose.ui.unit.TextUnit(18f, androidx.compose.ui.unit.TextUnitType.Sp), color = androidx.compose.ui.graphics.Color(0xFF8A8A8A)))

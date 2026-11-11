@@ -237,7 +237,7 @@ private fun BarTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: () ->
                 ),
             contentAlignment = Alignment.Center
         ) {
-            HIcon(t.icon, fg, modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale }, size = 24.dp, accent = if (selected) Color(0xFFC8962E) else fg)
+            HIcon(t.icon, fg, modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale }, size = 27.dp, muted = !selected)
         }
         Spacer(Modifier.height(3.dp))
         Text(
@@ -271,7 +271,7 @@ private fun CenterTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: ()
                 .border(2.5.dp, ring, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            HIcon(t.icon, Color.White, size = 30.dp, accent = Color(0xFFFFE6A3))
+            HIcon(t.icon, Color.White, size = 38.dp)
         }
         Spacer(Modifier.height(4.dp))
         Text(

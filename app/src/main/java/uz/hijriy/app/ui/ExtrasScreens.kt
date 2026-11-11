@@ -276,7 +276,7 @@ fun TasbehScreen(app: HijriyApp, nav: NavHostController) {
                     })
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SettingRow(Icons.Filled.Vibration, "Tebranish", "Har bosishda va davra tugaganda") {
+                SettingRow(HI.TASBEH, "Tebranish", "Har bosishda va davra tugaganda") {
                     Switch(checked = vibrate, onCheckedChange = { vibrate = it; store.putString("tasbeh_vib", if (it) "1" else "0") })
                 }
             }

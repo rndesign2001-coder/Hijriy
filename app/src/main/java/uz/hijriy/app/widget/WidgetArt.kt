@@ -19,9 +19,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import uz.hijriy.app.ui.HI
 import uz.hijriy.app.ui.drawGirih
-import uz.hijriy.app.ui.drawHIcon
 import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -75,8 +73,4 @@ object WidgetArt {
         }
     }
 
-    fun icon(context: Context, icon: HI, color: Int): Bitmap {
-        val px = (20 * context.resources.displayMetrics.density).roundToInt().coerceAtMost(72)
-        return render(context, px, px) { drawHIcon(icon, Color(color), Color(0xFFE9C46A)) }
-    }
 }

@@ -1,6 +1,7 @@
 package uz.hijriy.app.widget
 
 import uz.hijriy.app.ui.tr
+import uz.hijriy.app.ui.res
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -77,8 +78,7 @@ class PrayerWidget : AppWidgetProvider() {
             val day = sunset - sunrise
             v.setTextViewText(R.id.daylen, tr("kun ${day / 60} s ${day % 60} d", cyr))
             prayers.forEachIndexed { i, p ->
-                val activeI = i == prayers.indexOfLast { t[it] <= minuteNow }
-                runCatching { v.setImageViewBitmap(icons[i], WidgetArt.icon(context, uz.hijriy.app.ui.prayerHI.getValue(p), if (activeI) 0xFF0B3D2E.toInt() else 0xFFFFFFFF.toInt())) }
+                v.setImageViewResource(icons[i], uz.hijriy.app.ui.prayerHI.getValue(p).res)
                 v.setTextViewText(times[i], fmtMin(t[p]))
                 v.setTextViewText(names[i], tr(p.uz, cyr))
                 val active = i == currentIdx

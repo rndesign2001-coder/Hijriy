@@ -131,7 +131,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 // ---------- Ko'rinish ----------
                 SectionTitle("Ko'rinish")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
-                    SettingRow(Icons.Filled.Translate, "Yozuv", if (s.script == 1) "Кирилл" else "Lotin")
+                    SettingRow(HI.BOOKMOON, "Yozuv", if (s.script == 1) "Кирилл" else "Lotin")
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("Lotin" to 0, "Кирилл" to 1).forEach { (t, v) ->
                             FilterChip(selected = s.script == v, onClick = { update { it.copy(script = v) }; uz.hijriy.app.widget.PrayerWidget.updateAll(app) },
@@ -139,14 +139,14 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                         }
                     }
                     VSpace(8.dp)
-                    SettingRow(Icons.Filled.Brightness4, "Rejim", s.themeMode.title)
+                    SettingRow(HI.ISHA, "Rejim", s.themeMode.title)
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ThemeMode.entries.forEach { m ->
                             FilterChip(selected = s.themeMode == m, onClick = { update { it.copy(themeMode = m) } }, label = { Text(m.title) })
                         }
                     }
                     VSpace(8.dp)
-                    SettingRow(Icons.Filled.Palette, "Mavzu rangi", Palettes[s.palette.coerceIn(0, Palettes.lastIndex)].title)
+                    SettingRow(HI.PHOTO, "Mavzu rangi", Palettes[s.palette.coerceIn(0, Palettes.lastIndex)].title)
                     Row(
                         Modifier.padding(start = 8.dp, bottom = 6.dp).horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -186,7 +186,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 // ---------- Namoz vaqtlari ----------
                 SectionTitle("Namoz vaqtlari hisobi")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
-                    SettingRow(Icons.Filled.AccessTime, "Hisoblash usuli", s.method.title, onClick = { methodDialog = true })
+                    SettingRow(HI.PRAYER, "Hisoblash usuli", s.method.title, onClick = { methodDialog = true })
                     SettingRow(null, "Asr vaqti", if (s.hanafi) "Hanafiy (soya 2 barobar)" else "Shofe'iy / Molikiy / Hanbaliy (1 barobar)",
                         onClick = { update { it.copy(hanafi = !it.hanafi) } }) {
                         Switch(checked = s.hanafi, onCheckedChange = { v -> update { it.copy(hanafi = v) } })
@@ -224,7 +224,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 SectionTitle("Hijriy taqvim")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
                     val h = Hijri.fromGregorian(uz.hijriy.app.data.AppTime.today(), s.hijriAdjust)
-                    SettingRow(Icons.Filled.CalendarMonth, "Bugun: $h", "Mahalliy e'longa moslash uchun kunni suring")
+                    SettingRow(HI.CALENDAR, "Bugun: $h", "Mahalliy e'longa moslash uchun kunni suring")
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (-2..2).forEach { d ->
                             FilterChip(
@@ -238,7 +238,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 // ---------- Bildirishnoma ----------
                 SectionTitle("Eslatmalar")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
-                    SettingRow(Icons.Filled.Notifications, "Namoz vaqti eslatmasi", if (s.notifyEnabled) "Yoqilgan" else "O'chirilgan") {
+                    SettingRow(HI.BELL, "Namoz vaqti eslatmasi", if (s.notifyEnabled) "Yoqilgan" else "O'chirilgan") {
                         Switch(checked = s.notifyEnabled, onCheckedChange = { v ->
                             if (v && Build.VERSION.SDK_INT >= 33 &&
                                 ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -289,7 +289,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                         if (s.notifySound.isBlank()) "Standart ovoz"
                         else runCatching { android.media.RingtoneManager.getRingtone(ctx, Uri.parse(s.notifySound))?.getTitle(ctx) }.getOrNull() ?: "Tanlangan ovoz"
                     }
-                    SettingRow(Icons.Filled.MusicNote, "Eslatma ovozi", soundTitle, onClick = {
+                    SettingRow(HI.HEADPHONES, "Eslatma ovozi", soundTitle, onClick = {
                         ringPicker.launch(Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                             putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALL)
                             putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, "Eslatma ovozi")
@@ -303,7 +303,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                         "Telefondagi azon (mp3) faylini eslatma ovozi qilish",
                         onClick = { audioPicker.launch(arrayOf("audio/*")) }
                     )
-                    SettingRow(Icons.Filled.EventAvailable, "Juma kuni eslatma", "Juma ertalab 8:30 da — Juma namozi va Kahf surasi") {
+                    SettingRow(HI.MOSQUE, "Juma kuni eslatma", "Juma ertalab 8:30 da — Juma namozi va Kahf surasi") {
                         Switch(checked = s.fridayReminder, onCheckedChange = { v ->
                             if (v && Build.VERSION.SDK_INT >= 33 &&
                                 ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED

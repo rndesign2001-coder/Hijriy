@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import uz.hijriy.app.R
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -30,11 +31,45 @@ import kotlin.math.sin
 enum class HI {
     QURAN, MUSHAF, QIBLA, TASBEH, NAMES, DUA, WALLPAPER, QAZO, CONVERTER, CALENDAR, WEATHER, SETTINGS,
     MOSQUE, HATM, RAMADAN, JOURNAL, SUNRISE, SUNSET, FAJR, DHUHR, ASR, ISHA, HOME, PRAYER, MORE, FOCUS, PHOTO, LOCATION, ZAKAT, KAABA,
+    // Faqat 3D rasm ko'rinishidagi qo'shimcha ikonkalar
+    BELL, BOOKMARK, CHARITY, COINS, GLOBE, MAP, CHECKLIST, SHIELD, SEARCH, HOURGLASS, HEADPHONES, MUHAMMAD, BOOKMOON, CALMOSQUE,
 }
 
+/** Har bir ikonkaning 3D rasmi (res/drawable-nodpi/ic3d_*.webp). */
+val HI.res: Int
+    get() = when (this) {
+        HI.QURAN -> R.drawable.ic3d_quran; HI.MUSHAF -> R.drawable.ic3d_mushaf; HI.QIBLA -> R.drawable.ic3d_qibla
+        HI.TASBEH -> R.drawable.ic3d_tasbeh; HI.NAMES -> R.drawable.ic3d_names; HI.DUA -> R.drawable.ic3d_dua
+        HI.WALLPAPER -> R.drawable.ic3d_wallpaper; HI.QAZO -> R.drawable.ic3d_qazo; HI.CONVERTER -> R.drawable.ic3d_converter
+        HI.CALENDAR -> R.drawable.ic3d_calendar; HI.WEATHER -> R.drawable.ic3d_weather; HI.SETTINGS -> R.drawable.ic3d_settings
+        HI.MOSQUE -> R.drawable.ic3d_mosque; HI.HATM -> R.drawable.ic3d_hatm; HI.RAMADAN -> R.drawable.ic3d_ramadan
+        HI.JOURNAL -> R.drawable.ic3d_journal; HI.SUNRISE -> R.drawable.ic3d_sunrise; HI.SUNSET -> R.drawable.ic3d_sunset
+        HI.FAJR -> R.drawable.ic3d_fajr; HI.DHUHR -> R.drawable.ic3d_dhuhr; HI.ASR -> R.drawable.ic3d_asr; HI.ISHA -> R.drawable.ic3d_isha
+        HI.HOME -> R.drawable.ic3d_home; HI.PRAYER -> R.drawable.ic3d_prayer; HI.MORE -> R.drawable.ic3d_more
+        HI.FOCUS -> R.drawable.ic3d_focus; HI.PHOTO -> R.drawable.ic3d_photo; HI.LOCATION -> R.drawable.ic3d_location
+        HI.ZAKAT -> R.drawable.ic3d_zakat; HI.KAABA -> R.drawable.ic3d_kaaba
+        HI.BELL -> R.drawable.ic3d_bell; HI.BOOKMARK -> R.drawable.ic3d_bookmark; HI.CHARITY -> R.drawable.ic3d_charity
+        HI.COINS -> R.drawable.ic3d_coins; HI.GLOBE -> R.drawable.ic3d_globe; HI.MAP -> R.drawable.ic3d_map
+        HI.CHECKLIST -> R.drawable.ic3d_checklist; HI.SHIELD -> R.drawable.ic3d_shield; HI.SEARCH -> R.drawable.ic3d_search
+        HI.HOURGLASS -> R.drawable.ic3d_hourglass; HI.HEADPHONES -> R.drawable.ic3d_headphones; HI.MUHAMMAD -> R.drawable.ic3d_muhammad
+        HI.BOOKMOON -> R.drawable.ic3d_bookmoon; HI.CALMOSQUE -> R.drawable.ic3d_calmosque
+    }
+
+private val mutedFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
+    androidx.compose.ui.graphics.ColorMatrix().apply { setToSaturation(0.2f) }
+)
+
+/**
+ * Ilova ikonkasi: 3D rasm. [tint] va [accent] faqat eski chiziqli variant uchun (rasm bo'lmasa).
+ * [muted] — tanlanmagan holat (pastki panel): rangsizroq va xiraroq.
+ */
 @Composable
-fun HIcon(icon: HI, tint: Color, modifier: Modifier = Modifier, size: Dp = 26.dp, accent: Color = tint) {
-    Canvas(modifier.size(size)) { drawHIcon(icon, tint, accent) }
+fun HIcon(icon: HI, tint: Color, modifier: Modifier = Modifier, size: Dp = 26.dp, accent: Color = tint, muted: Boolean = false) {
+    androidx.compose.foundation.Image(
+        androidx.compose.ui.res.painterResource(icon.res), null, modifier.size(size),
+        alpha = if (muted) 0.7f else 1f, colorFilter = if (muted) mutedFilter else null,
+        filterQuality = androidx.compose.ui.graphics.FilterQuality.High
+    )
 }
 
 fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
@@ -279,6 +314,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawPath(path { mt(2f, 12f); qt(12f, 2f, 22f, 12f); qt(12f, 22f, 2f, 12f); close() }, tint, style = st)
             drawPath(starPath(ox + 12 * u, oy + 12 * u, 3.6f * u, 0f), accent)
         }
+        else -> {}
     }
 }
 
