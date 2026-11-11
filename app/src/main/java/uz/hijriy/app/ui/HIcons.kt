@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import uz.hijriy.app.R
+import androidx.compose.ui.res.imageResource
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -66,7 +67,7 @@ private val mutedFilter = androidx.compose.ui.graphics.ColorFilter.colorMatrix(
 @Composable
 fun HIcon(icon: HI, tint: Color, modifier: Modifier = Modifier, size: Dp = 26.dp, accent: Color = tint, muted: Boolean = false) {
     androidx.compose.foundation.Image(
-        androidx.compose.ui.res.painterResource(icon.res), null, modifier.size(size),
+        androidx.compose.ui.graphics.ImageBitmap.imageResource(icon.res), null, modifier.size(size),
         alpha = if (muted) 0.7f else 1f, colorFilter = if (muted) mutedFilter else null,
         filterQuality = androidx.compose.ui.graphics.FilterQuality.High
     )
