@@ -2,6 +2,8 @@ package uz.hijriy.app
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.text.drawText
+import uz.hijriy.app.ui.drawHIcon
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -125,6 +127,54 @@ class ScreenshotTest {
                 ).asAndroidBitmap()
                 File(dir, "wp_$layout.png").outputStream().use { img.compress(Bitmap.CompressFormat.PNG, 100, it) }
             }
+        }
+    }
+
+    /** Ilovadagi barcha ikonkalar bitta varaqda (dizaynerga yuborish uchun). */
+    @Test
+    fun iconSheet() {
+        rule.mainClock.autoAdvance = false
+        settle(1000)
+        val labels = mapOf(
+            "QURAN" to "Qur'on", "MUSHAF" to "Mushaf", "QIBLA" to "Qibla", "TASBEH" to "Tasbeh", "NAMES" to "99 ism",
+            "DUA" to "Duolar", "WALLPAPER" to "Rasm", "QAZO" to "Qazo", "CONVERTER" to "Konvertor", "CALENDAR" to "Taqvim",
+            "WEATHER" to "Ob-havo", "SETTINGS" to "Sozlamalar", "MOSQUE" to "Masjidlar", "HATM" to "Hatm", "RAMADAN" to "Ramazon",
+            "JOURNAL" to "Kundalik", "SUNRISE" to "Quyosh chiqishi", "SUNSET" to "Shom / botishi", "FAJR" to "Bomdod", "DHUHR" to "Peshin",
+            "ASR" to "Asr", "ISHA" to "Xufton", "HOME" to "Asosiy (panel)", "PRAYER" to "Namoz (panel)", "MORE" to "Yana (panel)",
+            "FOCUS" to "Fokus", "PHOTO" to "Fon", "LOCATION" to "Joylashuv", "ZAKAT" to "Zakot", "KAABA" to "Haj va Umra",
+        )
+        val tm = androidx.compose.ui.text.TextMeasurer(
+            androidx.compose.ui.text.font.createFontFamilyResolver(rule.activity),
+            androidx.compose.ui.unit.Density(1f), androidx.compose.ui.unit.LayoutDirection.Ltr, 0
+        )
+        rule.runOnUiThread {
+            val all = uz.hijriy.app.ui.HI.entries
+            val cols = 6; val cw = 260f; val ch = 300f; val top = 120f
+            val rows = (all.size + cols - 1) / cols
+            val img = androidx.compose.ui.graphics.ImageBitmap((cols * cw).toInt(), (top + rows * ch + 40).toInt())
+            androidx.compose.ui.graphics.drawscope.CanvasDrawScope().draw(
+                androidx.compose.ui.unit.Density(1f), androidx.compose.ui.unit.LayoutDirection.Ltr,
+                androidx.compose.ui.graphics.Canvas(img), androidx.compose.ui.geometry.Size(img.width.toFloat(), img.height.toFloat())
+            ) {
+                drawRect(androidx.compose.ui.graphics.Color(0xFFFBF6E9))
+                val title = tm.measure("Hijriy Taqvim — ikonkalar (${all.size} ta)", androidx.compose.ui.text.TextStyle(fontSize = androidx.compose.ui.unit.TextUnit(44f, androidx.compose.ui.unit.TextUnitType.Sp), color = androidx.compose.ui.graphics.Color(0xFF0B5D48)))
+                drawText(title, topLeft = androidx.compose.ui.geometry.Offset(40f, 36f))
+                all.forEachIndexed { i, ic ->
+                    val x = (i % cols) * cw; val y = top + (i / cols) * ch
+                    drawRoundRect(androidx.compose.ui.graphics.Color.White, androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f))
+                    drawRoundRect(androidx.compose.ui.graphics.Color(0x33C8962E), androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f), style = androidx.compose.ui.graphics.drawscope.Stroke(2f))
+                    androidx.compose.ui.graphics.drawscope.translate(x + (cw - 160f) / 2, y + 34f) {
+                        androidx.compose.ui.graphics.drawscope.inset(0f, 0f, size.width - 160f, size.height - 160f) {
+                            run { drawHIcon(ic, androidx.compose.ui.graphics.Color(0xFF0B5D48), androidx.compose.ui.graphics.Color(0xFFC8962E)) }
+                        }
+                    }
+                    val l1 = tm.measure(labels[ic.name] ?: ic.name, androidx.compose.ui.text.TextStyle(fontSize = androidx.compose.ui.unit.TextUnit(24f, androidx.compose.ui.unit.TextUnitType.Sp), color = androidx.compose.ui.graphics.Color(0xFF1B1B1B)))
+                    drawText(l1, topLeft = androidx.compose.ui.geometry.Offset(x + (cw - l1.size.width) / 2, y + 206f))
+                    val l2 = tm.measure("HI.${ic.name}", androidx.compose.ui.text.TextStyle(fontSize = androidx.compose.ui.unit.TextUnit(18f, androidx.compose.ui.unit.TextUnitType.Sp), color = androidx.compose.ui.graphics.Color(0xFF8A8A8A)))
+                    drawText(l2, topLeft = androidx.compose.ui.geometry.Offset(x + (cw - l2.size.width) / 2, y + 242f))
+                }
+            }
+            File(dir, "icons_sheet.png").outputStream().use { img.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 }
