@@ -1,0 +1,30 @@
+name: Fon rasmlari (Commons)
+
+on:
+  push:
+    branches: [assets-job]
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pillow
+      - name: Ishga tushirish
+        run: |
+          MODE=$(cat scripts/assets_mode.txt 2>/dev/null || echo scan)
+          python3 scripts/commons_bg.py $MODE 2>&1 | tee log.txt || true
+          cp log.txt out/ 2>/dev/null || (mkdir -p out && cp log.txt out/)
+      - name: Natijani assets-out shoxchasiga
+        run: |
+          URL=$(git remote get-url origin)
+          AUTH=$(git config --get http.https://github.com/.extraheader || true)
+          cd out
+          git init -q -b assets-out
+          git config user.name "ci-bot"; git config user.email "ci-bot@users.noreply.github.com"
+          git add -A; git commit -qm "assets ${{ github.run_number }}"
+          git -c http.https://github.com/.extraheader="$AUTH" push -f "$URL" assets-out
