@@ -34,6 +34,8 @@ class HijriyApp : Application() {
         private set
     lateinit var qazo: uz.hijriy.app.data.QazoStore
         private set
+    lateinit var journal: uz.hijriy.app.data.JournalStore
+        private set
 
     private val _quran = MutableStateFlow<Quran?>(null)
     val quran: StateFlow<Quran?> = _quran.asStateFlow()
@@ -47,6 +49,7 @@ class HijriyApp : Application() {
         settings = SettingsStore(this)
         bookmarks = uz.hijriy.app.data.Bookmarks(settings)
         qazo = uz.hijriy.app.data.QazoStore(settings)
+        journal = uz.hijriy.app.data.JournalStore(settings)
         scope.launch { uz.hijriy.app.data.TranslationRepo.loadLocal(this@HijriyApp) }
         createChannel()
         loadCachedWeather()

@@ -49,3 +49,23 @@ object MushafRepo {
         }
     }
 }
+
+/** Mushaf qatorlari uchun tajvid belgilari: [page][line] -> [start, end, rule, ...] (qator matni indekslarida). */
+object MushafTajweed {
+    @Volatile
+    private var cache: List<List<IntArray>>? = null
+
+    fun load(context: Context): List<List<IntArray>> {
+        cache?.let { return it }
+        synchronized(this) {
+            cache?.let { return it }
+            val j = JSONObject(context.assets.open("mushaf_tajweed.json").bufferedReader(Charsets.UTF_8).use { it.readText() })
+            val p = j.getJSONArray("p")
+            val out = (0 until p.length()).map { i ->
+                val ls = p.getJSONArray(i)
+                (0 until ls.length()).map { k -> val a = ls.getJSONArray(k); IntArray(a.length()) { a.getInt(it) } }
+            }
+            return out.also { cache = it }
+        }
+    }
+}

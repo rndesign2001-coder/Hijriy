@@ -64,7 +64,7 @@ private val prayerEmoji = mapOf(
 fun PrayerScreen(app: HijriyApp, nav: NavHostController) {
     val s by app.settings.state.collectAsStateWithLifecycle()
     val now by rememberNow(15_000)
-    var date by remember { mutableStateOf(LocalDate.now()) }
+    var date by remember { mutableStateOf(uz.hijriy.app.data.AppTime.today()) }
     var monthly by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<Prayer?>(null) }
     val today = now.toLocalDate()
@@ -93,7 +93,7 @@ fun PrayerScreen(app: HijriyApp, nav: NavHostController) {
                                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Oldingi kun")
                             }
                             Column(
-                                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable { date = LocalDate.now() },
+                                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).clickable { date = uz.hijriy.app.data.AppTime.today() },
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(Uz.gregorianFull(date), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
@@ -163,7 +163,7 @@ fun PrayerScreen(app: HijriyApp, nav: NavHostController) {
     editing?.let { p ->
         AdjustDialog(
             prayer = p,
-            calculatedToday = s.times(LocalDate.now()).calculated.getValue(p),
+            calculatedToday = s.times(uz.hijriy.app.data.AppTime.today()).calculated.getValue(p),
             current = s.adjust[p] ?: PrayerAdjust(),
             onDismiss = { editing = null },
             onSave = { a ->
@@ -182,7 +182,7 @@ private fun MonthlyTable(app: HijriyApp, anchor: LocalDate) {
     val s by app.settings.state.collectAsStateWithLifecycle()
     var month by remember { mutableStateOf(anchor.withDayOfMonth(1)) }
     val days = remember(s, month) { (0 until month.lengthOfMonth()).map { month.plusDays(it.toLong()) } }
-    val today = LocalDate.now()
+    val today = uz.hijriy.app.data.AppTime.today()
     Column(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
             IconButton(onClick = { month = month.minusMonths(1) }) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null) }

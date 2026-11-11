@@ -200,7 +200,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 }
                 SectionTitle("Vaqtlarni qo'lda sozlash")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
-                    val t = s.times(LocalDate.now())
+                    val t = s.times(uz.hijriy.app.data.AppTime.today())
                     Prayer.entries.forEach { p ->
                         val a = s.adjust[p] ?: PrayerAdjust()
                         SettingRow(
@@ -223,7 +223,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                 // ---------- Hijriy ----------
                 SectionTitle("Hijriy taqvim")
                 SectionCard(Modifier.fillMaxWidth(), padding = 12.dp) {
-                    val h = Hijri.fromGregorian(LocalDate.now(), s.hijriAdjust)
+                    val h = Hijri.fromGregorian(uz.hijriy.app.data.AppTime.today(), s.hijriAdjust)
                     SettingRow(Icons.Filled.CalendarMonth, "Bugun: $h", "Mahalliy e'longa moslash uchun kunni suring")
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         (-2..2).forEach { d ->
@@ -339,7 +339,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                     CalcMethod.entries.forEach { m ->
                         Row(
                             Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
-                                .clickable { update { it.copy(method = m) }; methodDialog = false }
+                                .clickable { update { it.copy(method = m, autoMethod = false) }; methodDialog = false }
                                 .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -363,7 +363,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
     editing?.let { p ->
         AdjustDialog(
             prayer = p,
-            calculatedToday = s.times(LocalDate.now()).calculated.getValue(p),
+            calculatedToday = s.times(uz.hijriy.app.data.AppTime.today()).calculated.getValue(p),
             current = s.adjust[p] ?: PrayerAdjust(),
             onDismiss = { editing = null },
             onSave = { a -> update { st -> st.copy(adjust = st.adjust + (p to a)) }; editing = null }
@@ -376,22 +376,57 @@ fun MoreScreen(nav: NavHostController) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Yana")
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
+            SectionTitle("Ibodat")
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
-                SettingRow(Icons.Filled.Explore, "Qibla kompasi", "Ka'ba yo'nalishini aniqlash", onClick = { nav.go("qibla") })
-                SettingRow(Icons.Filled.Fingerprint, "Tasbeh", "Zikr sanagich, namozdan keyingi tasbeh", onClick = { nav.go("tasbeh") })
-                SettingRow(Icons.Filled.VolunteerActivism, "Duolar va zikrlar", "Tong, kech va namozdan keyingi zikrlar", onClick = { nav.go("duas") })
-                SettingRow(Icons.Filled.Image, "Rasm tayyorlash", "Namoz vaqtlari bilan chiroyli rasm yoki fon", onClick = { nav.go("wallpaper") })
-                SettingRow(Icons.Filled.Checklist, "Qazo namozlar", "Qazo namozlarni hisoblab borish", onClick = { nav.go("qazo") })
-                SettingRow(Icons.Filled.Search, "Qur'ondan qidirish", "Arabcha matn yoki o'zbekcha tarjima", onClick = { nav.go("search") })
-                SettingRow(Icons.Filled.AutoAwesome, "Allohning 99 ismi", "Arabcha, o'qilishi va o'zbekcha ma'nosi", onClick = { nav.go("names") })
-                SettingRow(Icons.Filled.WbSunny, "Ob-havo", "Hozirgi holat va 7 kunlik prognoz", onClick = { nav.go("weather") })
-                SettingRow(Icons.Filled.SwapHoriz, "Sana konvertori", "Milodiy ⇄ Hijriy", onClick = { nav.go("converter") })
-                SettingRow(Icons.AutoMirrored.Filled.MenuBook, "Qur'oni Karim", "Tajvidli va oddiy o'qish", onClick = {
-                    nav.navigate("quran") { launchSingleTop = true; restoreState = true }
-                })
-                SettingRow(Icons.Filled.LocationOn, "Joylashuv", "Viloyat, tuman yoki GPS", onClick = { nav.go("location") })
-                SettingRow(Icons.Filled.Settings, "Sozlamalar", "Mavzu, hisob usuli, eslatmalar", onClick = { nav.go("settings") })
+                MoreRow(HI.QIBLA, Color(0xFF00838F), "Qibla kompasi", "Ka'ba yo'nalishini aniqlash") { nav.go("qibla") }
+                MoreRow(HI.MOSQUE, Color(0xFF0B7A5C), "Yaqin masjidlar", "Xaritada eng yaqin masjidlar") { nav.go("mosques") }
+                MoreRow(HI.JOURNAL, Color(0xFF8D6E2F), "Namoz kundaligi", "O'qilgan namozlar va statistikasi") { nav.go("journal") }
+                MoreRow(HI.QAZO, Color(0xFF5D6D7E), "Qazo namozlar", "Qazo namozlarni hisoblab borish") { nav.go("qazo") }
+                MoreRow(HI.RAMADAN, Color(0xFF6A1B9A), "Ramazon", "Saharlik, iftorlik, taqvim va duolar") { nav.go("ramadan") }
+                MoreRow(HI.TASBEH, Color(0xFF7B3FA0), "Tasbeh", "Zikr sanagich, namozdan keyingi tasbeh") { nav.go("tasbeh") }
+                MoreRow(HI.DUA, Color(0xFF2E7D32), "Duolar va zikrlar", "Tong, kech va namozdan keyingi zikrlar") { nav.go("duas") }
             }
+            SectionTitle("Qur'on")
+            SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
+                MoreRow(HI.QURAN, Color(0xFF0F8A66), "Qur'oni Karim", "Kartalar, tajvidli mushaf, fokus") {
+                    nav.navigate("quran") { launchSingleTop = true; restoreState = true }
+                }
+                MoreRow(HI.HATM, Color(0xFFC0392B), "Hatm rejasi", "Qur'onni maqsadli kunga tugatish") { nav.go("hatm") }
+                MoreRow(HI.FOCUS, Color(0xFF3949AB), "Qur'ondan qidirish", "Arabcha matn yoki o'zbekcha tarjima") { nav.go("search") }
+                MoreRow(HI.NAMES, Color(0xFF3949AB), "Allohning 99 ismi", "Arabcha, o'qilishi va o'zbekcha ma'nosi") { nav.go("names") }
+            }
+            SectionTitle("Vositalar")
+            SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
+                MoreRow(HI.WEATHER, Color(0xFF0288D1), "Ob-havo", "Hozirgi holat va 7 kunlik prognoz") { nav.go("weather") }
+                MoreRow(HI.CONVERTER, Color(0xFF1E6FD9), "Sana konvertori", "Milodiy ⇄ Hijriy") { nav.go("converter") }
+                MoreRow(HI.WALLPAPER, Color(0xFFD81B60), "Rasm tayyorlash", "Namoz vaqtlari bilan chiroyli rasm yoki fon") { nav.go("wallpaper") }
+                MoreRow(HI.LOCATION, Color(0xFF00838F), "Joylashuv", "O'zbekiston, dunyo shaharlari yoki GPS") { nav.go("location") }
+                MoreRow(HI.SETTINGS, Color(0xFF607D8B), "Sozlamalar", "Mavzu, hisob usuli, eslatmalar") { nav.go("settings") }
+                MoreRow(HI.PHOTO, Color(0xFF8D6E2F), "Manbalar va mualliflar", "Fotosuratlar va ma'lumot manbalari") { nav.go("credits") }
+            }
+            VSpace(24.dp)
+        }
+    }
+}
+
+@Composable
+private fun MoreRow(icon: HI, color: Color, title: String, sub: String, onClick: () -> Unit) {
+    val dark = uz.hijriy.app.ui.theme.LocalExtra.current.dark
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val arch = remember { ArchShape(0.5f) }
+        Box(
+            Modifier.size(width = 44.dp, height = 48.dp).clip(arch)
+                .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(color.copy(alpha = if (dark) 0.35f else 0.2f), color.copy(alpha = 0.05f))))
+                .border(1.dp, Color(0xFFE9C46A).copy(alpha = 0.7f), arch),
+            contentAlignment = Alignment.Center
+        ) { HIcon(icon, if (dark) androidx.compose.ui.graphics.lerp(color, Color.White, 0.4f) else color, Modifier.padding(top = 5.dp), size = 24.dp, accent = Color(0xFFC8962E)) }
+        HSpace(14.dp)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

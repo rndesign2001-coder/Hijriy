@@ -24,6 +24,12 @@ data class Settings(
     val lat: Double = 41.3111,
     val lon: Double = 69.2797,
     val fromGps: Boolean = false,
+    /** Tanlangan shaharning vaqt mintaqasi (IANA, masalan "Europe/Istanbul"); bo'sh — O'zbekiston/telefon. */
+    val tz: String = "",
+    /** Davlat kodi (ISO-2): hisoblash usulini avtomatik tanlash uchun. */
+    val country: String = "UZ",
+    /** Davlatga qarab hisoblash usulini avtomatik tanlash. */
+    val autoMethod: Boolean = true,
     // Namoz hisobi
     val method: CalcMethod = CalcMethod.UZBEKISTAN,
     val hanafi: Boolean = true,
@@ -64,18 +70,38 @@ data class Settings(
     // O'qilishi (transliteratsiya): Qur'onda va duolarda
     val quranReading: Boolean = false,
     val duaReading: Boolean = true,
+    /** O'qilish yozuvi: 0 — lotin, 1 — kirill (interfeys yozuvidan alohida). */
+    val readingScript: Int = 0,
+    /** Bosh sahifa foni: 0 — jonli osmon, 1.. — fotosuratlar. */
+    val bgIndex: Int = 1,
+    /** Qur'on ko'rinishi: 0 — oyat kartalari, 1 — tajvidli mushaf, 2 — fokus. */
+    val quranView: Int = 0,
+    // Hatm rejasi: boshlangan kun (epochDay), maqsad kuni, boshlang'ich sahifa (0 — reja yo'q)
+    val hatmStart: Long = 0,
+    val hatmEnd: Long = 0,
+    val hatmFromPage: Int = 1,
+    /** Fokus rejimida har oyatni takrorlash soni. */
+    val repeatCount: Int = 1,
 ) {
+    val zone: java.time.ZoneId
+        get() = when {
+            tz.isNotBlank() -> runCatching { java.time.ZoneId.of(tz) }.getOrDefault(ZoneId.systemDefault())
+            !fromGps -> ZoneId.of("Asia/Tashkent")
+            else -> ZoneId.systemDefault()
+        }
+
     val calc get() = CalcSettings(method, hanafi, customFajr, customIsha)
 
-    /** O'zbekiston hududlari uchun doim UTC+5; GPS bo'lsa telefon vaqt zonasi. */
-    fun tzHours(date: LocalDate): Double =
-        if (!fromGps) 5.0
-        else ZoneId.systemDefault().rules.getOffset(date.atTime(12, 0)).totalSeconds / 3600.0
+    /** Tanlangan joy vaqt mintaqasining UTC dan farqi (soat). */
+    fun tzHours(date: LocalDate): Double = zone.rules.getOffset(date.atTime(12, 0)).totalSeconds / 3600.0
 
     fun times(date: LocalDate): DayTimes = PrayerCalc.compute(date, lat, lon, tzHours(date), calc, adjust)
 
     fun toJson(): String = JSONObject().apply {
         put("locName", locName); put("locRegion", locRegion); put("lat", lat); put("lon", lon); put("fromGps", fromGps)
+        put("tz", tz); put("country", country); put("autoMethod", autoMethod)
+        put("readingScript", readingScript); put("bgIndex", bgIndex); put("quranView", quranView)
+        put("hatmStart", hatmStart); put("hatmEnd", hatmEnd); put("hatmFromPage", hatmFromPage); put("repeatCount", repeatCount)
         put("method", method.name); put("hanafi", hanafi); put("customFajr", customFajr); put("customIsha", customIsha)
         put("adjust", JSONObject().apply {
             adjust.forEach { (p, a) -> if (!a.isDefault) put(p.name, JSONObject().put("o", a.offset).put("f", a.fixed)) }
@@ -136,6 +162,16 @@ data class Settings(
                     script = j.optInt("script", 0),
                     quranReading = j.optBoolean("quranReading", false),
                     duaReading = j.optBoolean("duaReading", true),
+                    tz = j.optString("tz", ""),
+                    country = j.optString("country", "UZ"),
+                    autoMethod = j.optBoolean("autoMethod", true),
+                    readingScript = j.optInt("readingScript", j.optInt("script", 0)),
+                    bgIndex = j.optInt("bgIndex", 1),
+                    quranView = j.optInt("quranView", if (j.optBoolean("quranMushaf", false)) 1 else 0),
+                    hatmStart = j.optLong("hatmStart", 0),
+                    hatmEnd = j.optLong("hatmEnd", 0),
+                    hatmFromPage = j.optInt("hatmFromPage", 1),
+                    repeatCount = j.optInt("repeatCount", 1),
                 )
             } catch (e: Exception) {
                 Settings()
@@ -146,13 +182,14 @@ data class Settings(
 
 class SettingsStore(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("hijriy", Context.MODE_PRIVATE)
-    private val _state = MutableStateFlow(Settings.fromJson(prefs.getString("settings", null)))
+    private val _state = MutableStateFlow(Settings.fromJson(prefs.getString("settings", null)).also { AppTime.zone = it.zone })
     val state: StateFlow<Settings> = _state.asStateFlow()
     val value: Settings get() = _state.value
 
     fun update(block: (Settings) -> Settings) {
         val n = block(_state.value)
         _state.value = n
+        AppTime.zone = n.zone
         prefs.edit().putString("settings", n.toJson()).apply()
     }
 
@@ -164,4 +201,11 @@ class SettingsStore(context: Context) {
         fun read(context: Context): Settings =
             Settings.fromJson(context.getSharedPreferences("hijriy", Context.MODE_PRIVATE).getString("settings", null))
     }
+}
+
+/** Ilova soati: tanlangan shahar vaqt mintaqasida (xorijdagi shahar tanlansa ham to'g'ri hisob). */
+object AppTime {
+    @Volatile var zone: ZoneId = ZoneId.of("Asia/Tashkent")
+    fun now(): java.time.LocalDateTime = java.time.LocalDateTime.now(zone)
+    fun today(): LocalDate = LocalDate.now(zone)
 }

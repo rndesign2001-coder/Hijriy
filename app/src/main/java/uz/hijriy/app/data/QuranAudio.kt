@@ -39,6 +39,9 @@ object QuranAudio {
     private var player: MediaPlayer? = null
     private var reciter: Reciter = Reciters[0]
     private var suraLen = 0
+    /** Har oyatni necha marta takrorlash (yodlash rejimi). */
+    var repeat: Int = 1
+    private var played = 0
 
     fun play(sura: Int, fromAyah: Int, ayahCount: Int, r: Reciter) {
         reciter = r; suraLen = ayahCount
@@ -47,7 +50,8 @@ object QuranAudio {
         load(sura, start)
     }
 
-    private fun load(sura: Int, ayah: Int) {
+    private fun load(sura: Int, ayah: Int, again: Boolean = false) {
+        if (!again) played = 0
         release()
         _state.value = PlayState(sura, ayah, playing = true, loading = true)
         val url = if (ayah == 0) ayahUrl(reciter.folder, 1, 1) else ayahUrl(reciter.folder, sura, ayah)
@@ -66,6 +70,8 @@ object QuranAudio {
             }
             mp.setOnCompletionListener {
                 if (player !== it) return@setOnCompletionListener
+                played++
+                if (ayah > 0 && played < repeat) { load(sura, ayah, again = true); return@setOnCompletionListener }
                 val next = ayah + 1
                 if (next <= suraLen) load(sura, next) else stop()
             }

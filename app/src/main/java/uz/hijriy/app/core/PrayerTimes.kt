@@ -40,7 +40,30 @@ enum class CalcMethod(
     KARACHI("Karachi", 18.0, 18.0),
     UMM_AL_QURA("Ummul-Quro (Makka)", 18.5, 0.0, ishaMinutes = 90),
     TURKEY("Turkiya (Diyanet)", 18.0, 17.0),
+    RUSSIA("Rossiya (DUM RF)", 16.0, 15.0),
+    GULF("Fors ko'rfazi (BAA, Qatar)", 18.2, 18.2),
+    KUWAIT("Quvayt", 18.0, 17.5),
+    SINGAPORE("Janubi-Sharqiy Osiyo (MUIS)", 20.0, 18.0),
+    FRANCE("Fransiya (UOIF)", 12.0, 12.0),
+    TEHRAN("Eron (Tehron)", 17.7, 14.0),
     CUSTOM("Qo'lda burchak", 15.5, 15.5);
+}
+
+/** Davlat kodiga qarab tavsiya etilgan usul. */
+fun methodForCountry(cc: String): CalcMethod = when (cc.uppercase()) {
+    "UZ", "TJ", "KG" -> CalcMethod.UZBEKISTAN
+    "TR", "AZ" -> CalcMethod.TURKEY
+    "SA", "YE", "BH", "OM" -> CalcMethod.UMM_AL_QURA
+    "AE", "QA" -> CalcMethod.GULF
+    "KW" -> CalcMethod.KUWAIT
+    "EG", "SD", "LY", "DZ", "MA", "TN", "JO", "PS", "LB", "SY", "IQ", "MY" -> CalcMethod.EGYPT
+    "PK", "IN", "BD", "AF" -> CalcMethod.KARACHI
+    "US", "CA", "MX" -> CalcMethod.ISNA
+    "RU", "KZ", "BY", "TM" -> CalcMethod.RUSSIA
+    "SG", "ID", "BN" -> CalcMethod.SINGAPORE
+    "FR" -> CalcMethod.FRANCE
+    "IR" -> CalcMethod.TEHRAN
+    else -> CalcMethod.MWL
 }
 
 data class CalcSettings(
@@ -141,6 +164,16 @@ object PrayerCalc {
             val nss = angleTime(riseAngle, ss, false)
             val nisha = angleTime(ishaAngle, isha, false)
             f = nf; sr = nsr; dh = ndh; asr = nasr; ss = nss; isha = nisha
+        }
+        // Yuqori kengliklar (48°+): yozda shafaq tugamaydi — "burchak ulushi" qoidasi (angle/60 tun qismi)
+        if (abs(lat) > 48.0) {
+            val night = sr + 24.0 - ss
+            val fp = fajrAngle / 60.0 * night
+            if (f.isNaN() || sr - f > fp) f = sr - fp
+            if (ishaMinutes == 0) {
+                val ip = ishaAngle / 60.0 * night
+                if (isha.isNaN() || isha - ss > ip) isha = ss + ip
+            }
         }
         val adj = tzHours - lon / 15.0
         val sunset = ss + adj

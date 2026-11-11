@@ -62,7 +62,7 @@ object PrayerScheduler {
     fun findNext(context: Context, nowMillis: Long = System.currentTimeMillis(), ignoreSettings: Boolean = false): Next? {
         val s = SettingsStore.read(context)
         if (!ignoreSettings && (!s.notifyEnabled || s.notifyPrayers.isEmpty())) return null
-        val zone = ZoneId.systemDefault()
+        val zone = SettingsStore.read(context).zone
         val today = LocalDate.now(zone)
         for (dayOffset in 0..2) {
             val date = today.plusDays(dayOffset.toLong())
@@ -93,7 +93,7 @@ object PrayerScheduler {
         val pi = pending(context, ACTION_FRIDAY, REQ_FRIDAY, null, 0)
         am.cancel(pi)
         if (!SettingsStore.read(context).fridayReminder) return
-        val zone = ZoneId.systemDefault()
+        val zone = SettingsStore.read(context).zone
         var d = LocalDate.now(zone)
         val now = LocalDateTime.now(zone)
         while (d.dayOfWeek != DayOfWeek.FRIDAY || (d == now.toLocalDate() && now.toLocalTime().isAfter(java.time.LocalTime.of(8, 30)))) d = d.plusDays(1)
@@ -150,7 +150,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
     private fun show(context: Context, p: Prayer, minute: Int) {
         if (!allowed(context)) return
         val s = SettingsStore.read(context)
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now(s.zone)
         val left = minute - (now.hour * 60 + now.minute)
         val title = if (s.notifyBefore > 0 && left > 0) "${p.uz} namoziga $left daqiqa qoldi" else "${p.uz} vaqti kirdi"
         val n = NotificationCompat.Builder(context, Channels.ensure(context, s.notifySound))
@@ -168,7 +168,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
     private fun showFriday(context: Context) {
         if (!allowed(context) || !SettingsStore.read(context).fridayReminder) return
         val s = SettingsStore.read(context)
-        val jumaTime = fmtMin(s.times(LocalDate.now())[Prayer.DHUHR])
+        val jumaTime = fmtMin(s.times(LocalDate.now(s.zone))[Prayer.DHUHR])
         val n = NotificationCompat.Builder(context, Channels.ensure(context, s.notifySound))
             .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle(uz.hijriy.app.ui.tr("Juma muborak! 🕌", s.script == 1))

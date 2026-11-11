@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,6 +102,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -190,8 +193,11 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
         if (r == "quran" || r == "calendar") nav.navigate(r) { launchSingleTop = true; restoreState = true } else nav.go(r)
     }
 
+    var bgSheet by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    if (bgSheet) BgPickerSheet(s.bgIndex, { i -> app.settings.update { it.copy(bgIndex = i) } }) { bgSheet = false }
+
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        SkyHeader(phase, times, minute, now) {
+        SkyHeader(phase, times, minute, now, s.bgIndex) {
             Column(
                 Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 20.dp).padding(top = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -218,9 +224,9 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                         uz.hijriy.app.widget.PrayerWidget.updateAll(app)
                     }
                     HSpace(8.dp)
-                    GlassIcon(Icons.Filled.Explore, "Qibla") { nav.go("qibla") }
+                    GlassIcon(HI.PHOTO, "Fonni almashtirish") { bgSheet = true }
                     HSpace(8.dp)
-                    GlassIcon(Icons.Filled.Settings, "Sozlamalar") { nav.go("settings") }
+                    GlassIcon(HI.SETTINGS, "Sozlamalar") { nav.go("settings") }
                 }
                 VSpace(18.dp)
                 // --- sana ---
@@ -264,9 +270,11 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                 RamadanCard(hijri.day, times[Prayer.FAJR], times[Prayer.MAGHRIB], now)
             }
             VSpace(14.dp)
+            SunWeatherCard(weather, times, now) { nav.go("weather") }
+            VSpace(12.dp)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
-                WeatherCard(weather, times, Modifier.weight(1f).fillMaxHeight()) { nav.go("weather") }
                 QiblaCard(Qibla.bearing(s.lat, s.lon), Modifier.weight(1f).fillMaxHeight()) { nav.go("qibla") }
+                HatmCard(s, today, Modifier.weight(1f).fillMaxHeight()) { nav.go("hatm") }
             }
             VSpace(14.dp)
             NamesCard(now.toEpochSecond(ZoneOffset.UTC)) { nav.go("names") }
@@ -288,18 +296,18 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
             SectionHeader("Xizmatlar", "Barchasi") { nav.go("more") }
             VSpace(10.dp)
             val tiles = listOf(
-                HomeTile("Qur'on", Icons.AutoMirrored.Filled.MenuBook, "quran", Color(0xFF0F8A66)),
-                HomeTile("Mushaf", Icons.Filled.AutoStories, "mushaf/${if (s.mushafPage > 0) s.mushafPage else 1}", Color(0xFFB7791F)),
-                HomeTile("Qibla", Icons.Filled.Explore, "qibla", Color(0xFF00838F)),
-                HomeTile("Tasbeh", Icons.Filled.Fingerprint, "tasbeh", Color(0xFF7B3FA0)),
-                HomeTile("99 ism", Icons.Filled.AutoAwesome, "names", Color(0xFF3949AB)),
-                HomeTile("Duolar", Icons.Filled.VolunteerActivism, "duas", Color(0xFF2E7D32)),
-                HomeTile("Rasm", Icons.Filled.Image, "wallpaper", Color(0xFFD81B60)),
-                HomeTile("Qazo", Icons.Filled.Checklist, "qazo", Color(0xFF5D6D7E)),
-                HomeTile("Konvertor", Icons.Filled.SwapHoriz, "converter", Color(0xFF1E6FD9)),
-                HomeTile("Taqvim", Icons.Filled.CalendarMonth, "calendar", Color(0xFFE0592A)),
-                HomeTile("Ob-havo", Icons.Filled.WbSunny, "weather", Color(0xFF0288D1)),
-                HomeTile("Sozlamalar", Icons.Filled.Settings, "settings", Color(0xFF607D8B)),
+                HomeTile("Qur'on", HI.QURAN, "quran", Color(0xFF0F8A66)),
+                HomeTile("Mushaf", HI.MUSHAF, "mushaf/${if (s.mushafPage > 0) s.mushafPage else 1}", Color(0xFFB7791F)),
+                HomeTile("Masjidlar", HI.MOSQUE, "mosques", Color(0xFF00838F)),
+                HomeTile("Hatm", HI.HATM, "hatm", Color(0xFFC0392B)),
+                HomeTile("Tasbeh", HI.TASBEH, "tasbeh", Color(0xFF7B3FA0)),
+                HomeTile("Duolar", HI.DUA, "duas", Color(0xFF2E7D32)),
+                HomeTile("Ramazon", HI.RAMADAN, "ramadan", Color(0xFF6A1B9A)),
+                HomeTile("Kundalik", HI.JOURNAL, "journal", Color(0xFF8D6E2F)),
+                HomeTile("99 ism", HI.NAMES, "names", Color(0xFF3949AB)),
+                HomeTile("Qazo", HI.QAZO, "qazo", Color(0xFF5D6D7E)),
+                HomeTile("Konvertor", HI.CONVERTER, "converter", Color(0xFF1E6FD9)),
+                HomeTile("Rasm", HI.WALLPAPER, "wallpaper", Color(0xFFD81B60)),
             )
             Column(
                 Modifier.fillMaxWidth().premiumCard().padding(vertical = 14.dp, horizontal = 6.dp),
@@ -345,15 +353,17 @@ private fun SectionHeader(title: String, action: String?, onAction: () -> Unit) 
 }
 
 @Composable
-private fun GlassIcon(icon: ImageVector, desc: String, onClick: () -> Unit) {
+private fun GlassIcon(icon: HI, desc: String, onClick: () -> Unit) {
     Box(
-        Modifier.size(42.dp).clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.16f))
-            .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape)
-            .clickable(onClick = onClick),
+        Modifier.size(44.dp).clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.22f))
+            .border(1.dp, Color.White.copy(alpha = 0.30f), CircleShape)
+            .clickable(onClickLabel = desc, onClick = onClick)
+            .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center
-    ) { Icon(icon, desc, tint = Color.White, modifier = Modifier.size(22.dp)) }
+    ) { HIcon(icon, Color.White, size = 22.dp, accent = Gold) }
 }
+
 
 /** Lotin ⇄ kirill tezkor almashtirgich (yozuv o'zgarmasligi uchun material3.Text). */
 @Composable
@@ -390,7 +400,9 @@ private fun HeroChip(text: String, dot: Color) {
 // ------------------------------ Osmonli sarlavha ------------------------------
 
 @Composable
-private fun SkyHeader(phase: SkyPhase, t: DayTimes, minute: Int, now: LocalDateTime, content: @Composable () -> Unit) {
+private fun SkyHeader(phase: SkyPhase, t: DayTimes, minute: Int, now: LocalDateTime, bgIndex: Int, content: @Composable () -> Unit) {
+    val photo = HeroBgs.of(bgIndex)
+    if (photo != null) { PhotoHeader(photo, content); return }
     val c0 by animateColorAsState(phase.colors[0], tween(1500), label = "c0")
     val c1 by animateColorAsState(phase.colors[1], tween(1500), label = "c1")
     val c2 by animateColorAsState(phase.colors[2], tween(1500), label = "c2")
@@ -517,9 +529,9 @@ private fun CountdownRing(pn: PrayerNow, left: Long, progress: Float, onClick: (
 
 // ------------------------------ Namozlar jadvali ------------------------------
 
-private val prayerIcons = mapOf(
-    Prayer.FAJR to Icons.Filled.WbTwilight, Prayer.SUNRISE to Icons.Filled.WbSunny, Prayer.DHUHR to Icons.Filled.LightMode,
-    Prayer.ASR to Icons.Filled.Brightness5, Prayer.MAGHRIB to Icons.Filled.Brightness4, Prayer.ISHA to Icons.Filled.Bedtime
+val prayerHI = mapOf(
+    Prayer.FAJR to HI.FAJR, Prayer.SUNRISE to HI.SUNRISE, Prayer.DHUHR to HI.DHUHR,
+    Prayer.ASR to HI.ASR, Prayer.MAGHRIB to HI.SUNSET, Prayer.ISHA to HI.ISHA
 )
 
 @Composable
@@ -560,7 +572,7 @@ private fun PrayerTimeline(times: DayTimes, pn: PrayerNow, now: LocalDateTime, o
                         next -> GoldDeep
                         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     }
-                    Icon(prayerIcons.getValue(p), null, tint = iconTint, modifier = Modifier.size(22.dp))
+                    HIcon(prayerHI.getValue(p), iconTint, size = 24.dp, accent = if (active) Color.White else GoldDeep)
                     VSpace(4.dp)
                     Text(p.uz, color = fg.copy(alpha = if (active) 0.9f else 0.7f), style = MaterialTheme.typography.labelMedium, maxLines = 1)
                     Text(
@@ -601,8 +613,8 @@ private fun GradientTile(colors: List<Color>, modifier: Modifier, onClick: (() -
             .then(if (onClick != null) Modifier.clickable(src, null, onClick = onClick) else Modifier)
     ) {
         Canvas(Modifier.matchParentSize()) {
-            drawCircle(Color.White.copy(alpha = 0.10f), size.width * 0.55f, Offset(size.width * 1.02f, -size.height * 0.05f))
-            drawCircle(Color.White.copy(alpha = 0.07f), size.width * 0.35f, Offset(size.width * 0.95f, size.height * 1.05f))
+            drawGirih(Color.White.copy(alpha = 0.07f), 46.dp.toPx(), 0.9.dp.toPx())
+            drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent), Offset(size.width, 0f), size.width * 0.8f), size.width * 0.8f, Offset(size.width, 0f))
         }
         Box(Modifier.padding(16.dp)) { content() }
     }
@@ -715,7 +727,7 @@ private fun NamesCard(epoch: Long, onClick: () -> Unit) {
 
 // ------------------------------ Plitkalar ------------------------------
 
-private data class HomeTile(val label: String, val icon: ImageVector, val route: String, val color: Color)
+private data class HomeTile(val label: String, val icon: HI, val route: String, val color: Color)
 
 @Composable
 private fun AnimatedTile(t: HomeTile, index: Int, modifier: Modifier, onClick: () -> Unit) {
@@ -738,13 +750,15 @@ private fun AnimatedTile(t: HomeTile, index: Int, modifier: Modifier, onClick: (
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val tint = if (dark) lerp(t.color, Color.White, 0.35f) else t.color
+        val arch = remember { ArchShape() }
         Box(
-            Modifier.size(54.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(Brush.linearGradient(listOf(t.color.copy(alpha = if (dark) 0.30f else 0.16f), t.color.copy(alpha = if (dark) 0.14f else 0.06f))))
-                .border(1.dp, t.color.copy(alpha = if (dark) 0.35f else 0.18f), RoundedCornerShape(18.dp)),
+            Modifier.size(width = 54.dp, height = 60.dp)
+                .clip(arch)
+                .background(Brush.verticalGradient(listOf(t.color.copy(alpha = if (dark) 0.34f else 0.20f), t.color.copy(alpha = if (dark) 0.10f else 0.04f))))
+                .drawBehind { drawGirih(t.color.copy(alpha = if (dark) 0.16f else 0.10f), size.width / 1.6f, 0.8.dp.toPx()) }
+                .border(1.dp, Brush.verticalGradient(listOf(Gold.copy(alpha = 0.9f), t.color.copy(alpha = 0.25f))), arch),
             contentAlignment = Alignment.Center
-        ) { Icon(t.icon, null, tint = tint, modifier = Modifier.size(26.dp)) }
+        ) { HIcon(t.icon, tint, modifier = Modifier.padding(top = 6.dp), size = 28.dp, accent = GoldDeep) }
         VSpace(7.dp)
         Text(t.label, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -808,6 +822,242 @@ private fun RamadanCard(day: Int, fajr: Int, maghrib: Int, now: LocalDateTime) {
             Column(horizontalAlignment = Alignment.End) {
                 Text("Iftorlik", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium)
                 Text(fmtMin(maghrib), color = Color.White, style = MaterialTheme.typography.headlineSmall)
+            }
+        }
+    }
+}
+
+// ------------------------------ Fotosuratli sarlavha ------------------------------
+
+@Composable
+private fun PhotoHeader(bg: HeroBg, content: @Composable () -> Unit) {
+    val bmp by rememberBgBitmap(bg.res, 1)
+    val appear by animateFloatAsState(if (bmp != null) 1f else 0f, tween(700), label = "ph")
+    Box(Modifier.fillMaxWidth()) {
+        Canvas(Modifier.matchParentSize()) {
+            drawRect(Brush.verticalGradient(listOf(Color(0xFF0B1B2B), Color(0xFF14322A))))
+            bmp?.let { b ->
+                // ContentScale.Crop + markaz
+                val sc = maxOf(size.width / b.width, size.height / b.height)
+                val w = b.width * sc; val h = b.height * sc
+                drawImage(
+                    b, dstOffset = androidx.compose.ui.unit.IntOffset(((size.width - w) / 2).roundToInt(), ((size.height - h) / 2).roundToInt()),
+                    dstSize = androidx.compose.ui.unit.IntSize(w.roundToInt(), h.roundToInt()), alpha = appear,
+                    filterQuality = androidx.compose.ui.graphics.FilterQuality.Medium
+                )
+            }
+            // O'qilishi uchun yumshoq qorong'ilik (tepada va pastda kuchliroq)
+            drawRect(Brush.verticalGradient(0f to Color(0xB3000000), 0.32f to Color(0x55000000), 0.62f to Color(0x40000000), 1f to Color(0xE6081410)))
+            drawGirih(Color.White.copy(alpha = 0.035f), 64.dp.toPx(), 0.8.dp.toPx())
+            val overlap = HeroOverlap.toPx()
+            drawRect(Brush.verticalGradient(listOf(Color.Transparent, Color(0x33000000))), Offset(0f, size.height - overlap * 2), androidx.compose.ui.geometry.Size(size.width, overlap * 2))
+        }
+        content()
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun BgPickerSheet(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit) {
+    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(horizontal = 16.dp).padding(bottom = 28.dp)) {
+            Text("Bosh sahifa foni", fontFamily = TitleFont, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Text("Fotosuratlar: Wikimedia Commons (ochiq litsenziya)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            VSpace(14.dp)
+            val items = listOf(0) + HeroBgs.all.indices.map { it + 1 }
+            items.chunked(4).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    row.forEach { i ->
+                        val sel = i == current
+                        val shape = RoundedCornerShape(16.dp)
+                        Box(
+                            Modifier.weight(1f).height(118.dp).clip(shape)
+                                .border(if (sel) 3.dp else 1.dp, if (sel) Gold else MaterialTheme.colorScheme.outlineVariant, shape)
+                                .clickable { onPick(i) },
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            val bg = HeroBgs.of(i)
+                            if (bg != null) {
+                                val b by rememberBgBitmap(bg.res, 8)
+                                b?.let { androidx.compose.foundation.Image(it, bg.title, Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
+                            } else {
+                                Canvas(Modifier.fillMaxSize()) {
+                                    drawRect(Brush.verticalGradient(SkyPhase.SUNSET.colors))
+                                    drawGirih(Color.White.copy(alpha = 0.12f), 30.dp.toPx(), 0.8.dp.toPx())
+                                }
+                            }
+                            Box(Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000)))).padding(6.dp)) {
+                                Text(bg?.title?.substringBefore(" —") ?: "Jonli osmon", color = Color.White, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                    repeat(4 - row.size) { Box(Modifier.weight(1f)) }
+                }
+                VSpace(10.dp)
+            }
+        }
+    }
+}
+
+// ------------------------------ Quyosh va ob-havo ------------------------------
+
+/** Quyosh yo'li: bomdod → quyosh chiqishi → peshin → botishi → xufton; hozirgi o'rin va ob-havo. */
+@Composable
+private fun SunWeatherCard(weather: WeatherState, t: DayTimes, now: LocalDateTime, onClick: () -> Unit) {
+    val sunrise = t.calculated.getValue(Prayer.SUNRISE)
+    val sunset = (t.sunsetExact * 60).roundToInt()
+    val fajr = t[Prayer.FAJR]; val isha = t[Prayer.ISHA]; val dhuhr = t[Prayer.DHUHR]
+    val m = now.hour * 60 + now.minute + now.second / 60f
+    val day = sunset - sunrise
+    val isDay = m in sunrise.toFloat()..sunset.toFloat()
+    val inf = rememberInfiniteTransition(label = "sun")
+    val glow by inf.animateFloat(0.8f, 1.2f, infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "g")
+    val shape = RoundedCornerShape(28.dp)
+    val colors = if (isDay) listOf(Color(0xFF0E4D8C), Color(0xFF2C7BC4), Color(0xFFE59A54)) else listOf(Color(0xFF0B1030), Color(0xFF1C2459), Color(0xFF3A2C6E))
+    Column(
+        Modifier.fillMaxWidth()
+            .shadow(10.dp, shape, spotColor = colors[0].copy(alpha = 0.5f))
+            .clip(shape)
+            .background(Brush.linearGradient(colors))
+            .drawBehind { drawGirih(Color.White.copy(alpha = 0.05f), 52.dp.toPx(), 0.8.dp.toPx()) }
+            .border(1.dp, Gold.copy(alpha = 0.35f), shape)
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            HIcon(HI.SUNRISE, Gold, size = 20.dp, accent = Color.White)
+            HSpace(6.dp)
+            Text("Quyosh va ob-havo", color = Color.White, fontFamily = TitleFont, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+            when (weather) {
+                is WeatherState.Ready -> {
+                    val (desc, emo) = WeatherApi.describe(weather.w.code, weather.w.isDay)
+                    Column(horizontalAlignment = Alignment.End) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(emo, fontSize = 18.sp); HSpace(4.dp)
+                            Text("${weather.w.temp.roundToInt()}°", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text(desc, color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                    }
+                }
+                is WeatherState.Failed -> Text("Ob-havo: internet kerak", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelSmall)
+                else -> Text("…", color = Color.White, fontSize = 20.sp)
+            }
+        }
+        VSpace(6.dp)
+        // Yoy
+        val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
+        Canvas(Modifier.fillMaxWidth().height(118.dp)) {
+            val l = 14.dp.toPx(); val r = size.width - 14.dp.toPx()
+            val horizon = size.height - 26.dp.toPx(); val h = horizon - 10.dp.toPx()
+            val total = (isha + 60 - (fajr - 60)).toFloat()
+            fun xOf(min: Float) = l + (r - l) * ((min - (fajr - 60)) / total)
+            val xr = xOf(sunrise.toFloat()); val xs = xOf(sunset.toFloat())
+            fun yOf(min: Float): Float {
+                val f = ((min - sunrise) / day).coerceIn(-0.6f, 1.6f)
+                return horizon - h * sin(PI * f).toFloat().let { if (f < 0f || f > 1f) it * 0.35f else it }
+            }
+            // ufq
+            drawLine(Color.White.copy(alpha = 0.45f), Offset(0f, horizon), Offset(size.width, horizon), 1.dp.toPx())
+            // to'liq yo'l (chiziqcha)
+            val path = androidx.compose.ui.graphics.Path()
+            var first = true
+            var x = fajr - 40f
+            while (x <= isha + 40f) {
+                val px = xOf(x); val py = yOf(x)
+                if (first) { path.moveTo(px, py); first = false } else path.lineTo(px, py)
+                x += 4f
+            }
+            drawPath(path, Color.White.copy(alpha = 0.35f), style = Stroke(1.4.dp.toPx(), pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6f, 8f))))
+            // o'tilgan qism — yorqin to'ldirish
+            if (isDay) {
+                val fill = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(xr, horizon)
+                    var k = sunrise.toFloat()
+                    while (k <= m) { lineTo(xOf(k), yOf(k)); k += 3f }
+                    lineTo(xOf(m), horizon); close()
+                }
+                drawPath(fill, Brush.verticalGradient(listOf(Color(0x66FFE08A), Color(0x05FFE08A)), 0f, horizon))
+            }
+            // belgilar
+            fun mark(min: Int, label: String, hi: Boolean) {
+                val px = xOf(min.toFloat()); val py = yOf(min.toFloat())
+                drawCircle(if (hi) Gold else Color.White.copy(alpha = 0.8f), (if (hi) 4.5f else 3f).dp.toPx(), Offset(px, py))
+                val lay = textMeasurer.measure(label, TextStyle(color = Color.White.copy(alpha = 0.9f), fontSize = 10.sp, fontWeight = FontWeight.SemiBold))
+                val ty = if (py > horizon - 4f) horizon + 6.dp.toPx() else py - lay.size.height - 6.dp.toPx()
+                drawText(lay, topLeft = Offset((px - lay.size.width / 2).coerceIn(0f, size.width - lay.size.width), ty))
+            }
+            mark(fajr, "Bomdod ${fmtMin(fajr)}", false)
+            mark(dhuhr, "Peshin ${fmtMin(dhuhr)}", false)
+            mark(isha, "Xufton ${fmtMin(isha)}", false)
+            // quyosh/oy
+            val cm = m.coerceIn(fajr - 40f, isha + 40f)
+            val sx = xOf(cm); val sy = yOf(cm)
+            if (isDay) {
+                drawCircle(Brush.radialGradient(listOf(Color(0xAAFFF3B0), Color.Transparent), Offset(sx, sy), 22.dp.toPx() * glow), 22.dp.toPx() * glow, Offset(sx, sy))
+                drawCircle(Brush.radialGradient(listOf(Color(0xFFFFFBE6), Color(0xFFFFC93C)), Offset(sx, sy), 9.dp.toPx()), 9.dp.toPx(), Offset(sx, sy))
+            } else if (m in (fajr - 40f)..(isha + 40f)) {
+                drawCircle(Color(0x88FFC93C), 6.dp.toPx(), Offset(sx, sy))
+            }
+            // quyosh chiqishi / botishi — asosiy urg'u
+            drawLine(Gold, Offset(xr, horizon - 8.dp.toPx()), Offset(xr, horizon + 3.dp.toPx()), 2.dp.toPx(), StrokeCap.Round)
+            drawLine(Color(0xFFFFA36C), Offset(xs, horizon - 8.dp.toPx()), Offset(xs, horizon + 3.dp.toPx()), 2.dp.toPx(), StrokeCap.Round)
+        }
+        VSpace(4.dp)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            SunStat(HI.SUNRISE, "Quyosh chiqishi", fmtMin(sunrise), Gold, Modifier.weight(1f))
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(0.8f)) {
+                Text("Kun uzunligi", color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                Text("${day / 60} s ${day % 60} d", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                val left = if (isDay) sunset - m.toInt() else -1
+                if (left > 0) Text("botishiga ${left / 60}:${"%02d".format(left % 60)}", color = Gold, style = MaterialTheme.typography.labelSmall)
+            }
+            SunStat(HI.SUNSET, "Quyosh botishi", fmtMin(sunset), Color(0xFFFFA36C), Modifier.weight(1f), end = true)
+        }
+    }
+}
+
+@Composable
+private fun SunStat(icon: HI, label: String, time: String, color: Color, modifier: Modifier, end: Boolean = false) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = if (end) Arrangement.End else Arrangement.Start) {
+        if (!end) { HIcon(icon, color, size = 30.dp, accent = Color.White); HSpace(6.dp) }
+        Column(horizontalAlignment = if (end) Alignment.End else Alignment.Start) {
+            Text(label, color = Color.White.copy(alpha = 0.78f), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            Text(time, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, style = TextStyle(fontFeatureSettings = "tnum"))
+        }
+        if (end) { HSpace(6.dp); HIcon(icon, color, size = 30.dp, accent = Color.White) }
+    }
+}
+
+@Composable
+private fun HatmCard(s: Settings, today: java.time.LocalDate, modifier: Modifier, onClick: () -> Unit) {
+    val plan = HatmPlan.of(s, today)
+    GradientTile(listOf(Color(0xFF5A1E14), Color(0xFF8E3A1E), Color(0xFFC9772E)), modifier, onClick) {
+        Column {
+            Text("Hatm rejasi", color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.labelLarge)
+            if (plan == null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HIcon(HI.HATM, Color.White, size = 40.dp, accent = Gold)
+                    HSpace(8.dp)
+                    Text("Reja tuzish", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                }
+                Text("Qur'onni maqsadli kunga tugatish", color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Canvas(Modifier.size(56.dp)) {
+                            val st = 6.dp.toPx()
+                            drawCircle(Color.White.copy(alpha = 0.2f), size.minDimension / 2 - st / 2, style = Stroke(st))
+                            drawArc(Gold, -90f, 360f * plan.progress, false, Offset(st / 2, st / 2), androidx.compose.ui.geometry.Size(size.width - st, size.height - st), style = Stroke(st, cap = StrokeCap.Round))
+                        }
+                        Text("${(plan.progress * 100).roundToInt()}%", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
+                    HSpace(10.dp)
+                    Column {
+                        Text("Bugun", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelSmall)
+                        Text("${plan.todayPages} bet", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
+                }
+                Text("${plan.daysLeft} kun qoldi", color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
             }
         }
     }

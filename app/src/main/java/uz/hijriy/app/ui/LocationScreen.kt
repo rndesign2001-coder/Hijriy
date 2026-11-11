@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -62,8 +64,43 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
     var locating by remember { mutableStateOf(false) }
     var gpsMsg by remember { mutableStateOf<String?>(null) }
 
+    var world by remember { mutableStateOf(s.country != "UZ") }
+    var wq by remember { mutableStateOf("") }
+    var found by remember { mutableStateOf<List<uz.hijriy.app.data.City>>(emptyList()) }
+    var searching by remember { mutableStateOf(false) }
+    var searchErr by remember { mutableStateOf<String?>(null) }
+    androidx.compose.runtime.LaunchedEffect(wq) {
+        val q = wq.trim()
+        if (q.length < 2) { found = emptyList(); searchErr = null; return@LaunchedEffect }
+        kotlinx.coroutines.delay(450)
+        searching = true
+        runCatching { uz.hijriy.app.data.Geo.search(q, if (s.script == 1) "ru" else "en") }
+            .onSuccess { found = it; searchErr = if (it.isEmpty()) "Hech narsa topilmadi" else null }
+            .onFailure { searchErr = "Internetga ulanib bo'lmadi — quyidagi ro'yxatdan tanlang" }
+        searching = false
+    }
+
+    fun chooseCity(c: uz.hijriy.app.data.City) {
+        app.settings.update {
+            val m = if (it.autoMethod) uz.hijriy.app.core.methodForCountry(c.cc) else it.method
+            it.copy(
+                locName = c.name, locRegion = listOf(c.admin, c.country).filter { x -> x.isNotBlank() }.distinct().joinToString(", "),
+                lat = c.lat, lon = c.lon, fromGps = false, tz = if (c.cc == "UZ") "" else c.tz, country = c.cc.ifBlank { "UZ" },
+                method = m, hanafi = if (it.autoMethod) c.cc !in setOf("SA", "AE", "QA", "KW", "BH", "OM", "YE", "EG", "MA", "DZ", "TN", "LY", "SD", "MY", "ID", "SG", "BN") else it.hanafi,
+            )
+        }
+        PrayerScheduler.reschedule(app)
+        app.refreshWeather(force = true)
+        nav.popBackStack()
+    }
+
     fun choose(d: District) {
-        app.settings.update { it.copy(locName = d.name, locRegion = d.region, lat = d.lat, lon = d.lon, fromGps = false) }
+        app.settings.update {
+            it.copy(
+                locName = d.name, locRegion = d.region, lat = d.lat, lon = d.lon, fromGps = false, tz = "", country = "UZ",
+                method = if (it.autoMethod) uz.hijriy.app.core.CalcMethod.UZBEKISTAN else it.method, hanafi = if (it.autoMethod) true else it.hanafi,
+            )
+        }
         PrayerScheduler.reschedule(app)
         app.refreshWeather(force = true)
         nav.popBackStack()
@@ -79,10 +116,29 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
                 gpsMsg = "Joylashuv aniqlanmadi. GPS yoqilganini tekshiring yoki ro'yxatdan tanlang."
             } else {
                 val near = Regions.nearest(ctx, loc.latitude, loc.longitude)
-                val name = near?.let { (d, km) -> if (km < 40) d.name else "Mening joylashuvim" } ?: "Mening joylashuvim"
-                val region = near?.let { (d, km) -> if (km < 40) d.region else "" } ?: ""
+                val inUz = near != null && near.second < 60
+                var name = near?.let { (d, km) -> if (km < 40) d.name else "Mening joylashuvim" } ?: "Mening joylashuvim"
+                var region = near?.let { (d, km) -> if (km < 40) d.region else "" } ?: ""
+                var cc = if (inUz) "UZ" else ""
+                if (!inUz) {
+                    // Davlat va shahar nomi — qurilmaning Geocoder xizmati (bo'lmasa vaqt mintaqasidan)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        runCatching {
+                            @Suppress("DEPRECATION")
+                            android.location.Geocoder(ctx).getFromLocation(loc.latitude, loc.longitude, 1)?.firstOrNull()
+                        }.getOrNull()
+                    }?.let { a ->
+                        cc = a.countryCode ?: ""
+                        name = a.locality ?: a.subAdminArea ?: a.adminArea ?: name
+                        region = listOfNotNull(a.adminArea, a.countryName).distinct().joinToString(", ")
+                    }
+                }
                 app.settings.update {
-                    it.copy(locName = name, locRegion = region, lat = loc.latitude, lon = loc.longitude, fromGps = true)
+                    val m = if (it.autoMethod && cc.isNotBlank()) uz.hijriy.app.core.methodForCountry(cc) else it.method
+                    it.copy(
+                        locName = name, locRegion = region, lat = loc.latitude, lon = loc.longitude, fromGps = true,
+                        tz = if (inUz) "" else java.time.ZoneId.systemDefault().id, country = cc.ifBlank { it.country }, method = m,
+                    )
                 }
                 PrayerScheduler.reschedule(app)
                 app.refreshWeather(force = true)
@@ -123,6 +179,69 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
                     }
                 }
                 VSpace(12.dp)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainer).padding(4.dp),
+                ) {
+                    listOf(false to "O'zbekiston", true to "Dunyo shaharlari").forEach { (w, label) ->
+                        val sel = world == w
+                        Box(
+                            Modifier.weight(1f).clip(RoundedCornerShape(12.dp))
+                                .background(if (sel) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                .clickable { world = w }.padding(vertical = 11.dp),
+                            contentAlignment = Alignment.Center
+                        ) { Text(label, color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge) }
+                    }
+                }
+                VSpace(12.dp)
+            }
+            if (world) {
+                item {
+                    OutlinedTextField(
+                        value = wq, onValueChange = { wq = it }, modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Shahar nomi (masalan: Istanbul, Seoul)") },
+                        leadingIcon = { Icon(Icons.Filled.Search, null) },
+                        trailingIcon = {
+                            if (searching) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                            else if (wq.isNotEmpty()) IconButton(onClick = { wq = "" }) { Icon(Icons.Filled.Close, null) }
+                        },
+                        singleLine = true, shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                        )
+                    )
+                    searchErr?.let { VSpace(6.dp); Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    VSpace(6.dp)
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable {
+                            app.settings.update { it.copy(autoMethod = !it.autoMethod) }
+                        }.padding(horizontal = 8.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Usulni davlatga qarab tanlash", style = MaterialTheme.typography.titleSmall)
+                            Text("Hozir: ${s.method.title}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        androidx.compose.material3.Switch(checked = s.autoMethod, onCheckedChange = { v -> app.settings.update { it.copy(autoMethod = v) } })
+                    }
+                    VSpace(4.dp)
+                }
+                val list = if (wq.trim().length >= 2) found else uz.hijriy.app.data.Geo.popular
+                if (wq.trim().length < 2) item { SectionTitle("Mashhur shaharlar") }
+                items(list, key = { "${it.name}/${it.lat}/${it.lon}" }) { c ->
+                    CityRow(c, s.locName == c.name && kotlin.math.abs(s.lat - c.lat) < 0.01) { chooseCity(c) }
+                }
+                item {
+                    VSpace(10.dp)
+                    Text(
+                        "Shaharlar: Open-Meteo Geocoding (GeoNames, CC BY 4.0). Namoz vaqtlari qurilmada astronomik hisoblanadi.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                return@LazyColumn
+            }
+            item {
                 OutlinedTextField(
                     value = query, onValueChange = { query = it },
                     modifier = Modifier.fillMaxWidth(),
@@ -173,6 +292,29 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CityRow(c: uz.hijriy.app.data.City, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) { androidx.compose.material3.Text(c.cc.ifBlank { "?" }, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer) }
+        HSpace(12.dp)
+        Column(Modifier.weight(1f)) {
+            Text(c.name, style = MaterialTheme.typography.bodyLarge)
+            Text(listOf(c.admin, c.country).filter { it.isNotBlank() }.distinct().joinToString(", "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+        }
+        androidx.compose.material3.Text(
+            uz.hijriy.app.core.methodForCountry(c.cc).title.substringBefore(" ("), style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary, maxLines = 1
+        )
+        if (selected) { HSpace(6.dp); Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary) }
     }
 }
 

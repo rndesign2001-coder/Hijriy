@@ -63,14 +63,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import uz.hijriy.app.HijriyApp
 
-private data class Tab(val route: String, val label: String, val icon: ImageVector)
+private data class Tab(val route: String, val label: String, val icon: HI)
 
 private val tabs = listOf(
-    Tab("home", "Asosiy", Icons.Filled.Home),
-    Tab("prayer", "Namoz", Icons.Filled.Schedule),
-    Tab("quran", "Qur'on", Icons.AutoMirrored.Filled.MenuBook),
-    Tab("calendar", "Taqvim", Icons.Filled.CalendarMonth),
-    Tab("more", "Yana", Icons.Filled.MoreHoriz),
+    Tab("home", "Asosiy", HI.HOME),
+    Tab("prayer", "Namoz", HI.PRAYER),
+    Tab("quran", "Qur'on", HI.QURAN),
+    Tab("calendar", "Taqvim", HI.CALENDAR),
+    Tab("more", "Yana", HI.MORE),
 )
 
 fun NavHostController.go(route: String) = navigate(route) { launchSingleTop = true }
@@ -125,6 +125,18 @@ private fun AppContent(app: HijriyApp) {
                 composable("duas") { DuasScreen(app, nav) }
                 composable("qazo") { QazoScreen(app, nav) }
                 composable("search") { SearchScreen(app, nav) }
+                composable("hatm") { HatmScreen(app, nav) }
+                composable("ramadan") { RamadanScreen(app, nav) }
+                composable("mosques") { MosquesScreen(app, nav) }
+                composable("journal") { JournalScreen(app, nav) }
+                composable("credits") { CreditsScreen(nav) }
+                composable(
+                    "focus/{sura}?ayah={ayah}",
+                    arguments = listOf(
+                        navArgument("sura") { type = NavType.IntType },
+                        navArgument("ayah") { type = NavType.IntType; defaultValue = 1 },
+                    )
+                ) { e -> FocusScreen(app, nav, e.arguments?.getInt("sura") ?: 1, e.arguments?.getInt("ayah") ?: 1) }
                 composable(
                     "mushaf/{page}",
                     arguments = listOf(navArgument("page") { type = NavType.IntType })
@@ -208,7 +220,7 @@ private fun BarTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: () ->
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(t.icon, null, tint = fg, modifier = Modifier.size(23.dp).graphicsLayer { scaleX = iconScale; scaleY = iconScale })
+            HIcon(t.icon, fg, modifier = Modifier.graphicsLayer { scaleX = iconScale; scaleY = iconScale }, size = 24.dp, accent = if (selected) Color(0xFFC8962E) else fg)
         }
         Spacer(Modifier.height(3.dp))
         Text(
@@ -242,7 +254,7 @@ private fun CenterTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: ()
                 .border(2.5.dp, ring, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(t.icon, null, tint = Color.White, modifier = Modifier.size(28.dp))
+            HIcon(t.icon, Color.White, size = 30.dp, accent = Color(0xFFFFE6A3))
         }
         Spacer(Modifier.height(4.dp))
         Text(

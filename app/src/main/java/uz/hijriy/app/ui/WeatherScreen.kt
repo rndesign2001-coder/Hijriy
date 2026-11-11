@@ -106,7 +106,7 @@ private fun WeatherBody(app: HijriyApp, w: Weather, stale: Boolean, error: Strin
     val updated = Instant.ofEpochMilli(w.fetchedAt).atZone(ZoneId.systemDefault())
     Text(
         "Yangilangan: ${fmtMin(updated.hour * 60 + updated.minute)}" +
-            (if (updated.toLocalDate() != LocalDate.now()) ", ${Uz.gregorian(updated.toLocalDate())}" else "") +
+            (if (updated.toLocalDate() != uz.hijriy.app.data.AppTime.today()) ", ${Uz.gregorian(updated.toLocalDate())}" else "") +
             (if (error != null) " • $error" else if (stale) " • saqlangan ma'lumot" else ""),
         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 8.dp, top = 6.dp, bottom = 10.dp)
@@ -115,7 +115,7 @@ private fun WeatherBody(app: HijriyApp, w: Weather, stale: Boolean, error: Strin
     VSpace(12.dp)
     SectionCard(Modifier.fillMaxWidth(), padding = 10.dp) {
         Text("7 kunlik prognoz", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(8.dp))
-        val today = LocalDate.now()
+        val today = uz.hijriy.app.data.AppTime.today()
         w.days.forEach { d ->
             val (dd, de) = WeatherApi.describe(d.code)
             Row(
@@ -172,7 +172,7 @@ private fun Stat(label: String, value: String) {
 @Composable
 private fun SunCard(app: HijriyApp) {
     val s = app.settings.value
-    val today = LocalDate.now()
+    val today = uz.hijriy.app.data.AppTime.today()
     val t = s.times(today)
     val tm = s.times(today.plusDays(1))
     SectionCard(Modifier.fillMaxWidth()) {

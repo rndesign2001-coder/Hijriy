@@ -78,3 +78,33 @@ fun AyahMedallion(n: Int, color: Color) {
 fun rememberAyahInline(color: Color): Map<String, InlineTextContent> = remember(color) {
     (0..286).associate { n -> "$AYAH_PREFIX$n" to InlineTextContent(AyahPlaceholder) { AyahMedallion(n, color) } }
 }
+
+/** [withAyahMarks] kabi, lekin asl matn indekslaridagi rang oraliqlarini ([s, e, rule]...) ham qo'llaydi. */
+fun withAyahMarksColored(
+    text: String,
+    spans: IntArray?,
+    colorOf: (Int) -> androidx.compose.ui.graphics.Color?,
+    ranges: MutableList<AnnotatedString.Range<Placeholder>>? = null,
+): AnnotatedString = buildAnnotatedString {
+    fun seg(a: Int, b: Int) {
+        val start = length
+        append(text.substring(a, b))
+        if (spans == null) return
+        var i = 0
+        while (i + 2 < spans.size) {
+            val s = maxOf(spans[i], a); val e = minOf(spans[i + 1], b)
+            if (s < e) colorOf(spans[i + 2])?.let { c -> addStyle(androidx.compose.ui.text.SpanStyle(color = c), start + s - a, start + e - a) }
+            i += 3
+        }
+    }
+    var last = 0
+    for (m in MARK.findAll(text)) {
+        seg(last, m.range.first)
+        val digits = m.groupValues[1].map { c -> if (c in '٠'..'٩') '0' + (c - '٠') else c }.joinToString("")
+        val start = length
+        appendAyahMark(digits.toIntOrNull() ?: 0)
+        ranges?.add(AnnotatedString.Range(AyahPlaceholder, start, length))
+        last = m.range.last + 1
+    }
+    seg(last, text.length)
+}

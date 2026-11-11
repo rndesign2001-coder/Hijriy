@@ -41,7 +41,7 @@ class PrayerWidget : AppWidgetProvider() {
 
         fun build(context: Context): RemoteViews {
             val s = SettingsStore.read(context)
-            val zone = ZoneId.systemDefault()
+            val zone = SettingsStore.read(context).zone
             val now = LocalDateTime.now(zone)
             val today = now.toLocalDate()
             val t = s.times(today)

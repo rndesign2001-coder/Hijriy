@@ -338,7 +338,7 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
     var photo by remember { mutableStateOf<ImageBitmap?>(null) }
     var preview by remember { mutableStateOf<ImageBitmap?>(null) }
     var busy by remember { mutableStateOf(false) }
-    val date = if (o.tomorrow) LocalDate.now().plusDays(1) else LocalDate.now()
+    val date = if (o.tomorrow) uz.hijriy.app.data.AppTime.today().plusDays(1) else uz.hijriy.app.data.AppTime.today()
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) scope.launch {

@@ -44,10 +44,10 @@ import java.time.LocalDateTime
 
 @Composable
 fun rememberNow(periodMs: Long = 1000L): State<LocalDateTime> {
-    val state = remember { mutableStateOf(LocalDateTime.now()) }
+    val state = remember { mutableStateOf(uz.hijriy.app.data.AppTime.now()) }
     LaunchedEffect(periodMs) {
         while (true) {
-            state.value = LocalDateTime.now()
+            state.value = uz.hijriy.app.data.AppTime.now()
             delay(periodMs - (System.currentTimeMillis() % periodMs))
         }
     }

@@ -130,7 +130,11 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
     val mushaf by produceState<Mushaf?>(null) { value = withContext(Dispatchers.Default) { MushafRepo.load(ctx) } }
     fun open(sura: Int, ayah: Int = 1) {
         val m = mushaf
-        if (s.quranMushaf && m != null) nav.go("mushaf/${m.pageOf(sura, ayah)}") else nav.go("reader/$sura?ayah=$ayah")
+        when {
+            s.quranView == 1 && m != null -> nav.go("mushaf/${m.pageOf(sura, ayah)}")
+            s.quranView == 2 -> nav.go("focus/$sura?ayah=$ayah")
+            else -> nav.go("reader/$sura?ayah=$ayah")
+        }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -163,16 +167,8 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
             FilterChip(selected = listTab == 0, onClick = { listTab = 0 }, label = { Text("Suralar") })
             FilterChip(selected = listTab == 1, onClick = { listTab = 1 }, label = { Text("Juzlar") })
             FilterChip(selected = listTab == 2, onClick = { listTab = 2 }, label = { Text("🔖 Xatcho'plar") })
-            Box(Modifier.width(8.dp))
-            FilterChip(
-                selected = !s.quranMushaf, onClick = { app.settings.update { it.copy(quranMushaf = false) } },
-                label = { Text("Matn") }
-            )
-            FilterChip(
-                selected = s.quranMushaf, onClick = { app.settings.update { it.copy(quranMushaf = true) } },
-                label = { Text("Mushaf") }
-            )
         }
+        QuranViewPicker(s.quranView) { v -> app.settings.update { it.copy(quranView = v, quranMushaf = v == 1) } }
         val norm = { x: String -> x.lowercase().replace("'", "").replace("‘", "").replace("’", "").replace("-", "").replace(" ", "") }
         val filtered = remember(q, query) {
             val k = norm(query)
@@ -187,7 +183,7 @@ fun QuranListScreen(app: HijriyApp, nav: NavHostController) {
                     if (ls != null) SectionCard(
                         Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         onClick = {
-                            if (s.quranMushaf && s.mushafPage > 0) nav.go("mushaf/${s.mushafPage}") else open(ls.number, s.lastAyah)
+                            if (s.quranView == 1 && s.mushafPage > 0) nav.go("mushaf/${s.mushafPage}") else open(ls.number, s.lastAyah)
                         }
                     ) {
                         Text("📖 Davom ettirish", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -449,6 +445,8 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 }
                 if (!s.quranFlow) ReaderModeBar(
                     reading = s.quranReading, translation = s.translation > 0,
+                    readingCyr = s.readingScript == 1,
+                    onReadingScript = { c -> app.settings.update { it.copy(readingScript = c, quranReading = true) } },
                     onArabicOnly = { app.settings.update { it.copy(quranReading = false, translation = 0) } },
                     onReading = { app.settings.update { it.copy(quranReading = !it.quranReading) } },
                     onTranslation = {
@@ -507,7 +505,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                                 if (s.translation == 1) UzTranslit.toLatin(raw) else raw
                             } else null
                             val rd = if (s.quranReading) remember(a) { uz.hijriy.app.core.Translit.ayah(a.text) } else null
-                            val cyr = LocalCyr.current
+                            val cyr = LocalReadingCyr.current
                             AyahCard(
                                 number = a.number, arabic = text, arabicStyle = arabicStyle, inline = ayahInline,
                                 reading = rd, translation = trText, fontSize = s.quranFont, marked = marked,
@@ -739,6 +737,7 @@ private fun ayahShareText(sura: Sura, a: Ayah, rd: uz.hijriy.app.core.Translit.R
 @Composable
 private fun ReaderModeBar(
     reading: Boolean, translation: Boolean,
+    readingCyr: Boolean, onReadingScript: (Int) -> Unit,
     onArabicOnly: () -> Unit, onReading: () -> Unit, onTranslation: () -> Unit,
     onSmaller: () -> Unit, onBigger: () -> Unit,
 ) {
@@ -749,6 +748,20 @@ private fun ReaderModeBar(
     ) {
         FilterChip(selected = !reading && !translation, onClick = onArabicOnly, label = { Text("Arabcha") })
         FilterChip(selected = reading, onClick = onReading, label = { Text("O'qilishi") })
+        if (reading) {
+            Row(
+                Modifier.clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                listOf(0 to "Lotin", 1 to "Кирилл").forEach { (v, l) ->
+                    val sel = (v == 1) == readingCyr
+                    Box(
+                        Modifier.clip(RoundedCornerShape(50)).background(if (sel) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .clickable { onReadingScript(v) }.padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) { androidx.compose.material3.Text(l, color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge) }
+                }
+            }
+        }
         FilterChip(selected = translation, onClick = onTranslation, label = { Text("Tarjima") })
         FontStepButton("A−", "Kichraytirish", onSmaller)
         FontStepButton("A+", "Kattalashtirish", onBigger)
@@ -775,7 +788,7 @@ private fun AyahCard(
     onPlay: () -> Unit, onCopy: () -> Unit, onShare: () -> Unit, onBookmark: () -> Unit, onDoubleTap: () -> Unit,
 ) {
     val gold = Color(0xFFD4AF37)
-    val cyr = LocalCyr.current
+    val cyr = LocalReadingCyr.current
     val sub = (fontSize * 0.62f).coerceIn(14f, 30f)
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Column(
@@ -828,6 +841,30 @@ private fun AyahCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
                     modifier = Modifier.padding(end = 8.dp, top = 8.dp)
                 )
+            }
+        }
+    }
+}
+
+
+/** Qur'on ko'rinishini tanlash: oyat kartalari, tajvidli mushaf (varoqli), fokus rejimi. */
+@Composable
+private fun QuranViewPicker(current: Int, onPick: (Int) -> Unit) {
+    val items = listOf(Triple(0, "Kartalar", HI.QURAN), Triple(1, "Mushaf", HI.MUSHAF), Triple(2, "Fokus", HI.FOCUS))
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items.forEach { (v, label, icon) ->
+            val sel = v == current
+            val shape = RoundedCornerShape(16.dp)
+            Row(
+                Modifier.weight(1f).clip(shape)
+                    .background(if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainer)
+                    .border(1.dp, if (sel) Color(0xFFE9C46A) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), shape)
+                    .clickable { onPick(v) }.padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
+            ) {
+                HIcon(icon, if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary, size = 20.dp, accent = Color(0xFFC8962E))
+                HSpace(6.dp)
+                Text(label, color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge)
             }
         }
     }

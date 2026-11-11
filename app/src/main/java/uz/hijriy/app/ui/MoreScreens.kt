@@ -92,9 +92,18 @@ fun DuasScreen(app: HijriyApp, nav: NavHostController) {
             androidx.compose.material3.FilterChip(
                 selected = s.duaReading,
                 onClick = { app.settings.update { it.copy(duaReading = !it.duaReading) } },
-                label = { Text("O'qilishi (lotin / kirill)") },
+                label = { Text("O'qilishi") },
                 leadingIcon = if (s.duaReading) { { androidx.compose.material3.Icon(Icons.Filled.Check, null) } } else null
             )
+            androidx.compose.foundation.layout.Spacer(Modifier.padding(4.dp))
+            listOf(0 to "Lotin", 1 to "Кирилл").forEach { (v, l) ->
+                androidx.compose.material3.FilterChip(
+                    selected = s.readingScript == v,
+                    onClick = { app.settings.update { it.copy(readingScript = v, duaReading = true) } },
+                    label = { androidx.compose.material3.Text(l) },
+                    modifier = Modifier.padding(end = 6.dp)
+                )
+            }
         }
         val sec = Duas.sections[tab]
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

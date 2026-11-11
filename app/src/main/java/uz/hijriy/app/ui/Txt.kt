@@ -28,6 +28,9 @@ import uz.hijriy.app.data.UzTranslit
 /** Interfeys kirill yozuvida ko'rsatilsinmi. */
 val LocalCyr = staticCompositionLocalOf { false }
 
+/** Qur'on va duolar o'qilishi (transliteratsiya) yozuvi — interfeysdan alohida tanlanadi. */
+val LocalReadingCyr = staticCompositionLocalOf { false }
+
 /** Joriy yozuvga moslangan matn (lotin → kirill). */
 @Composable
 fun tr(s: String): String {
@@ -105,7 +108,7 @@ fun uiText(ctx: android.content.Context, s: String): String {
 /** Arabcha matnning o'qilishi — joriy yozuvda (lotin yoki kirill), yumshoq fon va chap chiziq bilan. */
 @Composable
 fun ReadingText(r: uz.hijriy.app.core.Translit.Result, modifier: Modifier = Modifier, prefix: String = "") {
-    val cyr = LocalCyr.current
+    val cyr = LocalReadingCyr.current
     val cs = androidx.compose.material3.MaterialTheme.colorScheme
     androidx.compose.foundation.layout.Row(
         modifier

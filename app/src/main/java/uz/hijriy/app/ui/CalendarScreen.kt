@@ -165,7 +165,7 @@ private fun EventsList(events: List<Pair<String, String>>) {
 
 @Composable
 private fun GregorianMonth(adj: Int) {
-    val today = LocalDate.now()
+    val today = uz.hijriy.app.data.AppTime.today()
     var month by remember { mutableStateOf(today.withDayOfMonth(1)) }
     val hStart = Hijri.fromGregorian(month, adj)
     val hEnd = Hijri.fromGregorian(month.plusDays(month.lengthOfMonth() - 1L), adj)
@@ -193,7 +193,7 @@ private fun GregorianMonth(adj: Int) {
 
 @Composable
 private fun HijriMonth(adj: Int) {
-    val todayG = LocalDate.now()
+    val todayG = uz.hijriy.app.data.AppTime.today()
     val todayH = Hijri.fromGregorian(todayG, adj)
     var ym by remember { mutableStateOf(todayH.year to todayH.month) }
     val (y, m) = ym
@@ -261,7 +261,7 @@ private fun NumberField(label: String, value: String, onChange: (String) -> Unit
 
 @Composable
 private fun Converter(adj: Int) {
-    val today = LocalDate.now()
+    val today = uz.hijriy.app.data.AppTime.today()
     // Milodiy → Hijriy
     var gd by remember { mutableStateOf(today.dayOfMonth.toString()) }
     var gm by remember { mutableIntStateOf(today.monthValue - 1) }

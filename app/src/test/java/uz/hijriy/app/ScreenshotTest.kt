@@ -71,6 +71,16 @@ class ScreenshotTest {
         settle(); shot("02_home")
         rule.onAllNodesWithText("Konvertor").onFirst().let { rule.mainClock.autoAdvance = true; runCatching { it.performScrollTo() }; rule.mainClock.autoAdvance = false }
         settle(); shot("02b_home_pastki")
+        rule.onAllNodesWithText("Quyosh va ob-havo").onFirst().let { rule.mainClock.autoAdvance = true; runCatching { it.performScrollTo() }; rule.mainClock.autoAdvance = false }
+        settle(); shot("02c_home_quyosh")
+        for ((r, n) in listOf("hatm" to "20_hatm", "journal" to "21_journal", "ramadan" to "22_ramadan", "mosques" to "23_mosques", "credits" to "24_credits", "more" to "25_more")) {
+            app.pendingRoute.value = r; settle(2500); shot(n); back()
+        }
+        app.pendingRoute.value = "location"; settle(); click("Dunyo shaharlari"); shot("26_location_world"); back()
+        app.pendingRoute.value = "focus/1?ayah=5"; settle(2500); shot("27_focus"); back()
+        app.settings.update { it.copy(bgIndex = 2) }; settle(2500); shot("28_home_bg2")
+        app.settings.update { it.copy(bgIndex = 0) }; settle(1500); shot("29_home_sky")
+        app.settings.update { it.copy(bgIndex = 1) }; settle()
         click("Namoz"); shot("03_prayer")
         click("Yana"); click("Qibla kompasi")
         shot("04_qibla_islomiy")
@@ -92,6 +102,8 @@ class ScreenshotTest {
         back()
         app.settings.update { it.copy(themeMode = uz.hijriy.app.data.ThemeMode.LIGHT) }
         app.pendingRoute.value = "mushaf/50"; settle(3000); shot("13_mushaf")
+        back()
+        app.pendingRoute.value = "mushaf/4"; settle(3000); shot("13b_mushaf_tajvid")
         back()
         app.pendingRoute.value = "duas"; settle(); shot("14_duas_dark")
     }

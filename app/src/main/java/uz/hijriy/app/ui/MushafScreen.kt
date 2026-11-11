@@ -55,6 +55,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -97,6 +104,8 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
     val ctx = LocalContext.current
     val quran by app.quran.collectAsStateWithLifecycle()
     val mushaf by produceState<Mushaf?>(null) { value = withContext(Dispatchers.Default) { MushafRepo.load(ctx) } }
+    val taj by produceState<List<List<IntArray>>?>(null) { value = withContext(Dispatchers.Default) { runCatching { uz.hijriy.app.data.MushafTajweed.load(ctx) }.getOrNull() } }
+    val st by app.settings.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { app.ensureQuran() }
     var controls by remember { mutableStateOf(false) }
 
@@ -134,7 +143,7 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
         }
     }
     val dark = LocalExtra.current.dark
-    val paper = if (dark) MaterialTheme.colorScheme.background else Color(0xFFFFF8E8)
+    val paper = if (dark) Color(0xFF14130F) else Color(0xFFF3EBD2)
 
     Box(
         Modifier
@@ -144,16 +153,38 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), beyondViewportPageCount = 1) { idx ->
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    // Bosish sahifa ichida ushlanadi — varaqlagich uni "yutib" qo'ymaydi
+                    // Kitob varag'i effekti: sahifalar joyida turadi, joriy varaq o'ng (muqova) cheti atrofida ag'dariladi
+                    val d = idx - (pager.currentPage + pager.currentPageOffsetFraction)
                     Box(
                         Modifier
                             .fillMaxSize()
+                            .zIndex(if (d <= 0f) 1f else 0f)
+                            .graphicsLayer {
+                                val dd = d.coerceIn(-1f, 1f)
+                                translationX = size.width * dd
+                                cameraDistance = 18f * density
+                                if (dd < 0f) {
+                                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 0.5f)
+                                    rotationY = dd * 100f
+                                    alpha = if (dd < -0.92f) 0f else 1f
+                                }
+                            }
+                            .drawWithContent {
+                                drawContent()
+                                val dd = d.coerceIn(-1f, 1f)
+                                // varaq soyasi
+                                if (dd > 0f) drawRect(Color.Black.copy(alpha = 0.35f * dd))
+                                if (dd < 0f) drawRect(
+                                    Brush.horizontalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f * -dd)))
+                                )
+                            }
+                            .background(paper)
                             .testTag("mushaf_page_${idx + 1}")
                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                                 controls = !controls
                             }
                     ) {
-                        MushafPageView(m.pages[idx], q, dark)
+                        MushafPageView(m.pages[idx], q, dark, if (st.tajweed) taj?.getOrNull(idx) else null)
                     }
                 }
             }
@@ -212,83 +243,145 @@ fun MushafScreen(app: HijriyApp, nav: NavHostController, startPage: Int) {
     }
 }
 
+/** Klassik tajvidli mushaf ranglari (Dor al-Ma'rifa uslubiga yaqin). */
+fun mushafTajColor(rule: Int, dark: Boolean): Color? {
+    val r = uz.hijriy.app.data.TajweedRule.entries.getOrNull(rule) ?: return null
+    return when (r) {
+        uz.hijriy.app.data.TajweedRule.HAMZAT_WASL, uz.hijriy.app.data.TajweedRule.LAM_SHAMSIYYAH, uz.hijriy.app.data.TajweedRule.SILENT,
+        uz.hijriy.app.data.TajweedRule.IDGHAAM_NO_GHUNNAH, uz.hijriy.app.data.TajweedRule.IDGHAAM_MUTAJANISAYN,
+        uz.hijriy.app.data.TajweedRule.IDGHAAM_MUTAQARIBAYN -> if (dark) Color(0xFF8E9590) else Color(0xFF9AA0A6)
+        uz.hijriy.app.data.TajweedRule.MADD_2 -> if (dark) Color(0xFFD9B45A) else Color(0xFFB8892B)
+        uz.hijriy.app.data.TajweedRule.MADD_246, uz.hijriy.app.data.TajweedRule.MADD_MUNFASIL -> if (dark) Color(0xFFFF9F5A) else Color(0xFFE0701B)
+        uz.hijriy.app.data.TajweedRule.MADD_MUTTASIL -> if (dark) Color(0xFFFF6FA8) else Color(0xFFD6197A)
+        uz.hijriy.app.data.TajweedRule.MADD_6 -> if (dark) Color(0xFFFF5A5A) else Color(0xFFB3001B)
+        uz.hijriy.app.data.TajweedRule.GHUNNAH, uz.hijriy.app.data.TajweedRule.IKHFA, uz.hijriy.app.data.TajweedRule.IKHFA_SHAFAWI,
+        uz.hijriy.app.data.TajweedRule.IQLAB, uz.hijriy.app.data.TajweedRule.IDGHAAM_GHUNNAH, uz.hijriy.app.data.TajweedRule.IDGHAAM_SHAFAWI ->
+            if (dark) Color(0xFF4FD08C) else Color(0xFF13894A)
+        uz.hijriy.app.data.TajweedRule.QALQALAH -> if (dark) Color(0xFF6CC4FF) else Color(0xFF1C8AD1)
+    }
+}
+
+private val mushafLegend = listOf(
+    Color(0xFFB3001B) to "Madd 6", Color(0xFFD6197A) to "Madd 4–5", Color(0xFFE0701B) to "Madd 2–4–6",
+    Color(0xFFB8892B) to "Madd 2", Color(0xFF13894A) to "G'unna, ixfo", Color(0xFF9AA0A6) to "Idg'om, o'qilmaydi",
+    Color(0xFF1C8AD1) to "Qalqala",
+)
+
 @Composable
-private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean) {
+private fun MushafPageView(page: MushafPage, q: Quran, dark: Boolean, spans: List<IntArray>?) {
     val density = LocalDensity.current
-    val ink = MaterialTheme.colorScheme.onSurface
-    val frame = MaterialTheme.colorScheme.primary
-    val accent = LocalExtra.current.palette.accent
-    val inline = rememberAyahInline(frame)
-    BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 6.dp)) {
+    val ink = if (dark) Color(0xFFEDE6D2) else Color(0xFF1A140A)
+    val band = if (dark) Color(0xFF1F5C55) else Color(0xFF1E6F66)
+    val gold = Color(0xFFC9A24A)
+    val sheet = if (dark) Color(0xFF1C1A15) else Color(0xFFFFFBEA)
+    val inline = rememberAyahInline(if (dark) gold else band)
+    BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 6.dp, vertical = 4.dp)) {
         val portrait = maxHeight >= maxWidth
-        val innerW: Dp = maxWidth - 28.dp
+        val frameW = 9.dp
+        val innerW: Dp = maxWidth - frameW * 2 - 16.dp
         val headerH = 22.dp
-        val footerH = 26.dp
-        val availH: Dp = maxHeight - headerH - footerH - 24.dp
+        val footerH = if (spans != null) 40.dp else 8.dp
+        val numberH = 22.dp
+        val availH: Dp = maxHeight - headerH - footerH - numberH - frameW * 2 - 18.dp
         val byWidth = with(density) { innerW.toPx() * 24f / 410f }
         val byHeight = with(density) { (availH / 15).toPx() / 1.78f }
         val fontPx = if (portrait) minOf(byWidth, byHeight) else byWidth
         val lineW: Dp = with(density) { (fontPx * 410f / 24f).toDp() }.coerceAtMost(innerW)
         val lineH: Dp = if (portrait) availH / 15 else with(density) { (fontPx * 1.9f).toDp() }
-        val style = TextStyle(
-            fontFamily = MushafFont,
-            fontSize = with(density) { fontPx.toSp() },
-            color = ink,
-            textAlign = TextAlign.Center,
-        )
+        val style = TextStyle(fontFamily = MushafFont, fontSize = with(density) { fontPx.toSp() }, color = ink, textAlign = TextAlign.Center)
         val scroll = rememberScrollState()
         Column(
-            Modifier
-                .fillMaxSize()
-                .then(if (portrait) Modifier else Modifier.verticalScroll(scroll))
-                .border(1.5.dp, frame.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
-                .padding(3.dp)
-                .border(0.8.dp, accent.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                .padding(horizontal = 10.dp, vertical = 6.dp),
+            Modifier.fillMaxSize().then(if (portrait) Modifier else Modifier.verticalScroll(scroll)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Yuqori qator: sura nomi va juz
             val sura = q.suras[page.firstSura - 1]
-            Row(Modifier.width(lineW).height(headerH), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "الجزء ${Uz.arabicNumber(q.juzOf(page.firstSura, page.firstAyah))}",
-                    fontFamily = QuranFont, fontSize = 14.sp, color = frame
-                )
-                Box(Modifier.weight(1f))
-                Text(sura.arName, fontFamily = QuranFont, fontSize = 14.sp, color = frame)
-            }
+            // Bezakli ramka: tashqi oltin chiziq, naqshli feruza tasma, ichki chiziqlar
             Column(
-                Modifier.then(if (portrait) Modifier.weight(1f) else Modifier),
-                verticalArrangement = if (page.number <= 2) Arrangement.Center else Arrangement.Top,
+                Modifier.then(if (portrait) Modifier.weight(1f) else Modifier).fillMaxWidth()
+                    .drawBehind {
+                        val fw = frameW.toPx()
+                        drawRect(band)
+                        clipRect(0f, 0f, size.width, size.height) {
+                            drawGirih(gold.copy(alpha = 0.55f), fw * 2.2f, 0.7.dp.toPx())
+                        }
+                        drawRect(gold, style = Stroke(1.6.dp.toPx()))
+                        drawRect(sheet, topLeft = androidx.compose.ui.geometry.Offset(fw, fw), size = androidx.compose.ui.geometry.Size(size.width - 2 * fw, size.height - 2 * fw))
+                        drawRect(gold, topLeft = androidx.compose.ui.geometry.Offset(fw, fw), size = androidx.compose.ui.geometry.Size(size.width - 2 * fw, size.height - 2 * fw), style = Stroke(1.2.dp.toPx()))
+                        val g = fw + 3.dp.toPx()
+                        drawRect(band.copy(alpha = 0.6f), topLeft = androidx.compose.ui.geometry.Offset(g, g), size = androidx.compose.ui.geometry.Size(size.width - 2 * g, size.height - 2 * g), style = Stroke(0.7.dp.toPx()))
+                        // burchak yulduzlari
+                        listOf(androidx.compose.ui.geometry.Offset(fw / 2, fw / 2), androidx.compose.ui.geometry.Offset(size.width - fw / 2, fw / 2),
+                            androidx.compose.ui.geometry.Offset(fw / 2, size.height - fw / 2), androidx.compose.ui.geometry.Offset(size.width - fw / 2, size.height - fw / 2)).forEach {
+                            drawPath(starPath(it.x, it.y, fw * 0.9f), gold)
+                        }
+                    }
+                    .padding(frameW + 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                page.lines.forEach { l ->
-                    Box(Modifier.width(lineW).height(lineH), contentAlignment = Alignment.Center) {
-                        when (l.type) {
-                            2 -> SuraBanner(q.suras.getOrNull((l.text.toIntOrNull() ?: 1) - 1)?.arName ?: "", style, frame, accent, lineW)
-                            else -> MushafTextLine(l, style, lineW, inline)
+                // Yuqori qator: juz va sura kartushlari
+                Row(Modifier.width(lineW).height(headerH), verticalAlignment = Alignment.CenterVertically) {
+                    Cartouche("الجزء ${Uz.arabicNumber(q.juzOf(page.firstSura, page.firstAyah))}", band, gold)
+                    Box(Modifier.weight(1f))
+                    Cartouche("سورة ${sura.arName}", band, gold)
+                }
+                Column(
+                    Modifier.then(if (portrait) Modifier.weight(1f) else Modifier),
+                    verticalArrangement = if (page.number <= 2) Arrangement.Center else Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    page.lines.forEachIndexed { li, l ->
+                        Box(Modifier.width(lineW).height(lineH), contentAlignment = Alignment.Center) {
+                            when (l.type) {
+                                2 -> SuraBanner(q.suras.getOrNull((l.text.toIntOrNull() ?: 1) - 1)?.arName ?: "", style, band, gold, lineW)
+                                else -> MushafTextLine(l, style, lineW, inline, spans?.getOrNull(li), dark)
+                            }
+                        }
+                    }
+                }
+                if (spans != null) {
+                    // Tajvid izohi
+                    Column(Modifier.width(lineW).height(footerH).padding(top = 4.dp), verticalArrangement = Arrangement.Center) {
+                        mushafLegend.chunked(4).forEach { row ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                                row.forEach { (c, t) ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(Modifier.size(7.dp).clip(androidx.compose.foundation.shape.CircleShape).background(c))
+                                        Box(Modifier.width(3.dp))
+                                        androidx.compose.material3.Text(t, fontSize = 8.5.sp, color = ink.copy(alpha = 0.75f), maxLines = 1)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-            // Pastki qator: sahifa raqami
-            Box(Modifier.width(lineW).height(footerH), contentAlignment = Alignment.Center) {
-                Box(
-                    Modifier.clip(RoundedCornerShape(50)).background(frame.copy(alpha = if (dark) 0.25f else 0.12f))
-                        .padding(horizontal = 14.dp, vertical = 2.dp)
-                ) { Text(Uz.arabicNumber(page.number), fontFamily = QuranFont, fontSize = 15.sp, color = frame) }
+            // Sahifa raqami
+            Box(Modifier.fillMaxWidth().height(numberH), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.Text(Uz.arabicNumber(page.number), fontFamily = QuranFont, fontSize = 15.sp, color = if (dark) gold else band)
             }
         }
     }
 }
 
 @Composable
-private fun MushafTextLine(l: MushafLine, style: TextStyle, lineW: Dp, inline: Map<String, androidx.compose.foundation.text.InlineTextContent>) {
+private fun Cartouche(text: String, band: Color, gold: Color) {
+    Box(
+        Modifier.clip(RoundedCornerShape(50)).background(band.copy(alpha = 0.10f))
+            .border(1.dp, gold, RoundedCornerShape(50)).padding(horizontal = 10.dp),
+        contentAlignment = Alignment.Center
+    ) { androidx.compose.material3.Text(text, fontFamily = QuranFont, fontSize = 12.sp, color = band) }
+}
+
+@Composable
+private fun MushafTextLine(
+    l: MushafLine, style: TextStyle, lineW: Dp, inline: Map<String, androidx.compose.foundation.text.InlineTextContent>,
+    spans: IntArray?, dark: Boolean,
+) {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val built = remember(l.text) {
+    val built = remember(l.text, spans, dark) {
         val ranges = mutableListOf<AnnotatedString.Range<androidx.compose.ui.text.Placeholder>>()
-        withAyahMarks(l.text, ranges) to ranges.toList()
+        withAyahMarksColored(l.text, spans, { mushafTajColor(it, dark) }, ranges) to ranges.toList()
     }
     val text = built.first
     val natural = remember(text, style) {
@@ -303,17 +396,23 @@ private fun MushafTextLine(l: MushafLine, style: TextStyle, lineW: Dp, inline: M
 }
 
 @Composable
-private fun SuraBanner(arName: String, style: TextStyle, frame: Color, accent: Color, lineW: Dp) {
+private fun SuraBanner(arName: String, style: TextStyle, band: Color, gold: Color, lineW: Dp) {
     Box(
         Modifier
             .width(lineW)
-            .padding(vertical = 3.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(accent.copy(alpha = 0.14f))
-            .border(1.2.dp, frame.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
-            .padding(vertical = 2.dp),
+            .padding(vertical = 2.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(Brush.horizontalGradient(listOf(band, band.copy(alpha = 0.85f), band)))
+            .drawBehind { drawGirih(gold.copy(alpha = 0.35f), size.height * 0.9f, 0.6.dp.toPx()) }
+            .border(1.5.dp, gold, RoundedCornerShape(6.dp))
+            .padding(vertical = 1.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text("سُورَةُ $arName", style = style.copy(fontFamily = QuranFont, fontSize = style.fontSize * 0.85f, color = frame))
+        Box(
+            Modifier.clip(RoundedCornerShape(50)).background(Color(0xFFFFFBEA)).border(1.dp, gold, RoundedCornerShape(50)).padding(horizontal = 18.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("سُورَةُ $arName", style = style.copy(fontFamily = QuranFont, fontSize = style.fontSize * 0.8f, color = band))
+        }
     }
 }
