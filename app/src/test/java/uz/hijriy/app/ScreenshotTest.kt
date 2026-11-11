@@ -3,6 +3,8 @@ package uz.hijriy.app
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.inset
 import uz.hijriy.app.ui.drawHIcon
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -163,8 +165,8 @@ class ScreenshotTest {
                     val x = (i % cols) * cw; val y = top + (i / cols) * ch
                     drawRoundRect(androidx.compose.ui.graphics.Color.White, androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f))
                     drawRoundRect(androidx.compose.ui.graphics.Color(0x33C8962E), androidx.compose.ui.geometry.Offset(x + 14, y + 10), androidx.compose.ui.geometry.Size(cw - 28, ch - 20), androidx.compose.ui.geometry.CornerRadius(28f), style = androidx.compose.ui.graphics.drawscope.Stroke(2f))
-                    androidx.compose.ui.graphics.drawscope.translate(x + (cw - 160f) / 2, y + 34f) {
-                        androidx.compose.ui.graphics.drawscope.inset(0f, 0f, size.width - 160f, size.height - 160f) {
+                    translate(x + (cw - 160f) / 2, y + 34f) {
+                        inset(0f, 0f, size.width - 160f, size.height - 160f) {
                             run { drawHIcon(ic, androidx.compose.ui.graphics.Color(0xFF0B5D48), androidx.compose.ui.graphics.Color(0xFFC8962E)) }
                         }
                     }
