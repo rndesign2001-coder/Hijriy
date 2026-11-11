@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -90,7 +91,7 @@ fun MosqueMapScreen(app: HijriyApp, nav: NavHostController) {
         ) {
             drawCircle(Color(0xFF0B5D48)); drawCircle(Color(0xFFE9C46A), style = androidx.compose.ui.graphics.drawscope.Stroke(size.width * 0.06f))
             val pad = size.width * 0.2f
-            androidx.compose.ui.graphics.drawscope.inset(pad, pad, pad, pad) { drawHIcon(HI.MOSQUE, Color.White, Color(0xFFE9C46A)) }
+            inset(pad, pad, pad, pad) { drawHIcon(HI.MOSQUE, Color.White, Color(0xFFE9C46A)) }
         }
         BitmapDrawable(ctx.resources, img.asAndroidBitmap())
     }
