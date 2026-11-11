@@ -80,6 +80,7 @@ import uz.hijriy.app.core.Prayer
 import uz.hijriy.app.core.Uz
 import uz.hijriy.app.core.fmtMin
 import uz.hijriy.app.data.Settings
+import uz.hijriy.app.data.HatmPlan
 import uz.hijriy.app.data.WeatherApi
 import uz.hijriy.app.ui.theme.QuranFont
 import uz.hijriy.app.ui.theme.TitleFont

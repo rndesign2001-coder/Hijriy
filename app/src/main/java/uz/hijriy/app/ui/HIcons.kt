@@ -45,10 +45,10 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
     val thin = Stroke(1.1f * u, cap = StrokeCap.Round, join = StrokeJoin.Round)
     val soft = accent.copy(alpha = 0.28f)
     fun path(block: Path.() -> Unit) = Path().apply(block)
-    fun Path.m(x: Float, y: Float) = moveTo(ox + x * u, oy + y * u)
-    fun Path.l(x: Float, y: Float) = lineTo(ox + x * u, oy + y * u)
-    fun Path.q(cx: Float, cy: Float, x: Float, y: Float) = quadraticTo(ox + cx * u, oy + cy * u, ox + x * u, oy + y * u)
-    fun Path.c(x1: Float, y1: Float, x2: Float, y2: Float, x: Float, y: Float) =
+    fun Path.mt(x: Float, y: Float) = moveTo(ox + x * u, oy + y * u)
+    fun Path.lt(x: Float, y: Float) = lineTo(ox + x * u, oy + y * u)
+    fun Path.qt(cx: Float, cy: Float, x: Float, y: Float) = quadraticBezierTo(ox + cx * u, oy + cy * u, ox + x * u, oy + y * u)
+    fun Path.ct(x1: Float, y1: Float, x2: Float, y2: Float, x: Float, y: Float) =
         cubicTo(ox + x1 * u, oy + y1 * u, ox + x2 * u, oy + y2 * u, ox + x * u, oy + y * u)
     fun star8(cx: Float, cy: Float, r: Float, color: Color, fill: Boolean = false) {
         val p = starPath(ox + cx * u, oy + cy * u, r * u, 0f)
@@ -65,10 +65,10 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
     /** Mehrob ravog'i (uchli ravoq). */
     fun arch(l: Float, r: Float, top: Float, bottom: Float) = path {
         val mid = (l + r) / 2; val sh = top + (r - l) * 0.55f
-        m(l, bottom); l(l, sh)
-        q(l, top + (sh - top) * 0.25f, mid, top)
-        q(r, top + (sh - top) * 0.25f, r, sh)
-        l(r, bottom); close()
+        mt(l, bottom); lt(l, sh)
+        qt(l, top + (sh - top) * 0.25f, mid, top)
+        qt(r, top + (sh - top) * 0.25f, r, sh)
+        lt(r, bottom); close()
     }
     fun sun(cx: Float, cy: Float, r: Float, rays: Boolean = true) {
         drawCircle(soft, r * u * 1.15f, P(cx, cy))
@@ -83,15 +83,15 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
     when (icon) {
         HI.QURAN -> {
             // Ochiq kitob rahl (lavh) ustida
-            val l = path { m(12f, 7f); q(8f, 4.6f, 3f, 5.5f); l(3f, 16f); q(8f, 15f, 12f, 17.5f); close() }
-            val r = path { m(12f, 7f); q(16f, 4.6f, 21f, 5.5f); l(21f, 16f); q(16f, 15f, 12f, 17.5f); close() }
+            val l = path { mt(12f, 7f); qt(8f, 4.6f, 3f, 5.5f); lt(3f, 16f); qt(8f, 15f, 12f, 17.5f); close() }
+            val r = path { mt(12f, 7f); qt(16f, 4.6f, 21f, 5.5f); lt(21f, 16f); qt(16f, 15f, 12f, 17.5f); close() }
             drawPath(l, soft); drawPath(r, soft)
             drawPath(l, tint, style = st); drawPath(r, tint, style = st)
-            drawPath(path { m(5f, 21f); l(19f, 15.5f); m(19f, 21f); l(5f, 15.5f) }, tint, style = st)
+            drawPath(path { mt(5f, 21f); lt(19f, 15.5f); mt(19f, 21f); lt(5f, 15.5f) }, tint, style = st)
             star8(7.6f, 10.4f, 1.4f, accent, true); star8(16.4f, 10.4f, 1.4f, accent, true)
         }
         HI.MUSHAF -> {
-            val b = path { m(5f, 3.5f); l(18f, 3.5f); q(19.5f, 3.5f, 19.5f, 5f); l(19.5f, 20.5f); l(6.5f, 20.5f); q(5f, 20.5f, 5f, 19f); close() }
+            val b = path { mt(5f, 3.5f); lt(18f, 3.5f); qt(19.5f, 3.5f, 19.5f, 5f); lt(19.5f, 20.5f); lt(6.5f, 20.5f); qt(5f, 20.5f, 5f, 19f); close() }
             drawPath(b, soft); drawPath(b, tint, style = st)
             drawLine(tint, P(5f, 17.5f), P(19.5f, 17.5f), 1.2f * u)
             star8(12.2f, 10.2f, 3.6f, accent); drawCircle(accent, 1.1f * u, P(12.2f, 10.2f))
@@ -100,9 +100,9 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawCircle(soft, 9.5f * u, P(12f, 12f))
             drawCircle(tint, 9.5f * u, P(12f, 12f), style = thin)
             for (i in 0 until 8) { val a = i * PI / 4; drawCircle(tint, 0.7f * u, P(12f + 7.8f * cos(a).toFloat(), 12f + 7.8f * sin(a).toFloat())) }
-            drawPath(path { m(12f, 13f); l(9.6f, 19f); l(12f, 17.4f); l(14.4f, 19f); close() }, tint.copy(alpha = 0.55f))
+            drawPath(path { mt(12f, 13f); lt(9.6f, 19f); lt(12f, 17.4f); lt(14.4f, 19f); close() }, tint.copy(alpha = 0.55f))
             // Ka'ba kubigi strelka uchida
-            val k = path { m(9f, 6.4f); l(12f, 5f); l(15f, 6.4f); l(15f, 10.6f); l(12f, 12f); l(9f, 10.6f); close() }
+            val k = path { mt(9f, 6.4f); lt(12f, 5f); lt(15f, 6.4f); lt(15f, 10.6f); lt(12f, 12f); lt(9f, 10.6f); close() }
             drawPath(k, tint)
             drawLine(accent, P(9f, 7.8f), P(12f, 9.2f), 1.1f * u); drawLine(accent, P(12f, 9.2f), P(15f, 7.8f), 1.1f * u)
         }
@@ -111,8 +111,8 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
                 val a = -PI / 2 + i * (2 * PI / 12)
                 drawCircle(if (i % 4 == 0) accent else tint, 1.35f * u, P(12f + 7f * cos(a).toFloat(), 10f + 7f * sin(a).toFloat()))
             }
-            drawPath(path { m(12f, 17f); l(12f, 19.4f) }, tint, style = st)
-            drawPath(path { m(12f, 19.4f); l(10.4f, 22.5f); m(12f, 19.4f); l(13.6f, 22.5f); m(12f, 19.4f); l(12f, 23f) }, accent, style = thin)
+            drawPath(path { mt(12f, 17f); lt(12f, 19.4f) }, tint, style = st)
+            drawPath(path { mt(12f, 19.4f); lt(10.4f, 22.5f); mt(12f, 19.4f); lt(13.6f, 22.5f); mt(12f, 19.4f); lt(12f, 23f) }, accent, style = thin)
         }
         HI.NAMES -> {
             star8(12f, 12f, 10f, tint)
@@ -121,8 +121,8 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawCircle(tint, 1.6f * u, P(12f, 12f))
         }
         HI.DUA -> {
-            val lh = path { m(11.2f, 21f); l(11.2f, 11f); q(11.2f, 6f, 8.2f, 3.5f); q(6f, 5f, 6.5f, 9f); l(7.4f, 14f); q(5f, 15f, 5f, 18f); l(5f, 21f) }
-            val rh = path { m(12.8f, 21f); l(12.8f, 11f); q(12.8f, 6f, 15.8f, 3.5f); q(18f, 5f, 17.5f, 9f); l(16.6f, 14f); q(19f, 15f, 19f, 18f); l(19f, 21f) }
+            val lh = path { mt(11.2f, 21f); lt(11.2f, 11f); qt(11.2f, 6f, 8.2f, 3.5f); qt(6f, 5f, 6.5f, 9f); lt(7.4f, 14f); qt(5f, 15f, 5f, 18f); lt(5f, 21f) }
+            val rh = path { mt(12.8f, 21f); lt(12.8f, 11f); qt(12.8f, 6f, 15.8f, 3.5f); qt(18f, 5f, 17.5f, 9f); lt(16.6f, 14f); qt(19f, 15f, 19f, 18f); lt(19f, 21f) }
             drawPath(lh, soft); drawPath(rh, soft)
             drawPath(lh, tint, style = st); drawPath(rh, tint, style = st)
             drawCircle(accent, 1.1f * u, P(12f, 1.8f))
@@ -130,7 +130,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
         HI.WALLPAPER, HI.PHOTO -> {
             val a = arch(4f, 20f, 2.5f, 21f)
             drawPath(a, soft); drawPath(a, tint, style = st)
-            drawPath(path { m(4f, 18f); l(9f, 13f); l(12.5f, 16f); l(15f, 13.6f); l(20f, 18f) }, tint, style = thin)
+            drawPath(path { mt(4f, 18f); lt(9f, 13f); lt(12.5f, 16f); lt(15f, 13.6f); lt(20f, 18f) }, tint, style = thin)
             crescent(14.5f, 8.6f, 2.4f, accent)
         }
         HI.QAZO -> {
@@ -138,18 +138,18 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawPath(a, tint, style = st)
             for (k in 0..2) {
                 val y = 10.5f + k * 3.6f
-                drawPath(path { m(7.3f, y); l(8.4f, y + 1.1f); l(10.2f, y - 1f) }, accent, style = thin)
+                drawPath(path { mt(7.3f, y); lt(8.4f, y + 1.1f); lt(10.2f, y - 1f) }, accent, style = thin)
                 drawLine(tint, P(12f, y), P(16.8f, y), 1.4f * u, StrokeCap.Round)
             }
         }
         HI.CONVERTER -> {
             crescent(8.2f, 9f, 4.6f, tint)
             drawCircle(soft, 4.6f * u, P(15.8f, 15f)); drawCircle(accent, 4.6f * u, P(15.8f, 15f), style = thin)
-            drawPath(path { m(15f, 4.5f); q(19.5f, 4.5f, 19.5f, 9f); l(18f, 7.6f); m(19.5f, 9f); l(21f, 7.6f) }, tint, style = thin)
-            drawPath(path { m(9f, 19.5f); q(4.5f, 19.5f, 4.5f, 15f); l(3f, 16.4f); m(4.5f, 15f); l(6f, 16.4f) }, tint, style = thin)
+            drawPath(path { mt(15f, 4.5f); qt(19.5f, 4.5f, 19.5f, 9f); lt(18f, 7.6f); mt(19.5f, 9f); lt(21f, 7.6f) }, tint, style = thin)
+            drawPath(path { mt(9f, 19.5f); qt(4.5f, 19.5f, 4.5f, 15f); lt(3f, 16.4f); mt(4.5f, 15f); lt(6f, 16.4f) }, tint, style = thin)
         }
         HI.CALENDAR -> {
-            val b = path { m(3.5f, 6f); l(20.5f, 6f); l(20.5f, 20.5f); l(3.5f, 20.5f); close() }
+            val b = path { mt(3.5f, 6f); lt(20.5f, 6f); lt(20.5f, 20.5f); lt(3.5f, 20.5f); close() }
             drawPath(b, soft); drawPath(b, tint, style = st)
             drawLine(tint, P(3.5f, 10f), P(20.5f, 10f), 1.4f * u)
             drawLine(tint, P(8f, 3.5f), P(8f, 7.5f), 1.7f * u, StrokeCap.Round); drawLine(tint, P(16f, 3.5f), P(16f, 7.5f), 1.7f * u, StrokeCap.Round)
@@ -157,7 +157,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
         }
         HI.WEATHER -> {
             sun(9f, 9f, 3.6f)
-            val cl = path { m(8.5f, 20f); q(5f, 20f, 5.4f, 16.6f); q(5.8f, 13.6f, 9f, 14f); q(10.4f, 10.8f, 14f, 11f); q(17.6f, 11.4f, 18f, 14.6f); q(21f, 15f, 20.6f, 17.8f); q(20.2f, 20f, 17.6f, 20f); close() }
+            val cl = path { mt(8.5f, 20f); qt(5f, 20f, 5.4f, 16.6f); qt(5.8f, 13.6f, 9f, 14f); qt(10.4f, 10.8f, 14f, 11f); qt(17.6f, 11.4f, 18f, 14.6f); qt(21f, 15f, 20.6f, 17.8f); qt(20.2f, 20f, 17.6f, 20f); close() }
             drawPath(cl, Color.White.copy(alpha = 0.001f)); drawPath(cl, accent.copy(alpha = 0.35f)); drawPath(cl, tint, style = st)
         }
         HI.SETTINGS -> {
@@ -167,41 +167,41 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
         }
         HI.MOSQUE, HI.LOCATION -> {
             if (icon == HI.LOCATION) {
-                val pin = path { m(12f, 22.5f); q(4f, 14f, 4f, 9.5f); q(4f, 2f, 12f, 2f); q(20f, 2f, 20f, 9.5f); q(20f, 14f, 12f, 22.5f); close() }
+                val pin = path { mt(12f, 22.5f); qt(4f, 14f, 4f, 9.5f); qt(4f, 2f, 12f, 2f); qt(20f, 2f, 20f, 9.5f); qt(20f, 14f, 12f, 22.5f); close() }
                 drawPath(pin, soft); drawPath(pin, tint, style = st)
-                drawPath(path { m(8.5f, 12.5f); q(8.5f, 6.5f, 12f, 6f); q(15.5f, 6.5f, 15.5f, 12.5f); close() }, accent)
+                drawPath(path { mt(8.5f, 12.5f); qt(8.5f, 6.5f, 12f, 6f); qt(15.5f, 6.5f, 15.5f, 12.5f); close() }, accent)
             } else {
-                val dome = path { m(6f, 13f); q(6f, 6.8f, 12f, 5.8f); q(18f, 6.8f, 18f, 13f); close() }
+                val dome = path { mt(6f, 13f); qt(6f, 6.8f, 12f, 5.8f); qt(18f, 6.8f, 18f, 13f); close() }
                 drawPath(dome, soft); drawPath(dome, tint, style = st)
                 drawLine(tint, P(12f, 5.8f), P(12f, 3.4f), 1.3f * u)
                 crescent(12f, 2.4f, 1.2f, accent)
-                drawPath(path { m(4.5f, 21f); l(4.5f, 13f); l(19.5f, 13f); l(19.5f, 21f) }, tint, style = st)
-                drawPath(path { m(10f, 21f); l(10f, 17f); q(12f, 14.6f, 14f, 17f); l(14f, 21f) }, accent, style = thin)
-                drawPath(path { m(1.5f, 21f); l(1.5f, 9f); l(2.6f, 6.8f); l(3.7f, 9f); l(3.7f, 21f) }, tint, style = thin)
-                drawPath(path { m(20.3f, 21f); l(20.3f, 9f); l(21.4f, 6.8f); l(22.5f, 9f); l(22.5f, 21f) }, tint, style = thin)
+                drawPath(path { mt(4.5f, 21f); lt(4.5f, 13f); lt(19.5f, 13f); lt(19.5f, 21f) }, tint, style = st)
+                drawPath(path { mt(10f, 21f); lt(10f, 17f); qt(12f, 14.6f, 14f, 17f); lt(14f, 21f) }, accent, style = thin)
+                drawPath(path { mt(1.5f, 21f); lt(1.5f, 9f); lt(2.6f, 6.8f); lt(3.7f, 9f); lt(3.7f, 21f) }, tint, style = thin)
+                drawPath(path { mt(20.3f, 21f); lt(20.3f, 9f); lt(21.4f, 6.8f); lt(22.5f, 9f); lt(22.5f, 21f) }, tint, style = thin)
                 drawLine(tint, P(1f, 21.2f), P(23f, 21.2f), 1.5f * u, StrokeCap.Round)
             }
         }
         HI.HATM -> {
             drawArc(tint.copy(alpha = 0.22f), 0f, 360f, false, P(2.5f, 2.5f), Size(19f * u, 19f * u), style = st)
             drawArc(accent, -90f, 250f, false, P(2.5f, 2.5f), Size(19f * u, 19f * u), style = Stroke(2.2f * u, cap = StrokeCap.Round))
-            val l = path { m(12f, 9f); q(9.5f, 7.6f, 7f, 8f); l(7f, 15.5f); q(9.5f, 15f, 12f, 16.4f); close() }
-            val r = path { m(12f, 9f); q(14.5f, 7.6f, 17f, 8f); l(17f, 15.5f); q(14.5f, 15f, 12f, 16.4f); close() }
+            val l = path { mt(12f, 9f); qt(9.5f, 7.6f, 7f, 8f); lt(7f, 15.5f); qt(9.5f, 15f, 12f, 16.4f); close() }
+            val r = path { mt(12f, 9f); qt(14.5f, 7.6f, 17f, 8f); lt(17f, 15.5f); qt(14.5f, 15f, 12f, 16.4f); close() }
             drawPath(l, tint, style = thin); drawPath(r, tint, style = thin)
         }
         HI.RAMADAN -> {
             // Fonus (chiroq)
             drawLine(tint, P(12f, 1.5f), P(12f, 4f), 1.3f * u)
-            drawPath(path { m(8f, 6.5f); l(12f, 4f); l(16f, 6.5f); close() }, tint)
-            val body = path { m(8f, 7f); l(16f, 7f); l(17.5f, 12f); l(16f, 18.5f); l(8f, 18.5f); l(6.5f, 12f); close() }
+            drawPath(path { mt(8f, 6.5f); lt(12f, 4f); lt(16f, 6.5f); close() }, tint)
+            val body = path { mt(8f, 7f); lt(16f, 7f); lt(17.5f, 12f); lt(16f, 18.5f); lt(8f, 18.5f); lt(6.5f, 12f); close() }
             drawPath(body, accent.copy(alpha = 0.35f)); drawPath(body, tint, style = st)
-            drawPath(path { m(12f, 7f); l(12f, 18.5f); m(9.2f, 7f); l(9f, 18.5f); m(14.8f, 7f); l(15f, 18.5f) }, tint, style = thin)
+            drawPath(path { mt(12f, 7f); lt(12f, 18.5f); mt(9.2f, 7f); lt(9f, 18.5f); mt(14.8f, 7f); lt(15f, 18.5f) }, tint, style = thin)
             drawCircle(Color(0xFFFFD86B), 1.5f * u, P(12f, 13f))
-            drawPath(path { m(9f, 18.5f); l(10f, 21.5f); l(14f, 21.5f); l(15f, 18.5f) }, tint, style = st)
+            drawPath(path { mt(9f, 18.5f); lt(10f, 21.5f); lt(14f, 21.5f); lt(15f, 18.5f) }, tint, style = st)
         }
         HI.JOURNAL -> {
             // Joynamoz
-            val mat = path { m(6f, 22f); l(6f, 7f); q(6f, 2f, 12f, 2f); q(18f, 2f, 18f, 7f); l(18f, 22f); close() }
+            val mat = path { mt(6f, 22f); lt(6f, 7f); qt(6f, 2f, 12f, 2f); qt(18f, 2f, 18f, 7f); lt(18f, 22f); close() }
             drawPath(mat, soft); drawPath(mat, tint, style = st)
             val inner = arch(8.6f, 15.4f, 5f, 19.5f)
             drawPath(inner, accent, style = thin)
@@ -215,8 +215,8 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawLine(tint.copy(alpha = 0.6f), P(5f, 19.5f), P(19f, 19.5f), 1.3f * u, StrokeCap.Round)
             val up = icon == HI.SUNRISE
             drawPath(path {
-                if (up) { m(12f, 7f); l(12f, 1.8f); m(9.6f, 4.2f); l(12f, 1.8f); l(14.4f, 4.2f) }
-                else { m(12f, 1.8f); l(12f, 7f); m(9.6f, 4.6f); l(12f, 7f); l(14.4f, 4.6f) }
+                if (up) { mt(12f, 7f); lt(12f, 1.8f); mt(9.6f, 4.2f); lt(12f, 1.8f); lt(14.4f, 4.2f) }
+                else { mt(12f, 1.8f); lt(12f, 7f); mt(9.6f, 4.6f); lt(12f, 7f); lt(14.4f, 4.6f) }
             }, accent, style = st)
         }
         HI.FAJR -> {
@@ -229,7 +229,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
         HI.ASR -> {
             sun(9.5f, 9f, 3.8f)
             drawLine(tint, P(3f, 20f), P(21f, 20f), 1.7f * u, StrokeCap.Round)
-            drawPath(path { m(15f, 20f); l(15f, 14f); l(16f, 13f); l(17f, 14f); l(17f, 20f) }, tint, style = thin)
+            drawPath(path { mt(15f, 20f); lt(15f, 14f); lt(16f, 13f); lt(17f, 14f); lt(17f, 20f) }, tint, style = thin)
             drawLine(accent, P(17f, 20f), P(22.5f, 22.4f), 1.4f * u, StrokeCap.Round)
         }
         HI.ISHA -> {
@@ -246,7 +246,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             val a = arch(4f, 20f, 2f, 22f)
             drawPath(a, soft); drawPath(a, tint, style = st)
             drawCircle(tint, 5f * u, P(12f, 14f), style = thin)
-            drawPath(path { m(12f, 11f); l(12f, 14f); l(14.2f, 15.4f) }, accent, style = st)
+            drawPath(path { mt(12f, 11f); lt(12f, 14f); lt(14.2f, 15.4f) }, accent, style = st)
         }
         HI.MORE -> {
             for ((x, y) in listOf(7f to 7f, 17f to 7f, 7f to 17f)) {
@@ -256,8 +256,8 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             drawPath(starPath(ox + 17 * u, oy + 17 * u, 4.4f * u, 0f), accent)
         }
         HI.FOCUS -> {
-            drawPath(path { m(2f, 12f); q(12f, 2f, 22f, 12f); q(12f, 22f, 2f, 12f); close() }, soft)
-            drawPath(path { m(2f, 12f); q(12f, 2f, 22f, 12f); q(12f, 22f, 2f, 12f); close() }, tint, style = st)
+            drawPath(path { mt(2f, 12f); qt(12f, 2f, 22f, 12f); qt(12f, 22f, 2f, 12f); close() }, soft)
+            drawPath(path { mt(2f, 12f); qt(12f, 2f, 22f, 12f); qt(12f, 22f, 2f, 12f); close() }, tint, style = st)
             drawPath(starPath(ox + 12 * u, oy + 12 * u, 3.6f * u, 0f), accent)
         }
     }
@@ -272,12 +272,12 @@ class ArchShape(private val shoulder: Float = 0.42f) : Shape {
         val p = Path().apply {
             moveTo(0f, h - r)
             lineTo(0f, sh)
-            quadraticTo(0f, sh * 0.22f, w / 2, 0f)
-            quadraticTo(w, sh * 0.22f, w, sh)
+            quadraticBezierTo(0f, sh * 0.22f, w / 2, 0f)
+            quadraticBezierTo(w, sh * 0.22f, w, sh)
             lineTo(w, h - r)
-            quadraticTo(w, h, w - r, h)
+            quadraticBezierTo(w, h, w - r, h)
             lineTo(r, h)
-            quadraticTo(0f, h, 0f, h - r)
+            quadraticBezierTo(0f, h, 0f, h - r)
             close()
         }
         return Outline.Generic(p)
