@@ -76,6 +76,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    // Yaqin masjidlar xaritasi (OpenStreetMap)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    // Baseline profile — ilova ochilishi va aylantirishni tezlashtiradi
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation(composeBom)

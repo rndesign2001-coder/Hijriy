@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -270,7 +271,7 @@ fun RamadanScreen(app: HijriyApp, nav: NavHostController) {
 }
 
 @Composable
-private fun DuaBlock(title: String, ar: String, meaning: String, cyr: Boolean) {
+fun DuaBlock(title: String, ar: String, meaning: String, cyr: Boolean) {
     val rd = remember(ar) { Translit.dua(ar) }
     SectionCard(Modifier.fillMaxWidth()) {
         Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
@@ -290,19 +291,51 @@ private fun DuaBlock(title: String, ar: String, meaning: String, cyr: Boolean) {
 
 data class Mosque(val name: String, val lat: Double, val lon: Double, val km: Double, val bearing: Double)
 
-private suspend fun fetchMosques(lat: Double, lon: Double, radius: Int): List<Mosque> = withContext(Dispatchers.IO) {
-    // Maxfiylik: so'rovga ~1 km aniqlikdagi koordinata yuboriladi, masofa telefonda aniq hisoblanadi
-    val la = "%.2f".format(java.util.Locale.US, lat); val lo = "%.2f".format(java.util.Locale.US, lon)
-    val q = "[out:json][timeout:25];(node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"](around:$radius,$la,$lo);" +
-        "way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"](around:$radius,$la,$lo););out center 80;"
-    val c = URL("https://overpass-api.de/api/interpreter").openConnection() as HttpURLConnection
-    c.requestMethod = "POST"; c.doOutput = true; c.connectTimeout = 15_000; c.readTimeout = 30_000
-    c.setRequestProperty("User-Agent", "HijriyTaqvim/1.0 (Android)")
-    c.outputStream.use { it.write(("data=" + URLEncoder.encode(q, "UTF-8")).toByteArray()) }
-    val txt = c.inputStream.bufferedReader().use { it.readText() }
-    c.disconnect()
-    val arr = JSONObject(txt).optJSONArray("elements") ?: return@withContext emptyList()
-    (0 until arr.length()).mapNotNull { i ->
+/** Overpass API oynalari: biri band yoki cheklov qo'ysa, keyingisi sinab ko'riladi. */
+private val OVERPASS = listOf(
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+)
+
+class MosqueFetchError(msg: String) : Exception(msg)
+
+/** [area] — Overpass hudud filtri, masalan "(around:3000,41.31,69.28)" yoki "(s,w,n,e)". */
+private fun overpass(area: String, limit: Int): String {
+    val q = "[out:json][timeout:25];(" +
+        "node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
+        "way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
+        "relation[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
+        ");out center $limit;"
+    val body = ("data=" + URLEncoder.encode(q, "UTF-8")).toByteArray()
+    var last: Exception? = null
+    var anyHttp = false
+    for (url in OVERPASS) {
+        try {
+            val c = URL(url).openConnection() as HttpURLConnection
+            c.requestMethod = "POST"; c.doOutput = true; c.connectTimeout = 12_000; c.readTimeout = 35_000
+            c.setRequestProperty("User-Agent", "HijriyTaqvim/1.0 (Android; uz.hijriy.app)")
+            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            c.setRequestProperty("Accept", "application/json")
+            c.outputStream.use { it.write(body) }
+            val code = c.responseCode
+            if (code == 200) {
+                val txt = c.inputStream.bufferedReader().use { it.readText() }
+                c.disconnect()
+                if (txt.trimStart().startsWith("{")) return txt
+            } else { anyHttp = true; c.errorStream?.close(); c.disconnect() }
+        } catch (e: Exception) { last = e }
+    }
+    throw MosqueFetchError(
+        if (anyHttp) "Xarita serverlari hozir band. Bir ozdan so'ng qayta urinib ko'ring."
+        else "Internetga ulanib bo'lmadi" + (last?.javaClass?.simpleName?.let { " ($it)" } ?: "")
+    )
+}
+
+private fun parseMosques(txt: String, lat: Double, lon: Double): List<Mosque> {
+    val arr = JSONObject(txt).optJSONArray("elements") ?: return emptyList()
+    return (0 until arr.length()).mapNotNull { i ->
         val o = arr.getJSONObject(i)
         val mla = if (o.has("lat")) o.getDouble("lat") else o.optJSONObject("center")?.optDouble("lat") ?: return@mapNotNull null
         val mlo = if (o.has("lon")) o.getDouble("lon") else o.optJSONObject("center")?.optDouble("lon") ?: return@mapNotNull null
@@ -310,7 +343,19 @@ private suspend fun fetchMosques(lat: Double, lon: Double, radius: Int): List<Mo
         val name = tags?.let { t -> listOf("name:uz", "name", "name:ru", "name:en").firstNotNullOfOrNull { k -> t.optString(k).takeIf { v -> v.isNotBlank() } } } ?: "Masjid"
         val (km, br) = distBearing(lat, lon, mla, mlo)
         Mosque(name, mla, mlo, km, br)
-    }.sortedBy { it.km }
+    }.distinctBy { "%.4f,%.4f".format(java.util.Locale.US, it.lat, it.lon) }.sortedBy { it.km }
+}
+
+private suspend fun fetchMosques(lat: Double, lon: Double, radius: Int): List<Mosque> = withContext(Dispatchers.IO) {
+    // Maxfiylik: so'rovga ~1 km aniqlikdagi koordinata yuboriladi, masofa telefonda aniq hisoblanadi
+    val la = "%.2f".format(java.util.Locale.US, lat); val lo = "%.2f".format(java.util.Locale.US, lon)
+    parseMosques(overpass("(around:$radius,$la,$lo)", if (radius > 20000) 300 else 150), lat, lon)
+}
+
+/** Xaritadagi ko'rinib turgan hudud (janub, g'arb, shimol, sharq) bo'yicha qidiruv. */
+suspend fun fetchMosquesBox(s: Double, w: Double, n: Double, e: Double, fromLat: Double, fromLon: Double): List<Mosque> = withContext(Dispatchers.IO) {
+    val f = { v: Double -> "%.3f".format(java.util.Locale.US, v) }
+    parseMosques(overpass("(${f(s)},${f(w)},${f(n)},${f(e)})", 400), fromLat, fromLon)
 }
 
 private fun distBearing(la1: Double, lo1: Double, la2: Double, lo2: Double): Pair<Double, Double> {
@@ -329,11 +374,12 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
     var list by remember { mutableStateOf<List<Mosque>?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
-    LaunchedEffect(s.lat, s.lon, radius) {
+    var retry by remember { mutableIntStateOf(0) }
+    LaunchedEffect(s.lat, s.lon, radius, retry) {
         loading = true; err = null
         runCatching { fetchMosques(s.lat, s.lon, radius) }
             .onSuccess { list = it; if (it.isEmpty()) err = "Bu radiusda masjid topilmadi — radiusni kattalashtiring" }
-            .onFailure { err = "Internetga ulanib bo'lmadi" }
+            .onFailure { e -> err = (e as? MosqueFetchError)?.message ?: "Internetga ulanib bo'lmadi" }
         loading = false
     }
     Column(Modifier.fillMaxSize()) {
@@ -344,8 +390,8 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                         MosqueRadar(list.orEmpty(), radius / 1000.0, Qibla.bearing(s.lat, s.lon))
                         VSpace(8.dp)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf(1000, 3000, 5000, 10000).forEach { r ->
+                        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(1000, 3000, 5000, 10000, 25000, 50000).forEach { r ->
                                 val sel = r == radius
                                 Box(
                                     Modifier.clip(RoundedCornerShape(50)).background(if (sel) FGold else Color.White.copy(alpha = 0.14f))
@@ -356,8 +402,26 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
                     }
                 }
             }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { nav.go("mosquemap") }, modifier = Modifier.weight(1f).height(48.dp)) {
+                        HIcon(HI.LOCATION, MaterialTheme.colorScheme.onPrimary, size = 20.dp); HSpace(6.dp); Text("Katta xarita")
+                    }
+                    OutlinedButton(onClick = {
+                        val uri = Uri.parse("geo:${s.lat},${s.lon}?q=${Uri.encode("mosque masjid")}")
+                        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+                    }, modifier = Modifier.weight(1f).height(48.dp)) { Text("Xarita ilovasida") }
+                }
+            }
             if (loading) item { Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
-            err?.let { e -> item { Text(e, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(8.dp)) } }
+            err?.let { e ->
+                item {
+                    Column(Modifier.fillMaxWidth().padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(e, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        androidx.compose.material3.TextButton(onClick = { retry++ }) { Text("Qayta urinish") }
+                    }
+                }
+            }
             items(list.orEmpty()) { m ->
                 Row(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.surfaceContainer)

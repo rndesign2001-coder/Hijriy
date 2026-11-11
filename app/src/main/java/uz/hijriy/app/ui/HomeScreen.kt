@@ -192,7 +192,7 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
         onDispose { if (prev != null) c?.isAppearanceLightStatusBars = prev }
     }
     val go: (String) -> Unit = { r ->
-        if (r == "quran" || r == "calendar") nav.navigate(r) { launchSingleTop = true; restoreState = true } else nav.go(r)
+        nav.go(r)
     }
 
     var bgSheet by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
@@ -310,6 +310,10 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                 HomeTile("Qazo", HI.QAZO, "qazo", Color(0xFF5D6D7E)),
                 HomeTile("Konvertor", HI.CONVERTER, "converter", Color(0xFF1E6FD9)),
                 HomeTile("Rasm", HI.WALLPAPER, "wallpaper", Color(0xFFD81B60)),
+                HomeTile("Haj, Umra", HI.KAABA, "hajj", Color(0xFF8D6E2F)),
+                HomeTile("Zakot", HI.ZAKAT, "zakat", Color(0xFF2E7D32)),
+                HomeTile("Qibla", HI.QIBLA, "qibla", Color(0xFF00838F)),
+                HomeTile("Taqvim", HI.CALENDAR, "calendar", Color(0xFFE0592A)),
             )
             Column(
                 Modifier.fillMaxWidth().premiumCard().padding(vertical = 14.dp, horizontal = 6.dp),
@@ -619,43 +623,6 @@ private fun GradientTile(colors: List<Color>, modifier: Modifier, onClick: (() -
             drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent), Offset(size.width, 0f), size.width * 0.8f), size.width * 0.8f, Offset(size.width, 0f))
         }
         Box(Modifier.padding(16.dp)) { content() }
-    }
-}
-
-@Composable
-private fun WeatherCard(weather: WeatherState, times: DayTimes, modifier: Modifier, onClick: () -> Unit) {
-    GradientTile(listOf(Color(0xFF1565C0), Color(0xFF3D8BEB), Color(0xFF6EC6F5)), modifier, onClick) {
-        Column {
-            Text("Ob-havo", color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.labelLarge)
-            when (weather) {
-                is WeatherState.Ready -> {
-                    val (desc, emo) = WeatherApi.describe(weather.w.code, weather.w.isDay)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("${weather.w.temp.roundToInt()}°", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
-                        HSpace(6.dp)
-                        Text(emo, fontSize = 26.sp)
-                    }
-                    Text(desc, color = Color.White, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text("Namlik ${weather.w.humidity}%", color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
-                }
-                is WeatherState.Failed -> {
-                    Text("—°", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
-                    Text("Internet kerak", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall)
-                }
-                else -> {
-                    Text("…", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
-                    Text("Yuklanmoqda", color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall)
-                }
-            }
-            VSpace(8.dp)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.ArrowUpward, null, tint = Gold, modifier = Modifier.size(13.dp))
-                Text(fmtMin(times.calculated.getValue(Prayer.SUNRISE)), color = Color.White, style = MaterialTheme.typography.labelMedium)
-                HSpace(8.dp)
-                Icon(Icons.Filled.ArrowDownward, null, tint = Color(0xFFFFB38A), modifier = Modifier.size(13.dp))
-                Text(fmtMin((times.sunsetExact * 60).roundToInt()), color = Color.White, style = MaterialTheme.typography.labelMedium)
-            }
-        }
     }
 }
 

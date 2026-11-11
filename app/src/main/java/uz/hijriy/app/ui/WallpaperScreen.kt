@@ -119,7 +119,7 @@ val WpColors = listOf(
 )
 
 data class WpOptions(
-    val bg: Int = 0,             // 0..3 ichki fonlar, -1 — galereya rasmi
+    val bg: Int = 0,             // 0..3 ichki fonlar, -1 — galereya rasmi, 100+ — Ka'ba / Masjidi Nabaviy suratlari
     val layout: Int = 0,
     val font: Int = 0,
     val color: Int = 0,
@@ -347,7 +347,13 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
             else android.widget.Toast.makeText(ctx, uiText(ctx, "Rasmni ochib bo'lmadi"), Toast.LENGTH_SHORT).show()
         }
     }
-    fun full(): Bitmap = renderToBitmap(tm, o, s, date, if (o.bg == -1) photo else null).asAndroidBitmap()
+    /** Tanlangan fon fotosurati: galereyadan yoki ilovadagi Ka'ba / Masjidi Nabaviy suratlari. */
+    fun bgPhoto(): ImageBitmap? = when {
+        o.bg == -1 -> photo
+        o.bg >= 100 -> HeroBgs.all.getOrNull(o.bg - 100)?.let { runCatching { HeroBgs.decode(ctx, it.res, 1) }.getOrNull() }
+        else -> null
+    }
+    fun full(): Bitmap = renderToBitmap(tm, o, s, date, bgPhoto()).asAndroidBitmap()
     fun doSave() {
         busy = true
         scope.launch {
@@ -362,7 +368,8 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
     LaunchedEffect(o, s, photo) {
         // Asosiy oqimda chiziladi (tez, ~50 ms) — matn keshini boshqa oqim bilan bo'lishmaslik uchun
         kotlinx.coroutines.delay(60)
-        preview = runCatching { renderToBitmap(tm, o, s, date, if (o.bg == -1) photo else null, 0.5f) }.getOrNull()
+        val ph = if (o.bg >= 100) withContext(Dispatchers.IO) { bgPhoto() } else bgPhoto()
+        preview = runCatching { renderToBitmap(tm, o, s, date, ph, 0.5f) }.getOrNull()
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -412,6 +419,10 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
                 BgThumb("Galereya", o.bg == -1, photo) {
                     picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
+                HeroBgs.all.forEachIndexed { i, b ->
+                    val th by rememberBgBitmap(b.res, 8)
+                    BgThumb(b.title.substringBefore(" —"), o.bg == 100 + i, th, -2) { o = o.copy(bg = 100 + i, dim = maxOf(o.dim, 0.35f)) }
+                }
                 WpBackgrounds.forEachIndexed { i, name -> BgThumb(name, o.bg == i, null, i) { o = o.copy(bg = i) } }
             }
             SectionTitleLeft("Joylash uslubi")
@@ -436,7 +447,7 @@ fun WallpaperScreen(app: HijriyApp, nav: NavHostController) {
                 SettingRow(null, "Hijriy sana") { Switch(o.hijri, { o = o.copy(hijri = it) }) }
                 SettingRow(null, "Joy nomi (${s.locName})") { Switch(o.location, { o = o.copy(location = it) }) }
                 SettingRow(null, "Ertangi kun vaqtlari") { Switch(o.tomorrow, { o = o.copy(tomorrow = it) }) }
-                if (o.bg == -1) {
+                if (o.bg == -1 || o.bg >= 100) {
                     Text("Rasmni qoraytirish: ${(o.dim * 100).toInt()}%", modifier = Modifier.padding(start = 8.dp, top = 4.dp))
                     Slider(o.dim, { o = o.copy(dim = it) }, valueRange = 0f..0.8f)
                 }

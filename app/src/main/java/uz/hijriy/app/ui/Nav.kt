@@ -73,7 +73,27 @@ private val tabs = listOf(
     Tab("more", "Yana", HI.MORE),
 )
 
-fun NavHostController.go(route: String) = navigate(route) { launchSingleTop = true }
+fun NavHostController.go(route: String) {
+    if (route in TAB_ROUTES) goTab(route) else navigate(route) { launchSingleTop = true }
+}
+
+private val TAB_ROUTES = setOf("home", "prayer", "quran", "calendar", "more")
+
+/**
+ * Pastki panel bo'limiga o'tish. "Asosiy" uchun stek boshiga qaytiladi: aks holda saqlangan holat
+ * (popUpTo bilan saqlangan boshqa sahifalar) qayta tiklanib, tugma "ishlamayotgandek" ko'rinardi.
+ */
+fun NavHostController.goTab(route: String) {
+    if (route == "home") {
+        if (!popBackStack("home", inclusive = false)) navigate("home") { launchSingleTop = true }
+        return
+    }
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
 @Composable
 fun AppRoot(app: HijriyApp) {
@@ -98,13 +118,7 @@ private fun AppContent(app: HijriyApp) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (showBar) PremiumBottomBar(route) { r ->
-                nav.navigate(r) {
-                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }
+            if (showBar) PremiumBottomBar(route) { r -> nav.goTab(r) }
         }
     ) { pad ->
         Box(Modifier.fillMaxSize().padding(bottom = if (showBar) (pad.calculateBottomPadding() - 20.dp).coerceAtLeast(0.dp) else 0.dp)) {
@@ -130,6 +144,9 @@ private fun AppContent(app: HijriyApp) {
                 composable("mosques") { MosquesScreen(app, nav) }
                 composable("journal") { JournalScreen(app, nav) }
                 composable("credits") { CreditsScreen(nav) }
+                composable("mosquemap") { MosqueMapScreen(app, nav) }
+                composable("hajj") { HajjScreen(app, nav) }
+                composable("zakat") { ZakatScreen(app, nav) }
                 composable(
                     "focus/{sura}?ayah={ayah}",
                     arguments = listOf(

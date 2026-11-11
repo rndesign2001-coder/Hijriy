@@ -97,4 +97,3 @@ class StarField(n: Int, seed: Int = 7) {
     }
 }
 
-fun Size.minHalf() = minDimension / 2f

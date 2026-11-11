@@ -383,13 +383,15 @@ fun MoreScreen(nav: NavHostController) {
                 MoreRow(HI.JOURNAL, Color(0xFF8D6E2F), "Namoz kundaligi", "O'qilgan namozlar va statistikasi") { nav.go("journal") }
                 MoreRow(HI.QAZO, Color(0xFF5D6D7E), "Qazo namozlar", "Qazo namozlarni hisoblab borish") { nav.go("qazo") }
                 MoreRow(HI.RAMADAN, Color(0xFF6A1B9A), "Ramazon", "Saharlik, iftorlik, taqvim va duolar") { nav.go("ramadan") }
+                MoreRow(HI.KAABA, Color(0xFF3E2A0C), "Haj va Umra", "Bosqichma-bosqich amallar va duolar") { nav.go("hajj") }
+                MoreRow(HI.ZAKAT, Color(0xFF2E7D32), "Zakot kalkulyatori", "Nisob va to'lanadigan zakot miqdori") { nav.go("zakat") }
                 MoreRow(HI.TASBEH, Color(0xFF7B3FA0), "Tasbeh", "Zikr sanagich, namozdan keyingi tasbeh") { nav.go("tasbeh") }
                 MoreRow(HI.DUA, Color(0xFF2E7D32), "Duolar va zikrlar", "Tong, kech va namozdan keyingi zikrlar") { nav.go("duas") }
             }
             SectionTitle("Qur'on")
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
                 MoreRow(HI.QURAN, Color(0xFF0F8A66), "Qur'oni Karim", "Kartalar, tajvidli mushaf, fokus") {
-                    nav.navigate("quran") { launchSingleTop = true; restoreState = true }
+                    nav.go("quran")
                 }
                 MoreRow(HI.HATM, Color(0xFFC0392B), "Hatm rejasi", "Qur'onni maqsadli kunga tugatish") { nav.go("hatm") }
                 MoreRow(HI.FOCUS, Color(0xFF3949AB), "Qur'ondan qidirish", "Arabcha matn yoki o'zbekcha tarjima") { nav.go("search") }

@@ -131,7 +131,6 @@ private val AppTypography = Typography().let { t ->
     )
 }
 
-val ArabicTitle = TextStyle(fontFamily = QuranFont, fontSize = 22.sp)
 
 @Composable
 fun HijriyTheme(mode: ThemeMode, paletteIndex: Int, cyr: Boolean = false, readingCyr: Boolean = cyr, content: @Composable () -> Unit) {

@@ -16,13 +16,16 @@ import uz.hijriy.app.data.SettingsStore
 import uz.hijriy.app.notify.PrayerScheduler
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 /** Bosh ekran vidjeti: joy, hijriy sana, keyingi namoz va teskari sanoq, 5 vaqt namoz. */
 class PrayerWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        for (id in ids) manager.updateAppWidget(id, build(context))
+        for (id in ids) manager.updateAppWidget(id, build(context, sizeOf(manager, id)))
         PrayerScheduler.reschedule(context)
+    }
+
+    override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, newOptions: android.os.Bundle?) {
+        manager.updateAppWidget(id, build(context, sizeOf(manager, id)))
     }
 
     companion object {
@@ -30,16 +33,23 @@ class PrayerWidget : AppWidgetProvider() {
         private val cells = listOf(R.id.cell0, R.id.cell1, R.id.cell2, R.id.cell3, R.id.cell4)
         private val times = listOf(R.id.time0, R.id.time1, R.id.time2, R.id.time3, R.id.time4)
         private val names = listOf(R.id.name0, R.id.name1, R.id.name2, R.id.name3, R.id.name4)
+        private val icons = listOf(R.id.icon0, R.id.icon1, R.id.icon2, R.id.icon3, R.id.icon4)
+
+        /** Vidjet o'lchami (dp): kenglik — portret rejimdagi eng kichik, balandlik — eng katta qiymat. */
+        fun sizeOf(m: AppWidgetManager, id: Int): Pair<Int, Int> {
+            val o = m.getAppWidgetOptions(id)
+            val w = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0).takeIf { it > 0 } ?: 320
+            val h = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0).takeIf { it > 0 } ?: 170
+            return w to h
+        }
 
         fun updateAll(context: Context) {
             val m = AppWidgetManager.getInstance(context) ?: return
             val ids = m.getAppWidgetIds(ComponentName(context, PrayerWidget::class.java))
-            if (ids.isEmpty()) return
-            val v = build(context)
-            for (id in ids) m.updateAppWidget(id, v)
+            for (id in ids) m.updateAppWidget(id, build(context, sizeOf(m, id)))
         }
 
-        fun build(context: Context): RemoteViews {
+        fun build(context: Context, sizeDp: Pair<Int, Int> = 320 to 170): RemoteViews {
             val s = SettingsStore.read(context)
             val zone = SettingsStore.read(context).zone
             val now = LocalDateTime.now(zone)
@@ -58,7 +68,17 @@ class PrayerWidget : AppWidgetProvider() {
                 nextIdx = 0; nextDate = today.plusDays(1); nextMinute = s.times(nextDate)[Prayer.FAJR]
             } else { nextDate = today; nextMinute = t[prayers[nextIdx]] }
             val currentIdx = prayers.indexOfLast { t[it] <= minuteNow }
+            // Naqshli fon, quyosh yo'li va ikonkalar
+            val sunrise = t.calculated.getValue(Prayer.SUNRISE)
+            val sunset = Math.round(t.sunsetExact * 60).toInt()
+            runCatching { v.setImageViewBitmap(R.id.art, WidgetArt.background(context, sizeDp.first, sizeDp.second, sunrise, sunset, minuteNow + now.second / 60f)) }
+            v.setTextViewText(R.id.sunrise, tr("↑ ${fmtMin(sunrise)}  chiqishi", cyr))
+            v.setTextViewText(R.id.sunset, tr("botishi  ${fmtMin(sunset)} ↓", cyr))
+            val day = sunset - sunrise
+            v.setTextViewText(R.id.daylen, tr("kun ${day / 60} s ${day % 60} d", cyr))
             prayers.forEachIndexed { i, p ->
+                val activeI = i == prayers.indexOfLast { t[it] <= minuteNow }
+                runCatching { v.setImageViewBitmap(icons[i], WidgetArt.icon(context, uz.hijriy.app.ui.prayerHI.getValue(p), if (activeI) 0xFF0B3D2E.toInt() else 0xFFFFFFFF.toInt())) }
                 v.setTextViewText(times[i], fmtMin(t[p]))
                 v.setTextViewText(names[i], tr(p.uz, cyr))
                 val active = i == currentIdx

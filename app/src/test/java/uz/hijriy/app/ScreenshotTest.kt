@@ -73,7 +73,7 @@ class ScreenshotTest {
         settle(); shot("02b_home_pastki")
         rule.onAllNodesWithText("Quyosh va ob-havo").onFirst().let { rule.mainClock.autoAdvance = true; runCatching { it.performScrollTo() }; rule.mainClock.autoAdvance = false }
         settle(); shot("02c_home_quyosh")
-        for ((r, n) in listOf("hatm" to "20_hatm", "journal" to "21_journal", "ramadan" to "22_ramadan", "mosques" to "23_mosques", "credits" to "24_credits", "more" to "25_more")) {
+        for ((r, n) in listOf("hatm" to "20_hatm", "journal" to "21_journal", "ramadan" to "22_ramadan", "mosques" to "23_mosques", "credits" to "24_credits", "more" to "25_more", "hajj" to "30_hajj", "zakat" to "31_zakat")) {
             app.pendingRoute.value = r; settle(2500); shot(n); back()
         }
         app.pendingRoute.value = "location"; settle(); click("Dunyo shaharlari"); shot("26_location_world"); back()

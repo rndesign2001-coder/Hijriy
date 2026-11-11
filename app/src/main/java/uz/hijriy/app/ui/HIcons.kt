@@ -29,7 +29,7 @@ import kotlin.math.sin
  */
 enum class HI {
     QURAN, MUSHAF, QIBLA, TASBEH, NAMES, DUA, WALLPAPER, QAZO, CONVERTER, CALENDAR, WEATHER, SETTINGS,
-    MOSQUE, HATM, RAMADAN, JOURNAL, SUNRISE, SUNSET, FAJR, DHUHR, ASR, ISHA, HOME, PRAYER, MORE, FOCUS, PHOTO, LOCATION,
+    MOSQUE, HATM, RAMADAN, JOURNAL, SUNRISE, SUNSET, FAJR, DHUHR, ASR, ISHA, HOME, PRAYER, MORE, FOCUS, PHOTO, LOCATION, ZAKAT, KAABA,
 }
 
 @Composable
@@ -47,7 +47,7 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
     fun path(block: Path.() -> Unit) = Path().apply(block)
     fun Path.mt(x: Float, y: Float) = moveTo(ox + x * u, oy + y * u)
     fun Path.lt(x: Float, y: Float) = lineTo(ox + x * u, oy + y * u)
-    fun Path.qt(cx: Float, cy: Float, x: Float, y: Float) = quadraticBezierTo(ox + cx * u, oy + cy * u, ox + x * u, oy + y * u)
+    fun Path.qt(cx: Float, cy: Float, x: Float, y: Float) = quadraticTo(ox + cx * u, oy + cy * u, ox + x * u, oy + y * u)
     fun Path.ct(x1: Float, y1: Float, x2: Float, y2: Float, x: Float, y: Float) =
         cubicTo(ox + x1 * u, oy + y1 * u, ox + x2 * u, oy + y2 * u, ox + x * u, oy + y * u)
     fun star8(cx: Float, cy: Float, r: Float, color: Color, fill: Boolean = false) {
@@ -255,6 +255,25 @@ fun DrawScope.drawHIcon(icon: HI, tint: Color, accent: Color = tint) {
             }
             drawPath(starPath(ox + 17 * u, oy + 17 * u, 4.4f * u, 0f), accent)
         }
+        HI.ZAKAT -> {
+            // Tangalar ustida o'sayotgan nihol — barakali mol
+            for ((k, y) in listOf(0 to 19.5f, 1 to 16.5f, 2 to 13.5f)) {
+                val e = Rect(P(4.5f + k * 0.0f, y - 1.6f), Size(11f * u, 3.6f * u))
+                drawOval(if (k == 2) accent.copy(alpha = 0.5f) else soft, e.topLeft, e.size)
+                drawOval(tint, e.topLeft, e.size, style = thin)
+            }
+            drawPath(path { mt(17f, 21f); lt(17f, 10f) }, tint, style = st)
+            drawPath(path { mt(17f, 13.5f); qt(13.5f, 12.5f, 13.6f, 9f); qt(17f, 9.5f, 17f, 13.5f); close() }, accent)
+            drawPath(path { mt(17f, 11.5f); qt(20.5f, 10.5f, 20.6f, 6.5f); qt(17.2f, 7f, 17f, 11.5f); close() }, accent)
+        }
+        HI.KAABA -> {
+            val top = path { mt(4f, 7f); lt(12f, 3.5f); lt(20f, 7f); lt(12f, 10.5f); close() }
+            val left = path { mt(4f, 7f); lt(12f, 10.5f); lt(12f, 21f); lt(4f, 17.5f); close() }
+            val right = path { mt(20f, 7f); lt(12f, 10.5f); lt(12f, 21f); lt(20f, 17.5f); close() }
+            drawPath(left, tint); drawPath(right, tint.copy(alpha = 0.8f)); drawPath(top, tint.copy(alpha = 0.6f))
+            drawPath(path { mt(4f, 10f); lt(12f, 13.5f); lt(20f, 10f) }, accent, style = Stroke(1.4f * u))
+            drawPath(path { mt(13.6f, 21f); lt(13.6f, 15.8f); lt(16.4f, 14.6f); lt(16.4f, 19.8f) }, accent, style = thin)
+        }
         HI.FOCUS -> {
             drawPath(path { mt(2f, 12f); qt(12f, 2f, 22f, 12f); qt(12f, 22f, 2f, 12f); close() }, soft)
             drawPath(path { mt(2f, 12f); qt(12f, 2f, 22f, 12f); qt(12f, 22f, 2f, 12f); close() }, tint, style = st)
@@ -272,12 +291,12 @@ class ArchShape(private val shoulder: Float = 0.42f) : Shape {
         val p = Path().apply {
             moveTo(0f, h - r)
             lineTo(0f, sh)
-            quadraticBezierTo(0f, sh * 0.22f, w / 2, 0f)
-            quadraticBezierTo(w, sh * 0.22f, w, sh)
+            quadraticTo(0f, sh * 0.22f, w / 2, 0f)
+            quadraticTo(w, sh * 0.22f, w, sh)
             lineTo(w, h - r)
-            quadraticBezierTo(w, h, w - r, h)
+            quadraticTo(w, h, w - r, h)
             lineTo(r, h)
-            quadraticBezierTo(0f, h, 0f, h - r)
+            quadraticTo(0f, h, 0f, h - r)
             close()
         }
         return Outline.Generic(p)

@@ -1,0 +1,11 @@
+# Hijriy Taqvim — boshlang'ich (baseline) profil: ilova kodi oldindan kompilyatsiya qilinadi,
+# shu bilan birinchi ochilish va ro'yxatlarni aylantirish tezlashadi.
+HSPLuz/hijriy/app/**->**(**)**
+Luz/hijriy/app/**;
+HSPLandroidx/compose/runtime/**->**(**)**
+HSPLandroidx/compose/ui/**->**(**)**
+HSPLandroidx/compose/foundation/**->**(**)**
+HSPLandroidx/compose/material3/**->**(**)**
+HSPLandroidx/compose/animation/**->**(**)**
+HSPLandroidx/navigation/**->**(**)**
+HSPLkotlinx/coroutines/**->**(**)**

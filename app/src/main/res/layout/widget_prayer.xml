@@ -1,69 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:background="@drawable/widget_bg">
+
+    <!-- Naqshli fon va quyosh yo'li (kod orqali chiziladi) -->
+    <ImageView
+        android:id="@+id/art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Toshkent"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/hijri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:text="1 Muharram 1448"
+                    android:textColor="#F3D57E"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Keyingi: Asr 16:22"
+                    android:textColor="#E6FFFFFF"
+                    android:textSize="12sp" />
+                <Chronometer
+                    android:id="@+id/countdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:countDown="true"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Quyosh chiqishi va botishi -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            android:paddingBottom="4dp">
             <TextView
-                android:id="@+id/location"
-                android:layout_width="wrap_content"
+                android:id="@+id/sunrise"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:text="Toshkent"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/hijri"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text="1 Muharram 1448"
+                android:layout_weight="1"
+                android:text="↑ 07:06"
                 android:textColor="#F3D57E"
-                android:textSize="12sp" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical">
+                android:textSize="12sp"
+                android:textStyle="bold" />
             <TextView
-                android:id="@+id/next"
+                android:id="@+id/daylen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Keyingi: Asr 16:22"
-                android:textColor="#E6FFFFFF"
-                android:textSize="12sp" />
-            <Chronometer
-                android:id="@+id/countdown"
-                android:layout_width="wrap_content"
+                android:text=""
+                android:textColor="#B3FFFFFF"
+                android:textSize="10sp" />
+            <TextView
+                android:id="@+id/sunset"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:countDown="true"
-                android:textColor="#FFFFFF"
-                android:textSize="22sp"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="17:07 ↓"
+                android:textColor="#FFB38A"
+                android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
         <LinearLayout
             android:id="@+id/cell0"
             android:layout_width="0dp"
@@ -73,21 +120,28 @@
             android:background="@drawable/widget_cell"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="6dp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:id="@+id/icon0"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
             <TextView
                 android:id="@+id/name0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Bomdod"
                 android:textColor="#E6FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
             <TextView
                 android:id="@+id/time0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
@@ -99,21 +153,28 @@
             android:background="@drawable/widget_cell"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="6dp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:id="@+id/icon1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
             <TextView
                 android:id="@+id/name1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Peshin"
                 android:textColor="#E6FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
             <TextView
                 android:id="@+id/time1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
@@ -125,21 +186,28 @@
             android:background="@drawable/widget_cell"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="6dp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:id="@+id/icon2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
             <TextView
                 android:id="@+id/name2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Asr"
                 android:textColor="#E6FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
             <TextView
                 android:id="@+id/time2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
@@ -151,21 +219,28 @@
             android:background="@drawable/widget_cell"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="6dp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:id="@+id/icon3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
             <TextView
                 android:id="@+id/name3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Shom"
                 android:textColor="#E6FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
             <TextView
                 android:id="@+id/time3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
         <LinearLayout
@@ -177,22 +252,30 @@
             android:background="@drawable/widget_cell"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingVertical="6dp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+            <ImageView
+                android:id="@+id/icon4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no" />
             <TextView
                 android:id="@+id/name4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Xufton"
                 android:textColor="#E6FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
             <TextView
                 android:id="@+id/time4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>
