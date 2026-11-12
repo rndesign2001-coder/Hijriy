@@ -177,13 +177,15 @@ fun IntroScreen(onDone: () -> Unit) {
             with(stars) { draw(Color.White.copy(alpha = 0.7f * easeOut(skyT) * (1f - 0.6f * photoT)), twinkle, 1f, 1.9f) }
             // fon naqshi (sekin aylanadi)
             drawStarLattice(GoldA.copy(alpha = 0.06f * easeOut(drawT)), size.minDimension / 4.5f, 1.2f, spin, c)
-            // markaziy rozetka: uch qatlam yulduz chiziladi va qarama-qarshi aylanadi
+            // markaziy rozetka: uch qatlam yulduz chiziladi va qarama-qarshi aylanadi;
+            // nom paydo bo'layotganda yozuvni to'smasligi uchun so'nadi
+            val fade = 1f - 0.88f * easeOut(titleT)
             val rot = spin * 3f
-            drawTrimmed(khatam(c.x, c.y, R, rot), easeInOut(drawT), GoldA.copy(alpha = 0.95f - 0.45f * logoT), 2.2.dp.toPx())
-            drawTrimmed(khatam(c.x, c.y, R * 0.78f, -rot + 22.5f), easeInOut(seg(p, 0.12f, 0.42f)), GoldB.copy(alpha = 0.8f - 0.4f * logoT), 1.6.dp.toPx())
-            drawTrimmed(khatam(c.x, c.y, R * 1.22f, rot * 0.5f + 11f), easeInOut(seg(p, 0.18f, 0.48f)), GoldA.copy(alpha = 0.45f - 0.2f * logoT), 1.dp.toPx())
+            drawTrimmed(khatam(c.x, c.y, R, rot), easeInOut(drawT), GoldA.copy(alpha = (0.95f - 0.45f * logoT) * fade), 2.2.dp.toPx())
+            drawTrimmed(khatam(c.x, c.y, R * 0.78f, -rot + 22.5f), easeInOut(seg(p, 0.12f, 0.42f)), GoldB.copy(alpha = (0.8f - 0.4f * logoT) * fade), 1.6.dp.toPx())
+            drawTrimmed(khatam(c.x, c.y, R * 1.22f, rot * 0.5f + 11f), easeInOut(seg(p, 0.18f, 0.48f)), GoldA.copy(alpha = (0.45f - 0.2f * logoT) * fade), 1.dp.toPx())
             // tashqi halqa va nuqtalar
-            val ringA = easeOut(seg(p, 0.2f, 0.5f))
+            val ringA = easeOut(seg(p, 0.2f, 0.5f)) * fade
             drawArc(
                 Brush.sweepGradient(listOf(GoldB, GoldA, Color.White, GoldA, GoldB), c), -90f + rot, 360f * ringA, false,
                 topLeft = Offset(c.x - R * 1.38f, c.y - R * 1.38f), size = androidx.compose.ui.geometry.Size(R * 2.76f, R * 2.76f),
