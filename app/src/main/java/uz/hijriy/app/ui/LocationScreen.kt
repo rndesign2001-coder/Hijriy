@@ -89,6 +89,7 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
                 method = m, hanafi = if (it.autoMethod) c.cc !in setOf("SA", "AE", "QA", "KW", "BH", "OM", "YE", "EG", "MA", "DZ", "TN", "LY", "SD", "MY", "ID", "SG", "BN") else it.hanafi,
             )
         }
+        app.settings.markLocChosen()
         PrayerScheduler.reschedule(app)
         app.refreshWeather(force = true)
         nav.popBackStack()
@@ -101,6 +102,7 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
                 method = if (it.autoMethod) uz.hijriy.app.core.CalcMethod.UZBEKISTAN else it.method, hanafi = if (it.autoMethod) true else it.hanafi,
             )
         }
+        app.settings.markLocChosen()
         PrayerScheduler.reschedule(app)
         app.refreshWeather(force = true)
         nav.popBackStack()
@@ -110,40 +112,9 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
         locating = true
         gpsMsg = null
         scope.launch {
-            val loc = LocationHelper.locate(ctx)
+            val r = locateAndApply(app, ctx)
             locating = false
-            if (loc == null) {
-                gpsMsg = "Joylashuv aniqlanmadi. GPS yoqilganini tekshiring yoki ro'yxatdan tanlang."
-            } else {
-                val near = Regions.nearest(ctx, loc.latitude, loc.longitude)
-                val inUz = near != null && near.second < 60
-                var name = near?.let { (d, km) -> if (km < 40) d.name else "Mening joylashuvim" } ?: "Mening joylashuvim"
-                var region = near?.let { (d, km) -> if (km < 40) d.region else "" } ?: ""
-                var cc = if (inUz) "UZ" else ""
-                if (!inUz) {
-                    // Davlat va shahar nomi — qurilmaning Geocoder xizmati (bo'lmasa vaqt mintaqasidan)
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        runCatching {
-                            @Suppress("DEPRECATION")
-                            android.location.Geocoder(ctx).getFromLocation(loc.latitude, loc.longitude, 1)?.firstOrNull()
-                        }.getOrNull()
-                    }?.let { a ->
-                        cc = a.countryCode ?: ""
-                        name = a.locality ?: a.subAdminArea ?: a.adminArea ?: name
-                        region = listOfNotNull(a.adminArea, a.countryName).distinct().joinToString(", ")
-                    }
-                }
-                app.settings.update {
-                    val m = if (it.autoMethod && cc.isNotBlank()) uz.hijriy.app.core.methodForCountry(cc) else it.method
-                    it.copy(
-                        locName = name, locRegion = region, lat = loc.latitude, lon = loc.longitude, fromGps = true,
-                        tz = if (inUz) "" else java.time.ZoneId.systemDefault().id, country = cc.ifBlank { it.country }, method = m,
-                    )
-                }
-                PrayerScheduler.reschedule(app)
-                app.refreshWeather(force = true)
-                gpsMsg = "Aniqlandi: $name (${"%.4f".format(loc.latitude)}, ${"%.4f".format(loc.longitude)})"
-            }
+            gpsMsg = r ?: "Joylashuv aniqlanmadi. GPS yoqilganini tekshiring yoki ro'yxatdan tanlang."
         }
     }
 
@@ -335,4 +306,39 @@ private fun DistrictRow(d: District, selected: Boolean, showRegion: Boolean, onC
         }
         if (selected) Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary)
     }
+}
+
+
+/** GPS orqali joylashuvni aniqlab sozlamalarga yozadi. Natija matni yoki null (aniqlanmadi). */
+suspend fun locateAndApply(app: uz.hijriy.app.HijriyApp, ctx: android.content.Context): String? {
+    val loc = LocationHelper.locate(ctx) ?: return null
+    val near = Regions.nearest(ctx, loc.latitude, loc.longitude)
+    val inUz = near != null && near.second < 60
+    var name = near?.let { (d, km) -> if (km < 40) d.name else "Mening joylashuvim" } ?: "Mening joylashuvim"
+    var region = near?.let { (d, km) -> if (km < 40) d.region else "" } ?: ""
+    var cc = if (inUz) "UZ" else ""
+    if (!inUz) {
+        // Davlat va shahar nomi — qurilmaning Geocoder xizmati (bo'lmasa vaqt mintaqasidan)
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                @Suppress("DEPRECATION")
+                android.location.Geocoder(ctx).getFromLocation(loc.latitude, loc.longitude, 1)?.firstOrNull()
+            }.getOrNull()
+        }?.let { a ->
+            cc = a.countryCode ?: ""
+            name = a.locality ?: a.subAdminArea ?: a.adminArea ?: name
+            region = listOfNotNull(a.adminArea, a.countryName).distinct().joinToString(", ")
+        }
+    }
+    app.settings.update {
+        val m = if (it.autoMethod && cc.isNotBlank()) uz.hijriy.app.core.methodForCountry(cc) else it.method
+        it.copy(
+            locName = name, locRegion = region, lat = loc.latitude, lon = loc.longitude, fromGps = true,
+            tz = if (inUz) "" else java.time.ZoneId.systemDefault().id, country = cc.ifBlank { it.country }, method = m,
+        )
+    }
+    app.settings.markLocChosen()
+    PrayerScheduler.reschedule(app)
+    app.refreshWeather(force = true)
+    return "Aniqlandi: $name (${"%.4f".format(loc.latitude)}, ${"%.4f".format(loc.longitude)})"
 }

@@ -193,6 +193,15 @@ class SettingsStore(context: Context) {
         prefs.edit().putString("settings", n.toJson()).apply()
     }
 
+    /** Foydalanuvchi joylashuvni o'zi tanlaganmi (yangi o'rnatilganda — yo'q, so'raladi). */
+    private val _locChosen = MutableStateFlow(prefs.getBoolean("locChosen", prefs.contains("settings")))
+    val locChosen: StateFlow<Boolean> = _locChosen.asStateFlow()
+    fun markLocChosen() {
+        if (_locChosen.value) return
+        _locChosen.value = true
+        prefs.edit().putBoolean("locChosen", true).apply()
+    }
+
     fun getString(key: String): String? = prefs.getString(key, null)
     fun putString(key: String, v: String) = prefs.edit().putString(key, v).apply()
 

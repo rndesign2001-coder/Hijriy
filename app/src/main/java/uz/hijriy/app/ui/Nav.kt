@@ -98,8 +98,14 @@ fun NavHostController.goTab(route: String) {
 @Composable
 fun AppRoot(app: HijriyApp) {
     var intro by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(true) }
+    val locChosen by app.settings.locChosen.collectAsState()
+    var pickingList by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     Box(Modifier.fillMaxSize()) {
         AppContent(app)
+        if (!intro && !locChosen && !pickingList) FirstLocationScreen(app) {
+            pickingList = true
+            app.pendingRoute.value = "location"
+        }
         if (intro) IntroScreen { intro = false }
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -148,6 +149,9 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
     var fullView by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<android.view.View?>(null) }
     var fullCallback by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<android.webkit.WebChromeClient.CustomViewCallback?>(null) }
     val main = androidx.compose.runtime.remember { android.os.Handler(android.os.Looper.getMainLooper()) }
+    // embed ruxsat bermasa — YouTube'ning mobil sayti shu oynaning o'zida ochiladi
+    var webMode by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val mobileUrl = ch.url.replace("://www.", "://m.")
 
     fun setFull(on: Boolean) {
         val a = activity ?: return
@@ -163,13 +167,20 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
     }
 
     val web = androidx.compose.runtime.remember {
-        android.webkit.WebView(ctx).apply {
+        val w = android.webkit.WebView(ctx)
+        fun toMobile() {
+            if (webMode) return
+            webMode = true; error = null; playing = false
+            runCatching { w.loadUrl(mobileUrl) }
+        }
+        android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(w, true)
+        w.apply {
             setBackgroundColor(android.graphics.Color.BLACK)
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
             addJavascriptInterface(object {
-                @android.webkit.JavascriptInterface fun onError(code: Int) { main.post { error = code } }
+                @android.webkit.JavascriptInterface fun onError(code: Int) { main.post { if (!webMode) toMobile() else error = code } }
                 @android.webkit.JavascriptInterface fun onState(st: Int) { main.post { if (st == 1) { playing = true; error = null } } }
             }, "Live")
             webChromeClient = object : android.webkit.WebChromeClient() {
@@ -182,13 +193,27 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
             }
             webViewClient = object : android.webkit.WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: android.webkit.WebView, req: android.webkit.WebResourceRequest): Boolean {
+                    if (!req.isForMainFrame) return false
+                    val u = req.url
+                    val host = u.host.orEmpty()
+                    if (webMode && (u.scheme == "https" || u.scheme == "http") &&
+                        (host.endsWith("youtube.com") || host.endsWith("google.com") || host.endsWith("youtu.be"))) return false
+                    if (u.scheme == "intent") {
+                        runCatching { ctx.startActivity(Intent.parseUri(u.toString(), Intent.URI_INTENT_SCHEME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        return true
+                    }
                     // pleyerdagi "YouTube" logotipi va boshqa havolalar YouTube ilovasida ochiladi
-                    if (req.isForMainFrame) { openYoutube(ctx, req.url.toString()); return true }
-                    return false
+                    openYoutube(ctx, u.toString()); return true
+                }
+                override fun onPageFinished(view: android.webkit.WebView, url: String) {
+                    if (webMode) playing = true
                 }
             }
             loadDataWithBaseURL("https://uz.hijriy.app/", playerHtml(ch.channelId), "text/html", "utf-8", null)
         }
+        // 15 soniyada efir boshlanmasa ham mobil saytga o'tiladi
+        main.postDelayed({ if (!playing && !webMode) toMobile() }, 15000)
+        w
     }
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose {
@@ -203,7 +228,7 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
         Column(Modifier.fillMaxSize()) {
             ScreenHeader(ch.title, ch.sub, onBack = { nav.popBackStack() })
             Box(
-                Modifier.fillMaxWidth().aspectRatio(16f / 9f).background(Color.Black)
+                Modifier.fillMaxWidth().then(if (webMode) Modifier.weight(1f) else Modifier.aspectRatio(16f / 9f)).background(Color.Black)
             ) {
                 androidx.compose.ui.viewinterop.AndroidView({ web }, Modifier.fillMaxSize())
                 if (!playing && error == null) {
@@ -212,7 +237,7 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
                     }
                 }
             }
-            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = if (webMode) 8.dp else 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 error?.let { code ->
                     Text(
                         when (code) {
@@ -226,12 +251,13 @@ fun LivePlayerScreen(nav: NavHostController, index: Int) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     androidx.compose.material3.OutlinedButton(onClick = {
                         error = null; playing = false
-                        web.loadDataWithBaseURL("https://uz.hijriy.app/", playerHtml(ch.channelId), "text/html", "utf-8", null)
+                        if (webMode) web.loadUrl(mobileUrl)
+                        else web.loadDataWithBaseURL("https://uz.hijriy.app/", playerHtml(ch.channelId), "text/html", "utf-8", null)
                     }) { Text("Qayta yuklash") }
                     androidx.compose.material3.OutlinedButton(onClick = { openYoutube(ctx, ch.url) }) { Text("YouTube'da ochish") }
                 }
-                Text(ch.arabic, color = Color(0xFFC8962E), fontSize = 20.sp)
-                Text(
+                if (!webMode) Text(ch.arabic, color = Color(0xFFC8962E), fontSize = 20.sp)
+                if (!webMode) Text(
                     "To'liq ekran uchun pleyerdagi ⛶ tugmasini bosing. Ovozni telefon tugmalari bilan boshqaring.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

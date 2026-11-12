@@ -76,6 +76,8 @@ class ScreenshotTest {
         rule.onAllNodesWithTag("intro").fetchSemanticsNodes().takeIf { it.isNotEmpty() }?.let {
             rule.onAllNodesWithTag("intro").onFirst().performClick(); settle()
         }
+        settle(1500); shot("01f_joylashuv")
+        rule.runOnUiThread { app.settings.markLocChosen() }
         rule.waitUntil(30_000) { app.quran.value != null }
         settle(); shot("02_home")
         rule.onAllNodesWithText("Konvertor").onFirst().let { rule.mainClock.autoAdvance = true; runCatching { it.performScrollTo() }; rule.mainClock.autoAdvance = false }
