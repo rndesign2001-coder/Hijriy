@@ -116,7 +116,11 @@ fun MosqueMapScreen(app: HijriyApp, nav: NavHostController) {
                     map.invalidate()
                     status = if (list.isEmpty()) "Bu hududda masjid topilmadi" else "${list.size} ta masjid topildi"
                 }
-                .onFailure { e -> status = (e as? MosqueFetchError)?.message ?: "Internetga ulanib bo'lmadi" }
+                .onFailure { e ->
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    val shown = map.overlays.count { it is Marker && it.id == "m" }
+                    status = if (shown > 0) "$shown ta masjid ko'rsatilgan" else (e as? MosqueFetchError)?.message ?: "Internetga ulanib bo'lmadi"
+                }
             loading = false
         }
     }

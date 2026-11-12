@@ -502,7 +502,8 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                             val a = g[0]
                             val trList = (trState as? TranslationRepo.State.Ready)?.suras?.getOrNull(sura.number - 1)
                             val trText = if (s.translation > 0 && trList != null) trList.getOrNull(a.number - 1)?.let { raw ->
-                                if (s.translation == 1) UzTranslit.toLatin(raw) else raw
+                                // Tarjima yozuvi: kirill o'qilish yoki kirill interfeysda — kirillcha, aks holda lotincha
+                                if (s.translation == 2 || s.readingScript == 1 || s.script == 1) raw else UzTranslit.toLatin(raw)
                             } else null
                             val rd = if (s.quranReading) remember(a) { uz.hijriy.app.core.Translit.ayah(a.text) } else null
                             val cyr = LocalReadingCyr.current

@@ -121,7 +121,14 @@ private fun AppContent(app: HijriyApp) {
             if (showBar) PremiumBottomBar(route) { r -> nav.goTab(r) }
         }
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(bottom = if (showBar) (pad.calculateBottomPadding() - 20.dp).coerceAtLeast(0.dp) else 0.dp)) {
+        // To'liq ekranli sahifalar o'zi pastki tizim paneliga joy qoldiradi; qolganlari uchun bu yerda qoldiriladi,
+        // aks holda ro'yxat oxiri telefonning navigatsiya tugmalari ostida qolib ketadi
+        val immersive = route?.let { r -> r.startsWith("mushaf") || r.startsWith("focus") || r == "mosquemap" || r.startsWith("reader") } ?: false
+        Box(
+            Modifier.fillMaxSize()
+                .padding(bottom = if (showBar) (pad.calculateBottomPadding() - 20.dp).coerceAtLeast(0.dp) else 0.dp)
+                .then(if (!showBar && !immersive) Modifier.navigationBarsPadding() else Modifier)
+        ) {
             NavHost(nav, startDestination = "home") {
                 composable("home") { HomeScreen(app, nav) }
                 composable("prayer") { PrayerScreen(app, nav) }

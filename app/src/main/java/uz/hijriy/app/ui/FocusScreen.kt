@@ -161,7 +161,7 @@ fun FocusScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah: 
                         if (tr != null) {
                             Box(Modifier.size(14.dp))
                             Text(
-                                if (s.script == 1) tr else UzTranslit.toLatin(tr), color = Color(0xFF9FB5AC),
+                                if (s.translation == 2 || s.readingScript == 1 || s.script == 1) tr else UzTranslit.toLatin(tr), color = Color(0xFF9FB5AC),
                                 style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center
                             )
                         }

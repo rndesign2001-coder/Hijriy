@@ -335,29 +335,35 @@ private suspend fun overpass(area: String, limit: Int): String {
     }
     val body = ("data=" + URLEncoder.encode(q, "UTF-8")).toByteArray()
     val result = kotlinx.coroutines.CompletableDeferred<String>()
-    var httpFail = false
-    val txt = kotlinx.coroutines.coroutineScope {
-        val jobs = OVERPASS.mapIndexed { i, url ->
-            launch(Dispatchers.IO) {
-                kotlinx.coroutines.delay(i * 400L) // serverlarni ortiqcha yuklamaslik uchun ozgina oraliq
-                if (result.isCompleted) return@launch
-                runCatching { fetchOne(url, body) }
-                    .onSuccess { result.complete(it) }
-                    .onFailure { e -> if (e.message?.startsWith("HTTP") == true) httpFail = true }
+    val left = java.util.concurrent.atomic.AtomicInteger(OVERPASS.size)
+    val httpFail = java.util.concurrent.atomic.AtomicBoolean(false)
+    // Alohida (bog'lanmagan) doira: javob kelishi bilan qolgan sekin serverlarni kutmaymiz
+    val race = kotlinx.coroutines.CoroutineScope(Dispatchers.IO + kotlinx.coroutines.SupervisorJob())
+    OVERPASS.forEachIndexed { i, url ->
+        race.launch {
+            try {
+                kotlinx.coroutines.delay(i * 350L)
+                if (!result.isCompleted) {
+                    runCatching { fetchOne(url, body) }
+                        .onSuccess { result.complete(it) }
+                        .onFailure { e -> if (e.message?.startsWith("HTTP") == true) httpFail.set(true) }
+                }
+            } finally {
+                if (left.decrementAndGet() == 0) result.completeExceptionally(
+                    MosqueFetchError(
+                        if (httpFail.get()) "Xarita serverlari hozir band. Bir ozdan so'ng qayta urinib ko'ring."
+                        else "Internetga ulanib bo'lmadi"
+                    )
+                )
             }
         }
-        launch {
-            jobs.forEach { it.join() }
-            result.completeExceptionally(
-                MosqueFetchError(
-                    if (httpFail) "Xarita serverlari hozir band. Bir ozdan so'ng qayta urinib ko'ring."
-                    else "Internetga ulanib bo'lmadi"
-                )
-            )
-        }
-        val r = result.await()
-        jobs.forEach { it.cancel() }
-        r
+    }
+    val txt = try {
+        kotlinx.coroutines.withTimeout(45_000) { result.await() }
+    } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+        throw MosqueFetchError("Serverlar javob bermadi. Qayta urinib ko'ring.")
+    } finally {
+        race.coroutineContext[kotlinx.coroutines.Job]?.cancel()
     }
     mosqueMem[q] = txt
     if (file != null) runCatching { file.parentFile?.mkdirs(); file.writeText(txt) }
@@ -410,8 +416,12 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
     LaunchedEffect(s.lat, s.lon, radius, retry) {
         loading = true; err = null
         runCatching { fetchMosques(s.lat, s.lon, radius) }
-            .onSuccess { list = it; if (it.isEmpty()) err = "Bu radiusda masjid topilmadi — radiusni kattalashtiring" }
-            .onFailure { e -> err = (e as? MosqueFetchError)?.message ?: "Internetga ulanib bo'lmadi" }
+            .onSuccess { list = it; err = if (it.isEmpty()) "Bu radiusda masjid topilmadi — radiusni kattalashtiring" else null }
+            .onFailure { e ->
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                // Oldingi natija bo'lsa — uni ko'rsatib turamiz, xato faqat ro'yxat bo'sh bo'lsa chiqadi
+                err = if (list.isNullOrEmpty()) (e as? MosqueFetchError)?.message ?: "Internetga ulanib bo'lmadi" else null
+            }
         loading = false
     }
     Column(Modifier.fillMaxSize()) {
@@ -659,6 +669,36 @@ fun CreditsScreen(nav: NavHostController) {
                         "Qiroatlar: everyayah.com",
                     ).forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 3.dp)) }
                 }
+            }
+            item { SectionTitle("Qur'on ma'nolari tarjimasi") }
+            item {
+                SectionCard(Modifier.fillMaxWidth()) {
+                    Text("Shayx Muhammad Sodiq Muhammad Yusuf", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "O'zbekcha ma'nolar tarjimasi va izohlari. Matn alquran.cloud xizmatidan (\"uz.sodik\" nashri) yuklanadi; lotin yozuvi asl kirill matndan avtomatik o'giriladi.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    VSpace(6.dp)
+                    Text("O'qilishi (transliteratsiya): ilovaning o'z dvigateli, Hafs an Osim qiroati qoidalari asosida.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            item { SectionTitle("Qorilar (audio: everyayah.com)") }
+            item {
+                SectionCard(Modifier.fillMaxWidth()) {
+                    uz.hijriy.app.data.Reciters.forEach { r ->
+                        Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            HIcon(HI.HEADPHONES, MaterialTheme.colorScheme.primary, size = 24.dp)
+                            HSpace(10.dp)
+                            Column {
+                                Text(r.name, style = MaterialTheme.typography.bodyMedium)
+                                androidx.compose.material3.Text(r.folder.replace('_', ' '), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Text("Fon fotosuratlari mualliflari yuqorida. Ikonkalar: ilova uchun maxsus tayyorlangan.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
