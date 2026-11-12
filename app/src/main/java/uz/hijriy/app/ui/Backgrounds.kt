@@ -77,9 +77,9 @@ fun PhotoBackdrop(
             androidx.compose.ui.Modifier.matchParentSize().background(
                 androidx.compose.ui.graphics.Brush.verticalGradient(
                     listOf(
-                        scrim.copy(alpha = (0.30f * strength).coerceAtMost(1f)),
-                        scrim.copy(alpha = (0.55f * strength).coerceAtMost(1f)),
-                        scrim.copy(alpha = (0.86f * strength).coerceAtMost(1f)),
+                        scrim.copy(alpha = (0.12f * strength).coerceAtMost(1f)),
+                        scrim.copy(alpha = (0.42f * strength).coerceAtMost(1f)),
+                        scrim.copy(alpha = (0.80f * strength).coerceAtMost(1f)),
                     )
                 )
             )
@@ -87,7 +87,7 @@ fun PhotoBackdrop(
         androidx.compose.foundation.layout.Box(
             androidx.compose.ui.Modifier.matchParentSize().background(
                 androidx.compose.ui.graphics.Brush.horizontalGradient(
-                    listOf(scrim.copy(alpha = 0.35f * strength.coerceAtMost(1f)), androidx.compose.ui.graphics.Color.Transparent)
+                    listOf(scrim.copy(alpha = 0.28f * strength.coerceAtMost(1f)), androidx.compose.ui.graphics.Color.Transparent)
                 )
             )
         )
