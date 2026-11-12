@@ -109,6 +109,11 @@ fun LocationScreen(app: HijriyApp, nav: NavHostController) {
     }
 
     fun runGps() {
+        if (!uz.hijriy.app.data.LocationHelper.servicesOn(ctx)) {
+            gpsMsg = "GPS o'chiq. Yoqing — tizim sozlamalari ochildi."
+            runCatching { ctx.startActivity(android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            return
+        }
         locating = true
         gpsMsg = null
         scope.launch {

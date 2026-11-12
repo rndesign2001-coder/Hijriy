@@ -13,6 +13,13 @@ import kotlin.coroutines.resume
 
 object LocationHelper {
 
+    /** Joylashuv xizmati (GPS yoki tarmoq) yoqilganmi. */
+    fun servicesOn(context: Context): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+            .any { runCatching { lm.isProviderEnabled(it) }.getOrDefault(false) }
+    }
+
     /** Joylashuvni aniqlaydi: avval so'nggi ma'lum joy (yangi bo'lsa), keyin jonli signal. */
     @SuppressLint("MissingPermission")
     suspend fun locate(context: Context, timeoutMs: Long = 25_000): Location? {

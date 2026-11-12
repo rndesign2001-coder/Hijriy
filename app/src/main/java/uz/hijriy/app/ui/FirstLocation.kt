@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import uz.hijriy.app.HijriyApp
+import uz.hijriy.app.data.LocationHelper
 import uz.hijriy.app.R
 import uz.hijriy.app.ui.theme.TitleFont
 
@@ -54,22 +55,45 @@ fun FirstLocationScreen(app: HijriyApp, onPickFromList: () -> Unit) {
     val cyr = app.settings.value.script == 1
     fun t(lat: String, cy: String) = if (cyr) cy else lat
 
+    var needSettings by remember { mutableStateOf(false) }
+    var needAppSettings by remember { mutableStateOf(false) }
+
     fun gps() {
+        needSettings = false; needAppSettings = false
+        if (!LocationHelper.servicesOn(ctx)) {
+            // GPS o'chiq — tizimning joylashuv sozlamalarini darhol ochamiz
+            msg = t("GPS o'chiq. Yoqing, so'ng qaytib keling — joylashuv avtomatik aniqlanadi.",
+                "GPS ўчиқ. Ёқинг, сўнг қайтиб келинг — жойлашув автоматик аниқланади.")
+            needSettings = true
+            runCatching { ctx.startActivity(android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            return
+        }
         busy = true; msg = null
         scope.launch {
             val r = locateAndApply(app, ctx)
             busy = false
             if (r == null) msg = t(
-                "Joylashuv aniqlanmadi. GPS yoqilganini tekshiring yoki ro'yxatdan tanlang.",
-                "Жойлашув аниқланмади. GPS ёқилганини текширинг ёки рўйхатдан танланг."
+                "Joylashuv topilmadi. Ochiq joyda qayta urinib ko'ring yoki shaharni ro'yxatdan tanlang.",
+                "Жойлашув топилмади. Очиқ жойда қайта уриниб кўринг ёки шаҳарни рўйхатдан танланг."
             )
         }
     }
     val perm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
-        if (res.values.any { it }) gps() else msg = t(
-            "Joylashuvga ruxsat berilmadi — shaharni ro'yxatdan tanlang.",
-            "Жойлашувга рухсат берилмади — шаҳарни рўйхатдан танланг."
-        )
+        if (res.values.any { it }) gps() else {
+            needAppSettings = true
+            msg = t(
+                "Joylashuvga ruxsat berilmadi. Ruxsatni sozlamalardan yoqing yoki shaharni ro'yxatdan tanlang.",
+                "Жойлашувга рухсат берилмади. Рухсатни созламалардан ёқинг ёки шаҳарни рўйхатдан танланг."
+            )
+        }
+    }
+    fun openAppSettings() {
+        runCatching {
+            ctx.startActivity(android.content.Intent(
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                android.net.Uri.parse("package:" + ctx.packageName)
+            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
     }
     BackHandler { /* joy tanlanmaguncha yopilmaydi */ }
 
@@ -121,7 +145,23 @@ fun FirstLocationScreen(app: HijriyApp, onPickFromList: () -> Unit) {
                 ) { Text(t("Shahar yoki tumanni tanlash", "Шаҳар ёки туманни танлаш"), fontSize = 16.sp) }
                 msg?.let {
                     Spacer(Modifier.height(12.dp))
-                    Text(it, color = Color(0xFFFFD7A0), fontSize = 14.sp, textAlign = TextAlign.Center)
+                    Text(it, color = Color(0xFFFFD7A0), fontSize = 15.sp, textAlign = TextAlign.Center)
+                }
+                if (needAppSettings) {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = { openAppSettings() }, modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9C46A)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFE9C46A))
+                    ) { Text(t("Ruxsatni sozlamalarda yoqish", "Рухсатни созламаларда ёқиш")) }
+                }
+                if (needSettings) {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = { gps() }, modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9C46A)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFE9C46A))
+                    ) { Text(t("GPS yoqildi — qayta aniqlash", "GPS ёқилди — қайта аниқлаш")) }
                 }
                 Spacer(Modifier.height(12.dp))
             }
