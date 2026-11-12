@@ -100,4 +100,22 @@ def fetch():
         print(c["name"], os.path.getsize(f"out/res/{c['name']}.webp"))
     json.dump(credits, open("out/res/credits.json", "w"), ensure_ascii=False, indent=1)
 
-{"scan": scan, "fetch": fetch}[sys.argv[1]]()
+def pick():
+    items = json.load(open("scripts/pick.json"))
+    os.makedirs("out", exist_ok=True)
+    tiles = []
+    for x in items:
+        try:
+            im = Image.open(io.BytesIO(blob(x["thumb"]))).convert("RGB"); im.thumbnail((360, 240))
+            t = Image.new("RGB", (360, 260), "black"); t.paste(im, (0, 0))
+            ImageDraw.Draw(t).text((6, 242), f"#{x['idx']} {x['w']}x{x['h']} {x['license'][:16]}", fill="yellow")
+            tiles.append(t)
+        except Exception as e:
+            print("skip", x["title"], e)
+    for s in range(0, len(tiles), 20):
+        sheet = Image.new("RGB", (360 * 4, 260 * 5), "black")
+        for k, t in enumerate(tiles[s:s+20]):
+            sheet.paste(t, ((k % 4) * 360, (k // 4) * 260))
+        sheet.save(f"out/pick_{s//20:02d}.jpg", quality=82)
+
+{"scan": scan, "fetch": fetch, "pick": pick}[sys.argv[1]]()
