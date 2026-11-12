@@ -1,38 +1,82 @@
 [
  {
-  "title": "File:Kaaba Al-Musharrafah.jpg",
-  "name": "bg_kaaba_sunset",
-  "fx": 0.7,
-  "fy": 0.5
- },
- {
-  "title": "File:Al Masjid an Nabawi 3.jpg",
-  "name": "bg_nabawi_dusk",
-  "fx": 0.56,
-  "fy": 0.5
- },
- {
-  "title": "File:Masjid al-Haram 2022.jpg",
-  "name": "bg_haram_evening",
-  "fx": 0.47,
-  "fy": 0.5
- },
- {
-  "title": "File:المسجد النبوي الشريف.jpg",
-  "name": "bg_nabawi_sunset",
+  "name": "card_registan_night",
+  "title": "File:Самарканд. Площадь-Регистан.jpg",
   "fx": 0.5,
-  "fy": 0.5
+  "fy": 0.55,
+  "W": 1200,
+  "H": 640
  },
  {
-  "title": "File:Mecca.JPG",
-  "name": "bg_haram_night",
+  "name": "card_registan_gold",
+  "title": "File:Sunset at the Registan, Samarkand (4934699224).jpg",
+  "fx": 0.5,
+  "fy": 0.5,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_hazrati_imam",
+  "title": "File:Hazrati Imam Mosque 01.jpg",
+  "fx": 0.5,
+  "fy": 0.45,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_quran_folio",
+  "title": "File:Qur'an Manuscript MET DP235922.jpg",
+  "fx": 0.5,
+  "fy": 0.45,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_crescent_dusk",
+  "title": "File:Waxing crescent moon setting over Tuntorp 2.jpg",
   "fx": 0.55,
-  "fy": 0.5
+  "fy": 0.45,
+  "W": 1200,
+  "H": 640
  },
  {
-  "title": "File:المسجد النبوي في المدينة المنورة، ليلاً.jpg",
-  "name": "bg_nabawi_night",
-  "fx": 0.72,
-  "fy": 0.5
+  "name": "card_crescent_night",
+  "title": "File:Crescent - Flickr - Christian Gloor.jpg",
+  "fx": 0.55,
+  "fy": 0.5,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_arafat",
+  "title": "File:Mount Arafat3.jpg",
+  "fx": 0.5,
+  "fy": 0.5,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_chimgan_sky",
+  "title": "File:Облака над Чимганом.jpg",
+  "fx": 0.5,
+  "fy": 0.45,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_storm",
+  "title": "File:Blue and orange clouds over the Mekong with a pirogue running in the water at sunset in Don Det Laos.jpg",
+  "fx": 0.5,
+  "fy": 0.4,
+  "W": 1200,
+  "H": 640
+ },
+ {
+  "name": "card_sunrise_clouds",
+  "title": "File:Sun rising over a blanket of clouds, Nandi Hills, Karnataka (edit).jpg",
+  "fx": 0.5,
+  "fy": 0.5,
+  "W": 1200,
+  "H": 640
  }
 ]
