@@ -68,6 +68,7 @@ class ScreensSmokeTest {
         settle()
         val intro = rule.onAllNodesWithTag("intro").fetchSemanticsNodes()
         if (intro.isNotEmpty()) rule.onAllNodesWithTag("intro").onFirst().performClick()
+        rule.runOnUiThread { (rule.activity.application as HijriyApp).settings.markLocChosen() }
         settle()
     }
 
