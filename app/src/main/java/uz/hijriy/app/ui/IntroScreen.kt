@@ -88,9 +88,9 @@ private fun particles(n: Int): List<Particle> {
     }
 }
 
-/** 8 qirrali yulduzni (ikki kvadrat) tashkil etuvchi yo'l. */
-private fun khatam(cx: Float, cy: Float, r: Float, rot: Float): Path = Path().apply {
-    for (sq in 0..1) {
+/** 8 qirrali yulduzni tashkil etuvchi ikki kvadrat (har biri alohida kontur). */
+private fun khatam(cx: Float, cy: Float, r: Float, rot: Float): List<Path> = (0..1).map { sq ->
+    Path().apply {
         for (k in 0..4) {
             val a = Math.toRadians((rot + sq * 45 + k * 90 + 45).toDouble())
             val x = cx + r * cos(a).toFloat(); val y = cy + r * sin(a).toFloat()
@@ -99,20 +99,15 @@ private fun khatam(cx: Float, cy: Float, r: Float, rot: Float): Path = Path().ap
     }
 }
 
-/** Yo'lni [t] ulushigacha "chizib" ko'rsatadi (qalam bilan chizilayotgandek). */
-private fun DrawScope.drawTrimmed(path: Path, t: Float, color: Color, width: Float) {
+/** Konturlarni [t] ulushigacha "chizib" ko'rsatadi (qalam bilan chizilayotgandek). */
+private fun DrawScope.drawTrimmed(paths: List<Path>, t: Float, color: Color, width: Float) {
     if (t <= 0f) return
-    val pm = PathMeasure().apply { setPath(path, false) }
-    val dst = Path()
-    // PathMeasure faqat birinchi konturni o'lchaydi — har konturni alohida chizamiz
-    var ok = true
-    var guard = 0
-    while (ok && guard++ < 8) {
-        val len = pm.length
-        pm.getSegment(0f, len * t, dst, true)
-        ok = pm.nextContour()
+    paths.forEach { path ->
+        val pm = PathMeasure().apply { setPath(path, false) }
+        val dst = Path()
+        pm.getSegment(0f, pm.length * t, dst, true)
+        drawPath(dst, color, style = Stroke(width, cap = StrokeCap.Round))
     }
-    drawPath(dst, color, style = Stroke(width, cap = StrokeCap.Round))
 }
 
 /**
