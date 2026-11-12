@@ -16,6 +16,8 @@
 
 **Bolalar.** Ilova bolalardan ataylab hech qanday ma'lumot yig'maydi.
 
+**Fotosuratlar va mualliflar:** ilovadagi fon rasmlari mualliflari [CREDITS.md](CREDITS.md) faylida ko'rsatilgan.
+
 **Aloqa:** rndesign2001@gmail.com
 
 ## English
@@ -28,5 +30,7 @@
 - Quran recitation audio is downloaded from everyayah.com and the Uzbek translation from api.alquran.cloud; no personal data is sent.
 - Settings, bookmarks and counters are stored only on your device.
 - Permissions: location (optional, to detect your region), notifications and exact alarms (prayer reminders), wallpaper and internet.
+
+Photo credits and licences: see [CREDITS.md](CREDITS.md).
 
 Contact: rndesign2001@gmail.com
