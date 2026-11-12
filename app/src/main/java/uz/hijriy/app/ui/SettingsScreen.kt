@@ -404,7 +404,7 @@ fun MoreScreen(nav: NavHostController) {
                 MoreRow(HI.WALLPAPER, Color(0xFFD81B60), "Rasm tayyorlash", "Namoz vaqtlari bilan chiroyli rasm yoki fon") { nav.go("wallpaper") }
                 MoreRow(HI.LOCATION, Color(0xFF00838F), "Joylashuv", "O'zbekiston, dunyo shaharlari yoki GPS") { nav.go("location") }
                 MoreRow(HI.SETTINGS, Color(0xFF607D8B), "Sozlamalar", "Mavzu, hisob usuli, eslatmalar") { nav.go("settings") }
-                MoreRow(HI.PHOTO, Color(0xFF8D6E2F), "Manbalar va mualliflar", "Fotosuratlar va ma'lumot manbalari") { nav.go("credits") }
+                MoreRow(HI.PHOTO, Color(0xFF8D6E2F), "Ma'lumot manbalari", "Qur'on, tarjima, ob-havo va masjid ma'lumotlari") { nav.go("credits") }
             }
             VSpace(24.dp)
         }

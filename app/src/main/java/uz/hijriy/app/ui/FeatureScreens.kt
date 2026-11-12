@@ -642,25 +642,9 @@ fun JournalScreen(app: HijriyApp, nav: NavHostController) {
 
 @Composable
 fun CreditsScreen(nav: NavHostController) {
-    val ctx = LocalContext.current
-    val photos = remember {
-        runCatching {
-            val a = org.json.JSONArray(ctx.assets.open("photo_credits.json").bufferedReader().use { it.readText() })
-            (0 until a.length()).map { a.getJSONObject(it) }
-        }.getOrDefault(emptyList())
-    }
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Manbalar va mualliflar", onBack = { nav.popBackStack() })
+        ScreenHeader("Ma'lumot manbalari", onBack = { nav.popBackStack() })
         LazyColumn(contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { SectionTitle("Fon fotosuratlari (Wikimedia Commons)") }
-            items(photos) { o ->
-                SectionCard(Modifier.fillMaxWidth().clickable {
-                    runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(o.optString("page")))) }
-                }) {
-                    androidx.compose.material3.Text(o.optString("title").removePrefix("File:"), style = MaterialTheme.typography.titleSmall)
-                    androidx.compose.material3.Text("Muallif: ${o.optString("artist")} • ${o.optString("license")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
             item { SectionTitle("Ma'lumotlar") }
             item {
                 SectionCard(Modifier.fillMaxWidth()) {
@@ -703,7 +687,7 @@ fun CreditsScreen(nav: NavHostController) {
                 }
             }
             item {
-                Text("Fon fotosuratlari mualliflari yuqorida. Ikonkalar: ilova uchun maxsus tayyorlangan.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Ikonkalar: ilova uchun maxsus tayyorlangan.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
