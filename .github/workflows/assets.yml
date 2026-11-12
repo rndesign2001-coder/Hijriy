@@ -17,8 +17,9 @@ jobs:
       - name: Ishga tushirish
         run: |
           MODE=$(cat scripts/assets_mode.txt 2>/dev/null || echo scan)
+          if [ "$MODE" = "yt" ]; then bash scripts/yt_check.sh; cat out/log.txt; else
           python3 scripts/commons_bg.py $MODE 2>&1 | tee log.txt || true
-          cp log.txt out/ 2>/dev/null || (mkdir -p out && cp log.txt out/)
+          cp log.txt out/ 2>/dev/null || (mkdir -p out && cp log.txt out/); fi
       - name: Natijani assets-out shoxchasiga
         run: |
           URL=$(git remote get-url origin)
