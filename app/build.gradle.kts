@@ -14,7 +14,8 @@ android {
         applicationId = "uz.hijriy.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = (System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 38) + 1
+        // Play Console'da 67 va undan past kodlar band — shuning uchun 1000 dan boshlanadi
+        versionCode = 1000 + (System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 38) + 1
         versionName = "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "38")
     }
 
