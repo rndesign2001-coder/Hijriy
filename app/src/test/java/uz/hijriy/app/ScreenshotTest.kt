@@ -67,8 +67,12 @@ class ScreenshotTest {
     fun screens() {
         rule.mainClock.autoAdvance = false
         val app = rule.activity.application as HijriyApp
-        settle(1200); shot("01_intro")
-        settle(2400)
+        settle(700); shot("01a_intro")
+        settle(700); shot("01b_intro")
+        settle(700); shot("01c_intro")
+        settle(700); shot("01d_intro")
+        settle(500); shot("01e_intro")
+        settle(1500)
         rule.onAllNodesWithTag("intro").fetchSemanticsNodes().takeIf { it.isNotEmpty() }?.let {
             rule.onAllNodesWithTag("intro").onFirst().performClick(); settle()
         }
