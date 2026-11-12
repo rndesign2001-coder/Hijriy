@@ -45,7 +45,8 @@ def info(titles, width):
 
 def scan():
     titles = []
-    cats = ["Quality images of Mecca", "Featured pictures of Mecca", "Valued images of Mecca", "Kaaba",
+    cfg = json.load(open("scripts/scan_cfg.json")) if os.path.exists("scripts/scan_cfg.json") else None
+    cats = cfg["cats"] if cfg else ["Quality images of Mecca", "Featured pictures of Mecca", "Valued images of Mecca", "Kaaba",
             "Masjid al-Haram", "Masjid al-Haram at night", "Quality images of Medina", "Featured pictures of Medina",
             "Al-Masjid an-Nabawi", "Green Dome", "Exterior of Al-Masjid an-Nabawi", "Umbrellas of Al-Masjid an-Nabawi",
             "Abraj Al Bait", "Quality images of mosques in Saudi Arabia"]
@@ -53,18 +54,18 @@ def scan():
         d = get({"action": "query", "list": "categorymembers", "cmtitle": "Category:" + c, "cmtype": "file", "cmlimit": 200})
         got = [x["title"] for x in d.get("query", {}).get("categorymembers", [])]
         print(c, len(got)); titles += got
-    for q in ["Kaaba Masjid al-Haram", "Masjid al-Haram night", "Masjid an-Nabawi", "Prophet's Mosque Medina dome", "Mecca Kaaba aerial"]:
+    for q in cfg["queries"] if cfg else ["Kaaba Masjid al-Haram", "Masjid al-Haram night", "Masjid an-Nabawi", "Prophet's Mosque Medina dome", "Mecca Kaaba aerial"]:
         d = get({"action": "query", "list": "search", "srsearch": q + " filetype:bitmap", "srnamespace": 6, "srlimit": 50})
         got = [x["title"] for x in d.get("query", {}).get("search", [])]
         print(q, len(got)); titles += got
     titles = list(dict.fromkeys(t for t in titles if t.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff"))))
-    items = [x for x in info(titles, 480) if x["w"] and x["w"] >= 1800 and x["w"] >= x["h"] and OK.match(x["license"] or "")]
+    items = [x for x in info(titles, 480) if x["w"] and x["w"] >= 1600 and x["w"] >= x["h"] and OK.match(x["license"] or "")]
     os.makedirs("out", exist_ok=True)
     json.dump(items, open("out/candidates.json", "w"), ensure_ascii=False, indent=1)
     print("nomzodlar:", len(items))
     # contact sheets: 4x5 grid, raqamli
     tiles = []
-    for i, x in enumerate(items[:160]):
+    for i, x in enumerate(items[:240]):
         try:
             im = Image.open(io.BytesIO(blob(x["thumb"]))).convert("RGB"); im.thumbnail((360, 240))
             t = Image.new("RGB", (360, 260), "black"); t.paste(im, (0, 0))
@@ -87,7 +88,7 @@ def fetch():
         x = meta[c["title"]]
         im = Image.open(io.BytesIO(blob(x["thumb"]))).convert("RGB")
         # telefon ekrani uchun: balandlikni 1600 px ga, kenglik markaz (yoki fx) bo'yicha 1080 px kesiladi
-        W, H = 1440, 1800
+        W, H = c.get("W", 1440), c.get("H", 1800)
         sc = max(W / im.width, H / im.height)
         im = im.resize((round(im.width * sc), round(im.height * sc)), Image.LANCZOS)
         fx = c.get("fx", 0.5)
