@@ -274,11 +274,11 @@ private fun CenterTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: ()
                 .graphicsLayer { scaleX = scale; scaleY = scale }
                 .shadow(10.dp, CircleShape, spotColor = cs.primary.copy(alpha = 0.6f), ambientColor = cs.primary.copy(alpha = 0.4f))
                 .clip(CircleShape)
-                .background(Brush.linearGradient(listOf(ex.palette.accent, cs.primary, ex.palette.primaryDark)))
+                .background(Brush.radialGradient(listOf(Color(0xFF1F6B57), Color(0xFF0E3B31), Color(0xFF082A22))))
                 .border(2.5.dp, ring, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            HIcon(t.icon, Color.White, size = 38.dp)
+            HIcon(t.icon, Color.White, size = 42.dp)
         }
         Spacer(Modifier.height(4.dp))
         Text(

@@ -407,7 +407,7 @@ private fun distBearing(la1: Double, lo1: Double, la2: Double, lo2: Double): Pai
 fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
     val s by app.settings.state.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
-    var radius by remember { mutableIntStateOf(3000) }
+    var radius by remember { mutableIntStateOf(10000) }
     var list by remember { mutableStateOf<List<Mosque>?>(null) }
     var err by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }

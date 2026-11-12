@@ -80,6 +80,7 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.20")
     // Baseline profile — ilova ochilishi va aylantirishni tezlashtiradi
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation(composeBom)
