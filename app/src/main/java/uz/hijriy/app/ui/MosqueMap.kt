@@ -66,6 +66,7 @@ fun MosqueMapScreen(app: HijriyApp, nav: NavHostController) {
     val scope = rememberCoroutineScope()
     var loading by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf<String?>(null) }
+    mosqueCacheDir = ctx.cacheDir
     val map = remember {
         Configuration.getInstance().apply {
             userAgentValue = "HijriyTaqvim/1.0 (${ctx.packageName})"

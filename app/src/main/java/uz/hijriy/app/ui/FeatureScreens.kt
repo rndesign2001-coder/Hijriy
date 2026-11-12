@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import uz.hijriy.app.HijriyApp
 import uz.hijriy.app.core.Hijri
@@ -301,36 +302,66 @@ private val OVERPASS = listOf(
 
 class MosqueFetchError(msg: String) : Exception(msg)
 
-/** [area] — Overpass hudud filtri, masalan "(around:3000,41.31,69.28)" yoki "(s,w,n,e)". */
-private fun overpass(area: String, limit: Int): String {
-    val q = "[out:json][timeout:25];(" +
-        "node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
-        "way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
-        "relation[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;" +
-        ");out center $limit;"
-    val body = ("data=" + URLEncoder.encode(q, "UTF-8")).toByteArray()
-    var last: Exception? = null
-    var anyHttp = false
-    for (url in OVERPASS) {
-        try {
-            val c = URL(url).openConnection() as HttpURLConnection
-            c.requestMethod = "POST"; c.doOutput = true; c.connectTimeout = 12_000; c.readTimeout = 35_000
-            c.setRequestProperty("User-Agent", "HijriyTaqvim/1.0 (Android; uz.hijriy.app)")
-            c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-            c.setRequestProperty("Accept", "application/json")
-            c.outputStream.use { it.write(body) }
-            val code = c.responseCode
-            if (code == 200) {
-                val txt = c.inputStream.bufferedReader().use { it.readText() }
-                c.disconnect()
-                if (txt.trimStart().startsWith("{")) return txt
-            } else { anyHttp = true; c.errorStream?.close(); c.disconnect() }
-        } catch (e: Exception) { last = e }
+/** Natijalar keshi: bir xil hudud qayta so'ralsa, darhol ko'rsatiladi (xotirada va diskda, 7 kun). */
+private val mosqueMem = java.util.concurrent.ConcurrentHashMap<String, String>()
+@Volatile var mosqueCacheDir: java.io.File? = null
+
+private fun fetchOne(url: String, body: ByteArray): String {
+    val c = URL(url).openConnection() as HttpURLConnection
+    try {
+        c.requestMethod = "POST"; c.doOutput = true; c.connectTimeout = 8_000; c.readTimeout = 25_000
+        c.setRequestProperty("User-Agent", "HijriyTaqvim/1.0 (Android; uz.hijriy.app)")
+        c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+        c.setRequestProperty("Accept", "application/json")
+        c.outputStream.use { it.write(body) }
+        val code = c.responseCode
+        if (code != 200) throw java.io.IOException("HTTP $code")
+        val txt = c.inputStream.bufferedReader().use { it.readText() }
+        if (!txt.trimStart().startsWith("{")) throw java.io.IOException("not json")
+        return txt
+    } finally { c.disconnect() }
+}
+
+/**
+ * [area] — Overpass hudud filtri, masalan "(around:3000,41.31,69.28)" yoki "(s,w,n,e)".
+ * Tezlik uchun barcha serverlarga deyarli bir vaqtda so'rov yuboriladi va birinchi kelgan javob olinadi.
+ */
+private suspend fun overpass(area: String, limit: Int): String {
+    val q = "[out:json][timeout:20];nwr[\"amenity\"=\"place_of_worship\"][\"religion\"=\"muslim\"]$area;out center $limit;"
+    mosqueMem[q]?.let { return it }
+    val file = mosqueCacheDir?.let { java.io.File(it, "mosques_" + Integer.toHexString(q.hashCode()) + ".json") }
+    if (file != null && file.exists() && System.currentTimeMillis() - file.lastModified() < 7L * 86_400_000) {
+        runCatching { file.readText() }.getOrNull()?.let { mosqueMem[q] = it; return it }
     }
-    throw MosqueFetchError(
-        if (anyHttp) "Xarita serverlari hozir band. Bir ozdan so'ng qayta urinib ko'ring."
-        else "Internetga ulanib bo'lmadi" + (last?.javaClass?.simpleName?.let { " ($it)" } ?: "")
-    )
+    val body = ("data=" + URLEncoder.encode(q, "UTF-8")).toByteArray()
+    val result = kotlinx.coroutines.CompletableDeferred<String>()
+    var httpFail = false
+    val txt = kotlinx.coroutines.coroutineScope {
+        val jobs = OVERPASS.mapIndexed { i, url ->
+            launch(Dispatchers.IO) {
+                kotlinx.coroutines.delay(i * 400L) // serverlarni ortiqcha yuklamaslik uchun ozgina oraliq
+                if (result.isCompleted) return@launch
+                runCatching { fetchOne(url, body) }
+                    .onSuccess { result.complete(it) }
+                    .onFailure { e -> if (e.message?.startsWith("HTTP") == true) httpFail = true }
+            }
+        }
+        launch {
+            jobs.forEach { it.join() }
+            result.completeExceptionally(
+                MosqueFetchError(
+                    if (httpFail) "Xarita serverlari hozir band. Bir ozdan so'ng qayta urinib ko'ring."
+                    else "Internetga ulanib bo'lmadi"
+                )
+            )
+        }
+        val r = result.await()
+        jobs.forEach { it.cancel() }
+        r
+    }
+    mosqueMem[q] = txt
+    if (file != null) runCatching { file.parentFile?.mkdirs(); file.writeText(txt) }
+    return txt
 }
 
 private fun parseMosques(txt: String, lat: Double, lon: Double): List<Mosque> {
@@ -346,14 +377,14 @@ private fun parseMosques(txt: String, lat: Double, lon: Double): List<Mosque> {
     }.distinctBy { "%.4f,%.4f".format(java.util.Locale.US, it.lat, it.lon) }.sortedBy { it.km }
 }
 
-private suspend fun fetchMosques(lat: Double, lon: Double, radius: Int): List<Mosque> = withContext(Dispatchers.IO) {
+private suspend fun fetchMosques(lat: Double, lon: Double, radius: Int): List<Mosque> = withContext(Dispatchers.Default) {
     // Maxfiylik: so'rovga ~1 km aniqlikdagi koordinata yuboriladi, masofa telefonda aniq hisoblanadi
     val la = "%.2f".format(java.util.Locale.US, lat); val lo = "%.2f".format(java.util.Locale.US, lon)
     parseMosques(overpass("(around:$radius,$la,$lo)", if (radius > 20000) 300 else 150), lat, lon)
 }
 
 /** Xaritadagi ko'rinib turgan hudud (janub, g'arb, shimol, sharq) bo'yicha qidiruv. */
-suspend fun fetchMosquesBox(s: Double, w: Double, n: Double, e: Double, fromLat: Double, fromLon: Double): List<Mosque> = withContext(Dispatchers.IO) {
+suspend fun fetchMosquesBox(s: Double, w: Double, n: Double, e: Double, fromLat: Double, fromLon: Double): List<Mosque> = withContext(Dispatchers.Default) {
     val f = { v: Double -> "%.3f".format(java.util.Locale.US, v) }
     parseMosques(overpass("(${f(s)},${f(w)},${f(n)},${f(e)})", 400), fromLat, fromLon)
 }
@@ -375,6 +406,7 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
     var err by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var retry by remember { mutableIntStateOf(0) }
+    mosqueCacheDir = ctx.cacheDir
     LaunchedEffect(s.lat, s.lon, radius, retry) {
         loading = true; err = null
         runCatching { fetchMosques(s.lat, s.lon, radius) }
