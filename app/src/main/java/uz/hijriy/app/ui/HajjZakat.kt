@@ -177,7 +177,7 @@ fun HajjScreen(app: HijriyApp, nav: NavHostController) {
         }
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                OrnateCard(listOf(Color(0xFF7A5A16), Color(0xFFA67C26), Color(0xFFD6AE52))) {
+                OrnateCard(listOf(Color(0xFF3A2A08), Color(0xFFA67C26), Color(0xFFD6AE52)), photo = if (tab == 0) uz.hijriy.app.R.drawable.bg_kaaba_sunset else CardPhotos.arafat, alignY = if (tab == 0) 0.2f else 0f) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         HIcon(HI.KAABA, Color(0xFF1B1B1B), size = 48.dp, accent = Color(0xFFE9C46A))
                         HSpace(12.dp)
@@ -243,7 +243,7 @@ fun ZakatScreen(app: HijriyApp, nav: NavHostController) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Zakot kalkulyatori", "Hanafiy mazhabi bo'yicha", onBack = { nav.popBackStack() })
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
-            OrnateCard(if (due) listOf(Color(0xFF0F3D2E), Color(0xFF1E6B4F), Color(0xFF2E8B67)) else listOf(Color(0xFF2A2A35), Color(0xFF3B3B4F), Color(0xFF55556E))) {
+            OrnateCard(if (due) listOf(Color(0xFF0A2A20), Color(0xFF1E6B4F), Color(0xFF2E8B67)) else listOf(Color(0xFF1C1C26), Color(0xFF3B3B4F), Color(0xFF55556E)), photo = CardPhotos.registanGold) {
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(if (due) "To'lanadigan zakot" else if (nisab <= 0) "Narxlarni kiriting" else "Zakot farz emas", color = Color.White.copy(alpha = 0.85f))
                     Text(

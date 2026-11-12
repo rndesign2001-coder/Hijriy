@@ -83,7 +83,12 @@ fun WeatherScreen(app: HijriyApp, nav: NavHostController) {
 @Composable
 private fun WeatherBody(app: HijriyApp, w: Weather, stale: Boolean, error: String?) {
     val (desc, emo) = WeatherApi.describe(w.code, w.isDay)
-    GradientCard(Modifier.fillMaxWidth()) {
+    val photo = when {
+        !w.isDay -> CardPhotos.crescentNight
+        w.code >= 45 || w.code == 3 -> CardPhotos.storm
+        else -> CardPhotos.chimganSky
+    }
+    GradientCard(Modifier.fillMaxWidth(), photo = photo) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("${w.temp.roundToInt()}°", color = Color.White, fontSize = 64.sp, style = MaterialTheme.typography.displayLarge)
@@ -175,20 +180,21 @@ private fun SunCard(app: HijriyApp) {
     val today = uz.hijriy.app.data.AppTime.today()
     val t = s.times(today)
     val tm = s.times(today.plusDays(1))
-    SectionCard(Modifier.fillMaxWidth()) {
+    val sub = Color.White.copy(alpha = 0.82f)
+    PhotoCard(CardPhotos.sunriseClouds, Modifier.fillMaxWidth(), scrim = Color(0xFF2A1406), alignY = 0.1f) {
         Text("Quyosh", style = MaterialTheme.typography.titleMedium)
         VSpace(8.dp)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Column {
-                Text("🌅 Chiqishi", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("🌅 Chiqishi", style = MaterialTheme.typography.labelMedium, color = sub)
                 Text(fmtMin(t.calculated.getValue(Prayer.SUNRISE)), style = MaterialTheme.typography.titleLarge)
             }
             Column {
-                Text("🌇 Botishi", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("🌇 Botishi", style = MaterialTheme.typography.labelMedium, color = sub)
                 Text(fmtMin(Math.round(t.sunsetExact * 60).toInt()), style = MaterialTheme.typography.titleLarge)
             }
             Column {
-                Text("☀️ Kun", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("☀️ Kun", style = MaterialTheme.typography.labelMedium, color = sub)
                 Text(Uz.duration(t.dayLengthMinutes), style = MaterialTheme.typography.titleSmall)
             }
         }
@@ -197,7 +203,7 @@ private fun SunCard(app: HijriyApp) {
         val diff = tm.dayLengthMinutes - t.dayLengthMinutes
         Text(
             "Tun: ${Uz.duration(night)} • Ertaga kun ${if (diff >= 0) "+$diff" else "$diff"} daqiqa",
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodySmall, color = sub
         )
     }
 }

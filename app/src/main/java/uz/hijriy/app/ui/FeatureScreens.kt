@@ -88,15 +88,20 @@ private val FGold = Color(0xFFE9C46A)
 
 /** Sarlavhali, naqshli bezak karta (yangi bo'limlar uchun). */
 @Composable
-fun OrnateCard(colors: List<Color>, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+fun OrnateCard(
+    colors: List<Color>, modifier: Modifier = Modifier, photo: Int? = null, alignY: Float = 0f, strength: Float = 1f,
+    content: @Composable () -> Unit
+) {
     val shape = RoundedCornerShape(26.dp)
     Box(
         modifier.fillMaxWidth().clip(shape)
             .background(Brush.linearGradient(colors))
-            .drawBehind { drawGirih(Color.White.copy(alpha = 0.06f), 54.dp.toPx(), 0.8.dp.toPx()) }
-            .border(1.dp, FGold.copy(alpha = 0.4f), shape)
-            .padding(18.dp)
-    ) { content() }
+            .border(1.dp, FGold.copy(alpha = 0.45f), shape)
+    ) {
+        if (photo != null) PhotoBackdrop(photo, colors.first(), Modifier.matchParentSize(), alignY, strength)
+        Canvas(Modifier.matchParentSize()) { drawGirih(Color.White.copy(alpha = if (photo != null) 0.05f else 0.06f), 54.dp.toPx(), 0.8.dp.toPx()) }
+        Box(Modifier.padding(18.dp)) { content() }
+    }
 }
 
 // ------------------------------ Hatm rejasi ------------------------------
@@ -112,7 +117,7 @@ fun HatmScreen(app: HijriyApp, nav: NavHostController) {
         ScreenHeader("Hatm rejasi", "Qur'onni maqsadli kunga tugatish", onBack = { nav.popBackStack() })
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
             if (plan != null) {
-                OrnateCard(listOf(Color(0xFF3E1A10), Color(0xFF7A3418), Color(0xFFC0742C))) {
+                OrnateCard(listOf(Color(0xFF2A0F08), Color(0xFF7A3418), Color(0xFFC0742C)), photo = CardPhotos.quranFolio) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                         Box(contentAlignment = Alignment.Center) {
                             Canvas(Modifier.size(170.dp)) {
@@ -154,7 +159,7 @@ fun HatmScreen(app: HijriyApp, nav: NavHostController) {
                     Text("Rejani bekor qilish")
                 }
             } else {
-                OrnateCard(listOf(Color(0xFF0F3D2E), Color(0xFF1E6B4F), Color(0xFF2E8B67))) {
+                OrnateCard(listOf(Color(0xFF0A2A20), Color(0xFF1E6B4F), Color(0xFF2E8B67)), photo = CardPhotos.quranFolio) {
                     Column {
                         HIcon(HI.HATM, Color.White, size = 48.dp, accent = FGold)
                         VSpace(8.dp)
@@ -216,7 +221,7 @@ fun RamadanScreen(app: HijriyApp, nav: NavHostController) {
         ScreenHeader("Ramazon", "${ramYear}-yil hijriy", onBack = { nav.popBackStack() })
         LazyColumn(contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item {
-                OrnateCard(listOf(Color(0xFF1A0F3C), Color(0xFF3B1E6B), Color(0xFF7A2E6E))) {
+                OrnateCard(listOf(Color(0xFF120A2C), Color(0xFF3B1E6B), Color(0xFF7A2E6E)), photo = CardPhotos.crescentDusk) {
                     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         HIcon(HI.RAMADAN, FGold, size = 56.dp, accent = Color.White)
                         VSpace(6.dp)
@@ -428,7 +433,7 @@ fun MosquesScreen(app: HijriyApp, nav: NavHostController) {
         ScreenHeader("Yaqin masjidlar", s.locName, onBack = { nav.popBackStack() })
         LazyColumn(contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
-                OrnateCard(listOf(Color(0xFF062E2A), Color(0xFF0B4F47), Color(0xFF137A6B))) {
+                OrnateCard(listOf(Color(0xFF041F1C), Color(0xFF0B4F47), Color(0xFF137A6B)), photo = CardPhotos.hazratiImam, strength = 1.25f) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                         MosqueRadar(list.orEmpty(), radius / 1000.0, Qibla.bearing(s.lat, s.lon))
                         VSpace(8.dp)
@@ -584,7 +589,7 @@ fun JournalScreen(app: HijriyApp, nav: NavHostController) {
             val daysIn = today.lengthOfMonth()
             val total = (1..daysIn).sumOf { Integer.bitCount(data[month.plusDays(it - 1L).toEpochDay()] ?: 0) }
             val passed = today.dayOfMonth * 5
-            OrnateCard(listOf(Color(0xFF0F3D2E), Color(0xFF175C45), Color(0xFF2E8B67))) {
+            OrnateCard(listOf(Color(0xFF071F2E), Color(0xFF175C45), Color(0xFF2E8B67)), photo = CardPhotos.registanNight) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {

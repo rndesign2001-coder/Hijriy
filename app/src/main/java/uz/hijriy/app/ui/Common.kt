@@ -1,5 +1,9 @@
 package uz.hijriy.app.ui
 
+import androidx.compose.ui.draw.drawBehind
+
+import androidx.compose.foundation.border
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -91,19 +95,34 @@ fun SectionCard(
 ) {
     val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     val shape = RoundedCornerShape(22.dp)
+    val ex = LocalExtra.current
+    val pat = MaterialTheme.colorScheme.primary.copy(alpha = if (ex.dark) 0.05f else 0.035f)
+    val edge = androidx.compose.ui.graphics.Color(0xFFE9C46A).copy(alpha = if (ex.dark) 0.22f else 0.35f)
+    val tone = androidx.compose.ui.graphics.Brush.linearGradient(
+        listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), androidx.compose.ui.graphics.Color.Transparent, ex.palette.accent.copy(alpha = 0.06f))
+    )
+    val inner = Modifier
+        .background(tone)
+        .drawBehind { drawGirih(pat, 46.dp.toPx(), 0.7.dp.toPx()) }
+        .padding(padding)
+    val m = modifier.border(0.8.dp, edge, shape)
     if (onClick != null) {
-        Card(onClick = onClick, modifier = modifier, shape = shape, colors = colors) {
-            Column(Modifier.padding(padding), content = content)
+        Card(onClick = onClick, modifier = m, shape = shape, colors = colors) {
+            Column(inner, content = content)
         }
     } else {
-        Card(modifier = modifier, shape = shape, colors = colors) {
-            Column(Modifier.padding(padding), content = content)
+        Card(modifier = m, shape = shape, colors = colors) {
+            Column(inner, content = content)
         }
     }
 }
 
 @Composable
-fun GradientCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun GradientCard(modifier: Modifier = Modifier, photo: Int? = null, alignY: Float = 0f, content: @Composable ColumnScope.() -> Unit) {
+    if (photo != null) {
+        PhotoCard(photo, modifier, alignY = alignY, padding = 20.dp, content = content)
+        return
+    }
     val ex = LocalExtra.current
     Box(
         modifier

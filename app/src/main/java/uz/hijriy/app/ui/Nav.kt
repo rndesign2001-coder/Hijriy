@@ -153,6 +153,7 @@ private fun AppContent(app: HijriyApp) {
                 composable("credits") { CreditsScreen(nav) }
                 composable("mosquemap") { MosqueMapScreen(app, nav) }
                 composable("hajj") { HajjScreen(app, nav) }
+                composable("live") { LiveScreen(nav) }
                 composable("zakat") { ZakatScreen(app, nav) }
                 composable(
                     "focus/{sura}?ayah={ayah}",
@@ -278,7 +279,7 @@ private fun CenterTab(t: Tab, selected: Boolean, modifier: Modifier, onClick: ()
                 .border(2.5.dp, ring, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            HIcon(t.icon, Color.White, size = 42.dp)
+            HIcon(t.icon, Color.White, size = 48.dp)
         }
         Spacer(Modifier.height(4.dp))
         Text(
