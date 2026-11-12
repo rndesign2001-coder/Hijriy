@@ -378,7 +378,6 @@ fun MoreScreen(nav: NavHostController) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
             SectionTitle("Ibodat")
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
-                MoreRow(HI.KAABA, Color(0xFFD32F2F), "Makka va Madina — jonli", "Masjidul Harom va Masjidi Nabaviydan efir") { nav.go("live") }
                 MoreRow(HI.QIBLA, Color(0xFF00838F), "Qibla kompasi", "Ka'ba yo'nalishini aniqlash") { nav.go("qibla") }
                 MoreRow(HI.MOSQUE, Color(0xFF0B7A5C), "Yaqin masjidlar", "Xaritada eng yaqin masjidlar") { nav.go("mosques") }
                 MoreRow(HI.JOURNAL, Color(0xFF8D6E2F), "Namoz kundaligi", "O'qilgan namozlar va statistikasi") { nav.go("journal") }
