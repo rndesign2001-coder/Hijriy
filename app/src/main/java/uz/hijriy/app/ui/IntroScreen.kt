@@ -130,7 +130,7 @@ fun IntroScreen(onDone: () -> Unit) {
     val stars = remember { StarField(110, 11) }
     val parts = remember { particles(150) }
     val p = progress.value
-    val photo by rememberBgBitmap(R.drawable.bg_kaaba_sunset, 2) // oldindan, fon oqimida o'qiladi
+    val photo by rememberBgBitmap(R.drawable.bg_nabawi_sunset, 2) // oldindan, fon oqimida o'qiladi
 
     val skyT = seg(p, 0f, 0.15f)
     val drawT = seg(p, 0.05f, 0.38f)      // yulduz chiziladi
@@ -157,7 +157,7 @@ fun IntroScreen(onDone: () -> Unit) {
             .clickable(remember { MutableInteractionSource() }, null) { onDone() },
         contentAlignment = Alignment.Center
     ) {
-        // Ka'ba surati — sekin yaqinlashib (Ken Burns), bosh sahifaga uzviy o'tish
+        // Masjidi Nabaviy surati (bosh sahifa standart foni) — sekin yaqinlashib (Ken Burns), bosh sahifaga uzviy o'tish
         val ph = photo
         if (photoT > 0f && ph != null) {
             Image(

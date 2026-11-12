@@ -89,7 +89,7 @@ class ScreenshotTest {
         app.pendingRoute.value = "focus/1?ayah=5"; settle(2500); shot("27_focus"); back()
         app.settings.update { it.copy(bgIndex = 2) }; settle(2500); shot("28_home_bg2")
         app.settings.update { it.copy(bgIndex = 0) }; settle(1500); shot("29_home_sky")
-        app.settings.update { it.copy(bgIndex = 1) }; settle()
+        app.settings.update { it.copy(bgIndex = 4) }; settle()
         click("Namoz"); shot("03_prayer")
         click("Yana"); click("Qibla kompasi")
         shot("04_qibla_islomiy")

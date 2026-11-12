@@ -73,7 +73,7 @@ data class Settings(
     /** O'qilish yozuvi: 0 — lotin, 1 — kirill (interfeys yozuvidan alohida). */
     val readingScript: Int = 0,
     /** Bosh sahifa foni: 0 — jonli osmon, 1.. — fotosuratlar. */
-    val bgIndex: Int = 1,
+    val bgIndex: Int = 4,
     /** Qur'on ko'rinishi: 0 — oyat kartalari, 1 — tajvidli mushaf, 2 — fokus. */
     val quranView: Int = 0,
     // Hatm rejasi: boshlangan kun (epochDay), maqsad kuni, boshlang'ich sahifa (0 — reja yo'q)
@@ -100,7 +100,7 @@ data class Settings(
     fun toJson(): String = JSONObject().apply {
         put("locName", locName); put("locRegion", locRegion); put("lat", lat); put("lon", lon); put("fromGps", fromGps)
         put("tz", tz); put("country", country); put("autoMethod", autoMethod)
-        put("readingScript", readingScript); put("bgIndex", bgIndex); put("quranView", quranView)
+        put("readingScript", readingScript); put("bgIndex2", bgIndex); put("quranView", quranView)
         put("hatmStart", hatmStart); put("hatmEnd", hatmEnd); put("hatmFromPage", hatmFromPage); put("repeatCount", repeatCount)
         put("method", method.name); put("hanafi", hanafi); put("customFajr", customFajr); put("customIsha", customIsha)
         put("adjust", JSONObject().apply {
@@ -166,7 +166,7 @@ data class Settings(
                     country = j.optString("country", "UZ"),
                     autoMethod = j.optBoolean("autoMethod", true),
                     readingScript = j.optInt("readingScript", j.optInt("script", 0)),
-                    bgIndex = j.optInt("bgIndex", 1),
+                    bgIndex = j.optInt("bgIndex2", 4), // standart: Masjidi Nabaviy — quyosh botishi
                     quranView = j.optInt("quranView", if (j.optBoolean("quranMushaf", false)) 1 else 0),
                     hatmStart = j.optLong("hatmStart", 0),
                     hatmEnd = j.optLong("hatmEnd", 0),
