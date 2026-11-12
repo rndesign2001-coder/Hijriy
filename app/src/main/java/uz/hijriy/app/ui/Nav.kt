@@ -123,7 +123,7 @@ private fun AppContent(app: HijriyApp) {
     ) { pad ->
         // To'liq ekranli sahifalar o'zi pastki tizim paneliga joy qoldiradi; qolganlari uchun bu yerda qoldiriladi,
         // aks holda ro'yxat oxiri telefonning navigatsiya tugmalari ostida qolib ketadi
-        val immersive = route?.let { r -> r.startsWith("mushaf") || r.startsWith("focus") || r == "mosquemap" || r.startsWith("reader") } ?: false
+        val immersive = route?.let { r -> r.startsWith("mushaf") || r.startsWith("focus") || r == "mosquemap" || r.startsWith("liveplay") || r.startsWith("reader") } ?: false
         Box(
             Modifier.fillMaxSize()
                 .padding(bottom = if (showBar) (pad.calculateBottomPadding() - 20.dp).coerceAtLeast(0.dp) else 0.dp)
@@ -154,6 +154,7 @@ private fun AppContent(app: HijriyApp) {
                 composable("mosquemap") { MosqueMapScreen(app, nav) }
                 composable("hajj") { HajjScreen(app, nav) }
                 composable("live") { LiveScreen(nav) }
+                composable("liveplay/{i}") { e -> LivePlayerScreen(nav, e.arguments?.getString("i")?.toIntOrNull() ?: 0) }
                 composable("zakat") { ZakatScreen(app, nav) }
                 composable(
                     "focus/{sura}?ayah={ayah}",
