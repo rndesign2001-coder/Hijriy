@@ -21,6 +21,7 @@ import uz.hijriy.app.data.QuranAudio
 import uz.hijriy.app.data.SettingsStore
 import uz.hijriy.app.notify.PrayerScheduler
 import uz.hijriy.app.ui.tr
+import uz.hijriy.app.ui.res
 import java.time.LocalDate
 import java.time.LocalDateTime
 
