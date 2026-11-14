@@ -73,7 +73,9 @@ class QuranAudioService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForegroundService() chaqirilganda 5 soniya ichida startForeground shart
-        render(QuranAudio.state.value)
+        val st0 = QuranAudio.state.value
+        render(st0, fromStart = true)
+        if (!st0.active) { shutdown(); return START_NOT_STICKY }
         when (intent?.action) {
             ACTION_TOGGLE -> QuranAudio.togglePause()
             ACTION_NEXT -> QuranAudio.next()
@@ -84,12 +86,13 @@ class QuranAudioService : Service() {
     }
 
     private fun shutdown() {
+        runCatching { uz.hijriy.app.widget.QuranWidget.update(this, PlayState()) }
         runCatching { ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE) }
         foreground = false
         stopSelf()
     }
 
-    private fun render(st: PlayState) {
+    private fun render(st: PlayState, fromStart: Boolean = false) {
         val app = HijriyApp.instance
         val cyr = app.settings.value.script == 1
         fun t(x: String) = if (cyr) UzTranslit.toCyrillic(x) else x
@@ -122,48 +125,59 @@ class QuranAudioService : Service() {
                     }, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f
                 ).build()
         )
-        val open = PendingIntent.getActivity(
-            this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+        runCatching { uz.hijriy.app.widget.QuranWidget.update(this, st) }
+        val open = PrayerScheduler.openApp(this, if (st.active) "reader/${st.sura}?ayah=${st.ayah.coerceAtLeast(1)}" else "quran", 45)
+        fun svc(act: String, req: Int) = PendingIntent.getService(
+            this, req, Intent(this, QuranAudioService::class.java).setAction(act),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        fun action(res: Int, label: String, act: String, req: Int) = Notification.Action.Builder(
-            Icon.createWithResource(this, res), t(label),
-            PendingIntent.getService(
-                this, req, Intent(this, QuranAudioService::class.java).setAction(act),
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
-        ).build()
+        fun action(res: Int, label: String, act: String, req: Int) =
+            Notification.Action.Builder(Icon.createWithResource(this, res), t(label), svc(act, req)).build()
         val playing = st.playing || st.loading
-        val n = Notification.Builder(this, CHANNEL)
+        val b = Notification.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle(title)
             .setContentText(sub)
             .setContentIntent(open)
-            .setDeleteIntent(
-                PendingIntent.getService(
-                    this, 5, Intent(this, QuranAudioService::class.java).setAction(ACTION_STOP),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                )
-            )
+            .setDeleteIntent(svc(ACTION_STOP, 5))
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
             .setOngoing(playing)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_TRANSPORT)
-            .addAction(action(android.R.drawable.ic_media_previous, "Oldingi", ACTION_PREV, 1))
-            .addAction(
-                if (st.playing) action(android.R.drawable.ic_media_pause, "To'xtatish", ACTION_TOGGLE, 2)
-                else action(android.R.drawable.ic_media_play, "Davom etish", ACTION_TOGGLE, 2)
-            )
-            .addAction(action(android.R.drawable.ic_media_next, "Keyingi", ACTION_NEXT, 3))
-            .addAction(action(android.R.drawable.ic_menu_close_clear_cancel, "Yopish", ACTION_STOP, 4))
-            .setStyle(Notification.MediaStyle().setMediaSession(session.sessionToken).setShowActionsInCompactView(0, 1, 2))
-            .build()
+        val n = if (app.settings.value.sysPlayer) {
+            // Tizim media pleyeri (Android 13+ da bildirishnomalar panelining tepasida / Boshqaruv markazida)
+            b.addAction(action(R.drawable.ic_pl_prev, "Oldingi", ACTION_PREV, 1))
+                .addAction(
+                    if (st.playing) action(R.drawable.ic_pl_pause, "To'xtatish", ACTION_TOGGLE, 2)
+                    else action(R.drawable.ic_pl_play, "Davom etish", ACTION_TOGGLE, 2)
+                )
+                .addAction(action(R.drawable.ic_pl_next, "Keyingi", ACTION_NEXT, 3))
+                .addAction(action(R.drawable.ic_pl_close, "Yopish", ACTION_STOP, 4))
+                .setStyle(Notification.MediaStyle().setMediaSession(session.sessionToken).setShowActionsInCompactView(0, 1, 2))
+                .build()
+        } else {
+            // Ilova pleyeri: oddiy bildirishnoma sifatida har qanday telefonda ro'yxatda ko'rinadi
+            val info = uz.hijriy.app.widget.PlayerViews.info(this, st)
+            fun views(layout: Int, big: Boolean) = android.widget.RemoteViews(packageName, layout).also { v ->
+                uz.hijriy.app.widget.PlayerViews.fill(v, info, st, hasProgress = big, hasCount = big)
+                v.setOnClickPendingIntent(R.id.pl_prev, svc(ACTION_PREV, 1))
+                v.setOnClickPendingIntent(R.id.pl_play, svc(ACTION_TOGGLE, 2))
+                v.setOnClickPendingIntent(R.id.pl_next, svc(ACTION_NEXT, 3))
+                if (big) v.setOnClickPendingIntent(R.id.pl_close, svc(ACTION_STOP, 4))
+            }
+            b.setCustomContentView(views(R.layout.notif_player_small, false))
+                .setCustomBigContentView(views(R.layout.notif_player_big, true))
+                .setStyle(Notification.DecoratedCustomViewStyle())
+                .build()
+        }
         try {
-            if (playing) {
+            if (playing || fromStart) {
+                // startForegroundService() dan keyin startForeground har doim chaqirilishi shart
                 ServiceCompat.startForeground(this, ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
                 foreground = true
-            } else {
+            }
+            if (!playing) {
                 // pauzada bildirishnomani suzib o'chirib tashlash mumkin (u pleyerni yopadi)
                 if (foreground) ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
                 foreground = false

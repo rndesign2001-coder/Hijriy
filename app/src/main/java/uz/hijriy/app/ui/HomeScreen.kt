@@ -223,7 +223,7 @@ fun HomeScreen(app: HijriyApp, nav: NavHostController) {
                     }
                     ScriptToggle(s.script == 1) {
                         app.settings.update { it.copy(script = 1 - it.script) }
-                        uz.hijriy.app.widget.PrayerWidget.updateAll(app)
+                        uz.hijriy.app.widget.Widgets.updateAll(app)
                     }
                     HSpace(8.dp)
                     GlassIcon(HI.PHOTO, "Fonni almashtirish") { bgSheet = true }

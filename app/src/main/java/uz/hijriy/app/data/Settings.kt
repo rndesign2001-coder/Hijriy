@@ -65,6 +65,8 @@ data class Settings(
     val translation: Int = 0,
     // Qori (Reciters ro'yxatidagi indeks)
     val reciter: Int = 0,
+    // Tilovat bildirishnomasi: false — ilova pleyeri (oddiy bildirishnoma), true — tizim media pleyeri
+    val sysPlayer: Boolean = false,
     // Interfeys yozuvi: 0 — lotin, 1 — kirill
     val script: Int = 0,
     // O'qilishi (transliteratsiya): Qur'onda va duolarda
@@ -111,7 +113,7 @@ data class Settings(
         put("lastSura", lastSura); put("lastAyah", lastAyah); put("mushafPage", mushafPage)
         put("notifyEnabled", notifyEnabled); put("notifyPrayers", notifyPrayers.joinToString(",") { it.name })
         put("notifyBefore", notifyBefore); put("notifySound", notifySound); put("fridayReminder", fridayReminder)
-        put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter); put("script", script); put("quranReading", quranReading); put("duaReading", duaReading)
+        put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter); put("sysPlayer", sysPlayer); put("script", script); put("quranReading", quranReading); put("duaReading", duaReading)
     }.toString()
 
     companion object {
@@ -159,6 +161,7 @@ data class Settings(
                     qiblaStyle = j.optInt("qiblaStyle", 1),
                     translation = j.optInt("translation", 0),
                     reciter = j.optInt("reciter", 0),
+                    sysPlayer = j.optBoolean("sysPlayer", false),
                     script = j.optInt("script", 0),
                     quranReading = j.optBoolean("quranReading", false),
                     duaReading = j.optBoolean("duaReading", true),

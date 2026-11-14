@@ -86,7 +86,7 @@ object PrayerScheduler {
         findNext(context, ignoreSettings = true)?.let {
             set(am, it.atMillis + 1500, pending(context, ACTION_WIDGET, REQ_WIDGET, null, 0), exact = false)
         }
-        runCatching { PrayerWidget.updateAll(context) }
+        runCatching { uz.hijriy.app.widget.Widgets.updateAll(context) }
     }
 
     private fun scheduleFriday(context: Context, am: AlarmManager) {

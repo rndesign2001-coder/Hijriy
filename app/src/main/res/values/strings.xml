@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Hijriy Taqvim</string>
     <string name="widget_desc">Namoz vaqtlari va keyingi namozgacha sanoq</string>
+    <string name="widget_next_desc">Keyingi namoz, vaqti va qolgan vaqt</string>
+    <string name="widget_hijri_desc">Bugungi hijriy sana, hafta kuni va muhim kunlar</string>
+    <string name="widget_quran_desc">Qur\'on tilovati pleyeri: ijro, oldingi va keyingi oyat</string>
 </resources>

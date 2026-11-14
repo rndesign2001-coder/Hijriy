@@ -464,7 +464,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = if (s.quranFlow) 18.dp else 12.dp, end = if (s.quranFlow) 18.dp else 12.dp, top = 8.dp, bottom = 32.dp),
+                    contentPadding = PaddingValues(start = if (s.quranFlow) 18.dp else 12.dp, end = if (s.quranFlow) 18.dp else 12.dp, top = 8.dp, bottom = if (play.active) 120.dp else 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(if (s.quranFlow) 0.dp else 12.dp),
                 ) {
@@ -552,41 +552,11 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 }
             }
         }
-        if (play.active) {
-            val playSura = quran?.suras?.getOrNull(play.sura - 1) ?: sura
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer, shadowElevation = 8.dp,
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(12.dp).fillMaxWidth()
-            ) {
-                Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { showReciter = true }
-                    ) {
-                        Text(Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)].name + "  ▾", style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                        Text(
-                            when {
-                                play.error != null -> play.error!!
-                                play.loading -> "Yuklanmoqda…"
-                                play.ayah == 0 -> "Bismillah"
-                                else -> "${playSura.uzName}, ${play.ayah}-oyat"
-                            },
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    IconButton(onClick = { QuranAudio.prev() }) { Icon(Icons.Filled.SkipPrevious, "Oldingi") }
-                    IconButton(onClick = { QuranAudio.togglePause() }) {
-                        if (play.loading) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-                        else Icon(if (play.playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Ijro")
-                    }
-                    IconButton(onClick = { QuranAudio.next() }) { Icon(Icons.Filled.SkipNext, "Keyingi") }
-                    IconButton(onClick = { QuranAudio.stop() }) { Icon(Icons.Filled.Close, "To'xtatish") }
-                }
-            }
-        }
+        QuranPlayerBar(
+            app,
+            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(horizontal = 12.dp, vertical = 10.dp),
+            onOpen = if (play.sura != sura.number) ({ nav.go("reader/${play.sura}?ayah=${play.ayah.coerceAtLeast(1)}") }) else null
+        )
         if (fullscreen) {
             IconButton(
                 onClick = { fullscreen = false },
@@ -626,6 +596,9 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                 )
+                SettingRow(null, "Tizim media pleyeri", "Bildirishnoma o'rniga telefonning media panelida (ba'zi telefonlarda Boshqaruv markazida) ko'rinadi", onClick = {
+                    app.settings.update { it.copy(sysPlayer = !it.sysPlayer) }; uz.hijriy.app.notify.QuranAudioService.refresh()
+                }) { Switch(checked = s.sysPlayer, onCheckedChange = { v -> app.settings.update { it.copy(sysPlayer = v) }; uz.hijriy.app.notify.QuranAudioService.refresh() }) }
                 SettingRow(null, "Tajvid ranglari izohi", onClick = { showSettings = false; showLegend = true })
                 VSpace(8.dp)
                 Text("O'zbekcha tarjima (Muhammad Sodiq Muhammad Yusuf)", style = MaterialTheme.typography.titleSmall)

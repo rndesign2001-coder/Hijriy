@@ -73,4 +73,30 @@ object WidgetArt {
         }
     }
 
+    /** Fon ustidagi naqsh: girih, oltin hoshiya; tunda — oy va yulduzlar. */
+    fun overlay(context: Context, wDp: Int, hDp: Int, night: Boolean): Bitmap {
+        val dens = context.resources.displayMetrics.density
+        val scale = minOf(dens, 700f / wDp.coerceAtLeast(1))
+        val w = (wDp * scale).roundToInt(); val h = (hDp * scale).roundToInt()
+        return render(context, w, h) {
+            val r = 24f * scale
+            val shape = Path().apply { addRoundRect(androidx.compose.ui.geometry.RoundRect(0f, 0f, size.width, size.height, CornerRadius(r))) }
+            clipPath(shape) {
+                drawGirih(Color.White.copy(alpha = 0.06f), 40f * scale, 0.8f * scale)
+                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.08f), Color.Transparent), 0f, size.height * 0.5f))
+                if (night) {
+                    // Yarim oy (o'ng yuqori burchakda)
+                    val c = Offset(size.width - 26f * scale, 26f * scale); val rad = 12f * scale
+                    drawCircle(Brush.radialGradient(listOf(Color(0x55F3D57E), Color.Transparent), c, rad * 2.4f), rad * 2.4f, c)
+                    val full = Path().apply { addOval(androidx.compose.ui.geometry.Rect(c, rad)) }
+                    val cut = Path().apply { addOval(androidx.compose.ui.geometry.Rect(Offset(c.x + rad * 0.55f, c.y - rad * 0.3f), rad * 0.95f)) }
+                    val moon = Path().apply { op(full, cut, androidx.compose.ui.graphics.PathOperation.Difference) }
+                    drawPath(moon, Color(0xFFF3D57E))
+                    val stars = listOf(0.12f to 0.18f, 0.22f to 0.62f, 0.85f to 0.72f, 0.65f to 0.12f, 0.08f to 0.85f)
+                    for ((fx, fy) in stars) drawCircle(Color.White.copy(alpha = 0.5f), 1.3f * scale, Offset(size.width * fx, size.height * fy))
+                }
+                drawRoundRect(Color(0x55E9C46A), cornerRadius = CornerRadius(r), style = Stroke(1.2f * scale))
+            }
+        }
+    }
 }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pl_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/pl_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="6dp">
+    <ImageView
+        android:id="@+id/pl_cover"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/pl_cover"
+        android:importantForAccessibility="no"
+        android:padding="3dp"
+        android:src="@drawable/ic3d_quran" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/pl_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Fotiha — 1-oyat"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/pl_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Mishari Rashid"
+            android:textColor="#F3D57E"
+            android:textSize="11sp" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/pl_prev"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/pl_btn_ghost"
+        android:contentDescription="Oldingi"
+        android:padding="7dp"
+        android:src="@drawable/ic_pl_prev" />
+    <ImageView
+        android:id="@+id/pl_play"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/pl_btn_gold"
+        android:contentDescription="Ijro"
+        android:padding="8dp"
+        android:tint="#0B3D2E"
+        android:src="@drawable/ic_pl_pause" />
+    <ImageView
+        android:id="@+id/pl_next"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/pl_btn_ghost"
+        android:contentDescription="Keyingi"
+        android:padding="7dp"
+        android:src="@drawable/ic_pl_next" />
+</LinearLayout>

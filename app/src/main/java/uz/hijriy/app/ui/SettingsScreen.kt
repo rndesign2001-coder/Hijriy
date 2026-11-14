@@ -134,7 +134,7 @@ fun SettingsScreen(app: HijriyApp, nav: NavHostController) {
                     SettingRow(HI.BOOKMOON, "Yozuv", if (s.script == 1) "Кирилл" else "Lotin")
                     Row(Modifier.padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("Lotin" to 0, "Кирилл" to 1).forEach { (t, v) ->
-                            FilterChip(selected = s.script == v, onClick = { update { it.copy(script = v) }; uz.hijriy.app.widget.PrayerWidget.updateAll(app) },
+                            FilterChip(selected = s.script == v, onClick = { update { it.copy(script = v) }; uz.hijriy.app.widget.Widgets.updateAll(app) },
                                 label = { androidx.compose.material3.Text(t) })
                         }
                     }

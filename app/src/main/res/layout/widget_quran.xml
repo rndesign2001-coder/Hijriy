@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pl_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_quran_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+    <ImageView
+        android:id="@+id/pl_cover"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/pl_cover"
+        android:importantForAccessibility="no"
+        android:padding="4dp"
+        android:src="@drawable/ic3d_quran" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/pl_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Fotiha — 1-oyat"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/pl_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Mishari Rashid"
+            android:textColor="#F3D57E"
+            android:textSize="12sp" />
+        <ProgressBar
+            android:id="@+id/pl_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginTop="5dp"
+            android:max="100"
+            android:progress="30"
+            android:progressDrawable="@drawable/pl_progress" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/pl_prev"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/pl_btn_ghost"
+        android:contentDescription="Oldingi"
+        android:padding="8dp"
+        android:tint="#FFFFFF"
+        android:src="@drawable/ic_pl_prev" />
+    <ImageView
+        android:id="@+id/pl_play"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/pl_btn_gold"
+        android:contentDescription="Ijro"
+        android:padding="10dp"
+        android:tint="#0B3D2E"
+        android:src="@drawable/ic_pl_play" />
+    <ImageView
+        android:id="@+id/pl_next"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/pl_btn_ghost"
+        android:contentDescription="Keyingi"
+        android:padding="8dp"
+        android:tint="#FFFFFF"
+        android:src="@drawable/ic_pl_next" />
+</LinearLayout>

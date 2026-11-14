@@ -75,6 +75,42 @@
         </receiver>
 
         <receiver
+            android:name=".widget.NextPrayerWidget"
+            android:exported="true"
+            android:label="Keyingi namoz">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_next_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HijriWidget"
+            android:exported="true"
+            android:label="Hijriy sana">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hijri_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.QuranWidget"
+            android:exported="true"
+            android:label="Qur'on pleyeri">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quran_info" />
+        </receiver>
+
+        <receiver
             android:name=".notify.BootReceiver"
             android:exported="true">
             <intent-filter>
