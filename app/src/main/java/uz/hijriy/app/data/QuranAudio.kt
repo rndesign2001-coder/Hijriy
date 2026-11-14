@@ -53,6 +53,9 @@ object QuranAudio {
     /** Hozir tanlangan qori nomi (bildirishnoma uchun). */
     val reciterName: String get() = reciter.name
 
+    /** Tilovat boshlanishidan oldin chaqiriladi (bildirishnoma ruxsatini tekshirish uchun). */
+    var beforePlay: (() -> Unit)? = null
+
     fun init(context: Context) { appCtx = context.applicationContext }
 
     private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
@@ -84,6 +87,7 @@ object QuranAudio {
     fun play(sura: Int, fromAyah: Int, ayahCount: Int, r: Reciter) {
         reciter = r; suraLen = ayahCount
         requestFocus()
+        runCatching { beforePlay?.invoke() }
         appCtx?.let { uz.hijriy.app.notify.QuranAudioService.start(it) }
         // Fotiha va Tavbadan tashqari suralar boshida bismillah
         val start = if (fromAyah <= 1 && sura != 1 && sura != 9) 0 else fromAyah.coerceIn(1, ayahCount)

@@ -43,6 +43,22 @@ import uz.hijriy.app.ui.theme.LocalExtra
 class MainActivity : ComponentActivity() {
     private var updateManager: AppUpdateManager? = null
     private val updateReady = mutableStateOf(false)
+    private val notifLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        if (!ok) android.widget.Toast.makeText(
+            this, "Bildirishnoma ruxsati yo'q — pleyer bildirishnomada ko'rinmaydi. Telefon sozlamalari → Ilovalar → Hijriy → Bildirishnomalar.",
+            android.widget.Toast.LENGTH_LONG
+        ).show()
+    }
+
+    /** Tilovat boshlanganda bildirishnomalar yoqilganini tekshiradi; yoqilmagan bo'lsa ruxsat so'raydi. */
+    private fun ensureNotifications() {
+        if (androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled()) return
+        if (android.os.Build.VERSION.SDK_INT >= 33) notifLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        else android.widget.Toast.makeText(
+            this, "Bildirishnomalar o'chirilgan — pleyer bildirishnomada ko'rinmaydi. Telefon sozlamalaridan yoqing.", android.widget.Toast.LENGTH_LONG
+        ).show()
+    }
+
     private val updateLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { }
     private val installListener = InstallStateUpdatedListener { st ->
         if (st.installStatus() == InstallStatus.DOWNLOADED) updateReady.value = true
@@ -72,11 +88,13 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onResume() {
+        uz.hijriy.app.data.QuranAudio.beforePlay = { ensureNotifications() }
         super.onResume()
         checkForUpdate()
     }
 
     override fun onDestroy() {
+        uz.hijriy.app.data.QuranAudio.beforePlay = null
         try { updateManager?.unregisterListener(installListener) } catch (_: Throwable) {}
         super.onDestroy()
     }
