@@ -1,7 +1,11 @@
 package uz.hijriy.app.data
 
+import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.MediaPlayer
+import android.os.PowerManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,9 +46,45 @@ object QuranAudio {
     /** Har oyatni necha marta takrorlash (yodlash rejimi). */
     var repeat: Int = 1
     private var played = 0
+    private var appCtx: Context? = null
+    private var focusReq: AudioFocusRequest? = null
+    private var resumeOnFocus = false
+
+    /** Hozir tanlangan qori nomi (bildirishnoma uchun). */
+    val reciterName: String get() = reciter.name
+
+    fun init(context: Context) { appCtx = context.applicationContext }
+
+    private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
+        when (change) {
+            AudioManager.AUDIOFOCUS_LOSS -> { resumeOnFocus = false; pause() }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (_state.value.playing) { resumeOnFocus = true; pause() }
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> if (resumeOnFocus) { resumeOnFocus = false; resume() }
+        }
+    }
+
+    private fun requestFocus() {
+        val ctx = appCtx ?: return
+        val am = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val req = focusReq ?: AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
+            .setOnAudioFocusChangeListener(focusListener).build().also { focusReq = it }
+        runCatching { am.requestAudioFocus(req) }
+    }
+
+    private fun abandonFocus() {
+        val ctx = appCtx ?: return
+        val am = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        focusReq?.let { runCatching { am.abandonAudioFocusRequest(it) } }
+        resumeOnFocus = false
+    }
 
     fun play(sura: Int, fromAyah: Int, ayahCount: Int, r: Reciter) {
         reciter = r; suraLen = ayahCount
+        requestFocus()
+        appCtx?.let { uz.hijriy.app.notify.QuranAudioService.start(it) }
         // Fotiha va Tavbadan tashqari suralar boshida bismillah
         val start = if (fromAyah <= 1 && sura != 1 && sura != 9) 0 else fromAyah.coerceIn(1, ayahCount)
         load(sura, start)
@@ -62,6 +102,7 @@ object QuranAudio {
                 AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build()
             )
+            appCtx?.let { mp.setWakeMode(it, PowerManager.PARTIAL_WAKE_LOCK) }
             mp.setDataSource(url)
             mp.setOnPreparedListener {
                 if (player === it) {
@@ -85,12 +126,31 @@ object QuranAudio {
         }
     }
 
-    fun togglePause() {
+    fun pause() {
         val p = player ?: return
         val st = _state.value
-        if (st.loading) return
-        if (p.isPlaying) { p.pause(); _state.value = st.copy(playing = false) }
-        else { p.start(); _state.value = st.copy(playing = true) }
+        if (st.loading || !st.playing) return
+        runCatching { p.pause() }
+        _state.value = st.copy(playing = false)
+    }
+
+    fun resume() {
+        val p = player ?: return
+        val st = _state.value
+        if (st.loading || st.playing) return
+        requestFocus()
+        runCatching { p.start() }
+        _state.value = st.copy(playing = true)
+    }
+
+    fun togglePause() { if (_state.value.playing) pause() else resume() }
+
+    /** Tilovat davomida qorini almashtiradi: shu oyatdan yangi qori bilan davom etadi. */
+    fun changeReciter(r: Reciter) {
+        if (r.folder == reciter.folder) return
+        reciter = r
+        val s = _state.value
+        if (s.active) load(s.sura, s.ayah, again = true)
     }
 
     fun next() { val s = _state.value; if (s.active && s.ayah < suraLen) load(s.sura, s.ayah + 1) }
@@ -98,6 +158,7 @@ object QuranAudio {
 
     fun stop() {
         release()
+        abandonFocus()
         _state.value = PlayState()
     }
 

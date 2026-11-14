@@ -390,7 +390,7 @@ fun MoreScreen(nav: NavHostController) {
             }
             SectionTitle("Qur'on")
             SectionCard(Modifier.fillMaxWidth(), padding = 8.dp) {
-                MoreRow(HI.QURAN, Color(0xFF0F8A66), "Qur'oni Karim", "Kartalar, tajvidli mushaf, fokus") {
+                MoreRow(HI.QURAN, Color(0xFF0F8A66), "Qur'oni Karim", "Oyatlar, tajvidli mushaf, hifz") {
                     nav.go("quran")
                 }
                 MoreRow(HI.HATM, Color(0xFFC0392B), "Hatm rejasi", "Qur'onni maqsadli kunga tugatish") { nav.go("hatm") }

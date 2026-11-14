@@ -150,7 +150,7 @@ class ScreenshotTest {
             "WEATHER" to "Ob-havo", "SETTINGS" to "Sozlamalar", "MOSQUE" to "Masjidlar", "HATM" to "Hatm", "RAMADAN" to "Ramazon",
             "JOURNAL" to "Kundalik", "SUNRISE" to "Quyosh chiqishi", "SUNSET" to "Shom / botishi", "FAJR" to "Bomdod", "DHUHR" to "Peshin",
             "ASR" to "Asr", "ISHA" to "Xufton", "HOME" to "Asosiy (panel)", "PRAYER" to "Namoz (panel)", "MORE" to "Yana (panel)",
-            "FOCUS" to "Fokus", "PHOTO" to "Fon", "LOCATION" to "Joylashuv", "ZAKAT" to "Zakot", "KAABA" to "Haj va Umra",
+            "FOCUS" to "Hifz", "PHOTO" to "Fon", "LOCATION" to "Joylashuv", "ZAKAT" to "Zakot", "KAABA" to "Haj va Umra",
             "BELL" to "Eslatma", "BOOKMARK" to "Xatcho'p", "CHARITY" to "Sadaqa", "COINS" to "Tangalar", "GLOBE" to "Dunyo",
             "MAP" to "Xarita", "CHECKLIST" to "Ro'yxat", "SHIELD" to "Maxfiylik", "SEARCH" to "Qidiruv", "HOURGLASS" to "Vaqt",
             "HEADPHONES" to "Qori", "MUHAMMAD" to "Salovot", "BOOKMOON" to "Yozuv", "CALMOSQUE" to "Taqvim 2",

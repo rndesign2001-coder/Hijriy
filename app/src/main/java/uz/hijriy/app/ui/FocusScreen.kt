@@ -75,12 +75,14 @@ import uz.hijriy.app.ui.theme.TitleFont
 
 private val FocusGold = Color(0xFFE9C46A)
 
-/** Fokus rejimi: ekranda bitta oyat — yirik harf, tajvid ranglari, o'qilishi, tarjima, takrorlab tinglash va yodlash. */
+/** Hifz (yodlash) rejimi: ekranda bitta oyat — yirik harf, tajvid ranglari, o'qilishi, tarjima, takrorlab tinglash va yodlash. */
 @Composable
 fun FocusScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah: Int) {
     val quran by app.quran.collectAsStateWithLifecycle()
     val s by app.settings.state.collectAsStateWithLifecycle()
     val play by QuranAudio.state.collectAsStateWithLifecycle()
+    var showReciter by remember { mutableStateOf(false) }
+    if (showReciter) ReciterSheet(app) { showReciter = false }
     val trState by TranslationRepo.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { app.ensureQuran() }
     val view = LocalView.current
@@ -193,7 +195,11 @@ fun FocusScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah: 
                 Box(Modifier.size(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text(Reciters.getOrNull(s.reciter)?.name ?: "", color = Color(0xFF9FB5AC), style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                        Text(
+                            (Reciters.getOrNull(s.reciter)?.name ?: "") + "  ▾", color = Color(0xFFE9C46A),
+                            style = MaterialTheme.typography.labelMedium, maxLines = 1,
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { showReciter = true }.padding(vertical = 3.dp, horizontal = 2.dp)
+                        )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Takror:", color = Color.White, style = MaterialTheme.typography.labelMedium)
                             listOf(1, 3, 5, 10).forEach { n ->

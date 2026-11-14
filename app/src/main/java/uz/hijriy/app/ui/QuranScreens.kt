@@ -323,6 +323,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
     var fullscreen by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showLegend by remember { mutableStateOf(false) }
+    var showReciter by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { app.ensureQuran() }
     val play by QuranAudio.state.collectAsStateWithLifecycle()
     val trState by TranslationRepo.state.collectAsStateWithLifecycle()
@@ -563,9 +564,9 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                         Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { showSettings = true }
+                            .clickable { showReciter = true }
                     ) {
-                        Text(Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)].name, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                        Text(Reciters[s.reciter.coerceIn(0, Reciters.lastIndex)].name + "  ▾", style = MaterialTheme.typography.labelLarge, maxLines = 1)
                         Text(
                             when {
                                 play.error != null -> play.error!!
@@ -650,10 +651,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 Text("Qori (tilovat internet orqali)", style = MaterialTheme.typography.titleMedium)
                 VSpace(4.dp)
                 Reciters.forEachIndexed { i, r ->
-                    val selectReciter = {
-                        app.settings.update { it.copy(reciter = i) }
-                        if (play.active) QuranAudio.stop()
-                    }
+                    val selectReciter = { chooseReciter(app, i) }
                     Row(
                         Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
                             .clickable(onClick = selectReciter)
@@ -672,6 +670,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
             }
         }
     }
+    if (showReciter) ReciterSheet(app) { showReciter = false }
     if (showLegend) {
         ModalBottomSheet(onDismissRequest = { showLegend = false }) {
             LazyColumn(Modifier.padding(horizontal = 20.dp), contentPadding = PaddingValues(bottom = 32.dp)) {
@@ -848,10 +847,10 @@ private fun AyahCard(
 }
 
 
-/** Qur'on ko'rinishini tanlash: oyat kartalari, tajvidli mushaf (varoqli), fokus rejimi. */
+/** Qur'on ko'rinishini tanlash: oyatlar ro'yxati, tajvidli mushaf (varoqli), hifz (yodlash) rejimi. */
 @Composable
 private fun QuranViewPicker(current: Int, onPick: (Int) -> Unit) {
-    val items = listOf(Triple(0, "Kartalar", HI.QURAN), Triple(1, "Mushaf", HI.MUSHAF), Triple(2, "Fokus", HI.FOCUS))
+    val items = listOf(Triple(0, "Oyatlar", HI.QURAN), Triple(1, "Mushaf", HI.MUSHAF), Triple(2, "Hifz", HI.FOCUS))
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items.forEach { (v, label, icon) ->
             val sel = v == current
@@ -866,6 +865,44 @@ private fun QuranViewPicker(current: Int, onPick: (Int) -> Unit) {
                 HIcon(icon, if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary, size = 20.dp, accent = Color(0xFFC8962E))
                 HSpace(6.dp)
                 Text(label, color = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
+}
+
+
+/** Qorini tanlaydi; tilovat ketayotgan bo'lsa, shu oyatdan yangi qori bilan davom etadi. */
+fun chooseReciter(app: uz.hijriy.app.HijriyApp, index: Int) {
+    val i = index.coerceIn(0, Reciters.lastIndex)
+    app.settings.update { it.copy(reciter = i) }
+    QuranAudio.changeReciter(Reciters[i])
+}
+
+/** Qori tanlash oynasi (Oyatlar va Hifz ko'rinishlarida umumiy). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun ReciterSheet(app: uz.hijriy.app.HijriyApp, onDismiss: () -> Unit) {
+    val s by app.settings.state.collectAsStateWithLifecycle()
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            Text("Qorini tanlang", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Tilovat ketayotgan bo'lsa ham almashtirish mumkin — shu oyatdan yangi qori bilan davom etadi.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+            )
+            Reciters.forEachIndexed { i, r ->
+                val sel = s.reciter == i
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .background(if (sel) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                        .clickable { chooseReciter(app, i); onDismiss() }
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.RadioButton(selected = sel, onClick = { chooseReciter(app, i); onDismiss() })
+                    Text(r.name, style = MaterialTheme.typography.bodyLarge)
+                }
             }
         }
     }

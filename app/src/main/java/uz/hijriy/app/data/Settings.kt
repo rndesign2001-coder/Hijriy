@@ -74,13 +74,13 @@ data class Settings(
     val readingScript: Int = 0,
     /** Bosh sahifa foni: 0 — jonli osmon, 1.. — fotosuratlar. */
     val bgIndex: Int = 4,
-    /** Qur'on ko'rinishi: 0 — oyat kartalari, 1 — tajvidli mushaf, 2 — fokus. */
+    /** Qur'on ko'rinishi: 0 — oyat kartalari, 1 — tajvidli mushaf, 2 — hifz. */
     val quranView: Int = 0,
     // Hatm rejasi: boshlangan kun (epochDay), maqsad kuni, boshlang'ich sahifa (0 — reja yo'q)
     val hatmStart: Long = 0,
     val hatmEnd: Long = 0,
     val hatmFromPage: Int = 1,
-    /** Fokus rejimida har oyatni takrorlash soni. */
+    /** Hifz rejimida har oyatni takrorlash soni. */
     val repeatCount: Int = 1,
 ) {
     val zone: java.time.ZoneId

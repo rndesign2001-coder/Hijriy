@@ -52,6 +52,7 @@ class HijriyApp : Application() {
         journal = uz.hijriy.app.data.JournalStore(settings)
         scope.launch { uz.hijriy.app.data.TranslationRepo.loadLocal(this@HijriyApp) }
         createChannel()
+        uz.hijriy.app.data.QuranAudio.init(this)
         loadCachedWeather()
         scope.launch(Dispatchers.Default) { _quran.value = QuranRepo.load(this@HijriyApp) }
         PrayerScheduler.reschedule(this)
