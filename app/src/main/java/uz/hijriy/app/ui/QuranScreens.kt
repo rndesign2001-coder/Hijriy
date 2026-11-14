@@ -330,7 +330,6 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
     val bookmarks by app.bookmarks.list.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val ctx = LocalContext.current
-    DisposableEffect(Unit) { onDispose { QuranAudio.stop() } }
 
     val view = LocalView.current
     val activity = LocalContext.current as? Activity
@@ -553,7 +552,8 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                 }
             }
         }
-        if (play.active && play.sura == sura.number) {
+        if (play.active) {
+            val playSura = quran?.suras?.getOrNull(play.sura - 1) ?: sura
             Surface(
                 color = MaterialTheme.colorScheme.primaryContainer, shadowElevation = 8.dp,
                 shape = RoundedCornerShape(24.dp),
@@ -572,7 +572,7 @@ fun ReaderScreen(app: HijriyApp, nav: NavHostController, suraNo: Int, startAyah:
                                 play.error != null -> play.error!!
                                 play.loading -> "Yuklanmoqda…"
                                 play.ayah == 0 -> "Bismillah"
-                                else -> "${sura.uzName}, ${play.ayah}-oyat"
+                                else -> "${playSura.uzName}, ${play.ayah}-oyat"
                             },
                             style = MaterialTheme.typography.bodySmall
                         )

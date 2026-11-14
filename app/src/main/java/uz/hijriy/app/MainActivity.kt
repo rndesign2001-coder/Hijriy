@@ -44,7 +44,8 @@ class MainActivity : ComponentActivity() {
     private var updateManager: AppUpdateManager? = null
     private val updateReady = mutableStateOf(false)
     private val notifLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        if (!ok) android.widget.Toast.makeText(
+        if (ok) uz.hijriy.app.notify.QuranAudioService.refresh()
+        else android.widget.Toast.makeText(
             this, "Bildirishnoma ruxsati yo'q — pleyer bildirishnomada ko'rinmaydi. Telefon sozlamalari → Ilovalar → Hijriy → Bildirishnomalar.",
             android.widget.Toast.LENGTH_LONG
         ).show()
@@ -89,6 +90,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         uz.hijriy.app.data.QuranAudio.beforePlay = { ensureNotifications() }
+        uz.hijriy.app.notify.QuranAudioService.refresh()
         super.onResume()
         checkForUpdate()
     }

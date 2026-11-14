@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.remember
+import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -184,6 +186,37 @@ private fun AppContent(app: HijriyApp) {
                         e.arguments?.getInt("ayah") ?: 1
                     )
                 }
+            }
+            if (!immersive) MiniPlayer(app, nav, Modifier.align(Alignment.BottomCenter))
+        }
+    }
+}
+
+/** Qur'on tinglanayotganda boshqa bo'limlarda ham ko'rinadigan kichik pleyer. */
+@Composable
+private fun MiniPlayer(app: uz.hijriy.app.HijriyApp, nav: androidx.navigation.NavController, modifier: Modifier) {
+    val play by uz.hijriy.app.data.QuranAudio.state.collectAsState()
+    val q by app.quran.collectAsState()
+    if (!play.active) return
+    val sura = q?.suras?.getOrNull(play.sura - 1)
+    val cs = MaterialTheme.colorScheme
+    Surface(
+        color = cs.primaryContainer,
+        shape = RoundedCornerShape(18.dp),
+        shadowElevation = 6.dp,
+        modifier = modifier.padding(horizontal = 14.dp, vertical = 8.dp).fillMaxWidth()
+            .clickable { nav.navigate("reader/${play.sura}?ayah=${play.ayah}") }
+    ) {
+        Row(Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(sura?.uzName ?: "Qur'on", fontWeight = FontWeight.SemiBold, color = cs.onPrimaryContainer, maxLines = 1)
+                Text(if (play.sura > 0) "${play.ayah}-oyat · ${uz.hijriy.app.data.QuranAudio.reciterName}" else "", color = cs.onPrimaryContainer.copy(alpha = 0.7f), fontSize = 12.sp, maxLines = 1)
+            }
+            androidx.compose.material3.TextButton(onClick = { uz.hijriy.app.data.QuranAudio.togglePause() }) {
+                Text(if (play.playing) "❚❚" else "▶", color = cs.onPrimaryContainer)
+            }
+            androidx.compose.material3.TextButton(onClick = { uz.hijriy.app.data.QuranAudio.stop() }) {
+                Text("✕", color = cs.onPrimaryContainer)
             }
         }
     }

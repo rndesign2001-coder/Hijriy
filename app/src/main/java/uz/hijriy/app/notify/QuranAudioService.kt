@@ -38,6 +38,8 @@ class QuranAudioService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var session: MediaSession
     private var foreground = false
+    private var checked = false
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) { QuranAudio.pause() }
@@ -48,6 +50,7 @@ class QuranAudioService : Service() {
     override fun onCreate() {
         super.onCreate()
         running = true
+        current = this
         ensureChannel(this)
         session = MediaSession(this, "HijriyQuran").apply {
             setCallback(object : MediaSession.Callback() {
@@ -156,19 +159,45 @@ class QuranAudioService : Service() {
             .addAction(action(android.R.drawable.ic_menu_close_clear_cancel, "Yopish", ACTION_STOP, 4))
             .setStyle(Notification.MediaStyle().setMediaSession(session.sessionToken).setShowActionsInCompactView(0, 1, 2))
             .build()
-        if (playing) {
-            ServiceCompat.startForeground(this, ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-            foreground = true
-        } else {
-            // pauzada bildirishnomani suzib o'chirib tashlash mumkin (u pleyerni yopadi)
-            if (foreground) ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
-            foreground = false
-            getSystemService(NotificationManager::class.java).notify(ID, n)
+        try {
+            if (playing) {
+                ServiceCompat.startForeground(this, ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+                foreground = true
+            } else {
+                // pauzada bildirishnomani suzib o'chirib tashlash mumkin (u pleyerni yopadi)
+                if (foreground) ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
+                foreground = false
+                getSystemService(NotificationManager::class.java).notify(ID, n)
+            }
+        } catch (e: Throwable) {
+            android.widget.Toast.makeText(this, "Pleyer bildirishnomasi xatosi: ${e.javaClass.simpleName}: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+            return
         }
+        if (!checked) {
+            checked = true
+            handler.postDelayed({ diagnose() }, 2500)
+        }
+    }
+
+    /** Bildirishnoma haqiqatan ko'rinyaptimi — ko'rinmasa sababini ekranda ko'rsatadi. */
+    private fun diagnose() {
+        val nm = getSystemService(NotificationManager::class.java)
+        val shown = runCatching { nm.activeNotifications.any { it.id == ID } }.getOrDefault(true)
+        if (shown) return
+        val enabled = nm.areNotificationsEnabled()
+        val ch = nm.getNotificationChannel(CHANNEL)
+        val msg = when {
+            !enabled -> "Pleyer bildirishnomasi chiqmadi: ilova uchun bildirishnomalar o'chiq. Sozlamalar → Ilovalar → Hijriy → Bildirishnomalar."
+            ch != null && ch.importance == NotificationManager.IMPORTANCE_NONE -> "Pleyer bildirishnomasi chiqmadi: \"Qur'on tilovati\" kanali o'chirilgan. Sozlamalar → Ilovalar → Hijriy → Bildirishnomalar."
+            else -> "Pleyer bildirishnomasi tizim tomonidan yashirildi (kanal darajasi ${ch?.importance}). Telefon sozlamalarida ilova uchun bildirishnomalarni yoqing."
+        }
+        android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_LONG).show()
     }
 
     override fun onDestroy() {
         running = false
+        if (current === this) current = null
+        handler.removeCallbacksAndMessages(null)
         scope.cancel()
         runCatching { unregisterReceiver(noisy) }
         runCatching { session.isActive = false; session.release() }
@@ -184,6 +213,12 @@ class QuranAudioService : Service() {
         const val ACTION_PREV = "uz.hijriy.app.QURAN_PREV"
         const val ACTION_STOP = "uz.hijriy.app.QURAN_STOP"
         @Volatile var running = false
+        @Volatile private var current: QuranAudioService? = null
+
+        /** Bildirishnomani qayta joylaydi (masalan, ruxsat berilgandan keyin). */
+        fun refresh() {
+            current?.let { runCatching { it.render(QuranAudio.state.value) } }
+        }
 
         private fun ensureChannel(c: Context) {
             val nm = c.getSystemService(NotificationManager::class.java)
