@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.ScreenshotTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-14T17:37:53.622Z" hostname="runnervmccnms" time="57.456">
+  <properties/>
+  <testcase name="wallpapers" classname="uz.hijriy.app.ScreenshotTest" time="1.89"/>
+  <testcase name="iconSheet" classname="uz.hijriy.app.ScreenshotTest" time="1.774"/>
+  <testcase name="screens" classname="uz.hijriy.app.ScreenshotTest" time="53.792"/>
+  <system-out><![CDATA[SHOT 01a_intro
+SHOT 01b_intro
+SHOT 01c_intro
+SHOT 01d_intro
+SHOT 01e_intro
+SHOT 01f_joylashuv
+SHOT 02_home
+SHOT 02b_home_pastki
+SHOT 02c_home_quyosh
+SHOT 20_hatm
+SHOT 21_journal
+SHOT 22_ramadan
+SHOT 23_mosques
+SHOT 24_credits
+SHOT 25_more
+SHOT 30_hajj
+SHOT 31_zakat
+SHOT 33_weather
+SHOT 26_location_world
+SHOT 27_focus
+SHOT 28_home_bg2
+SHOT 29_home_sky
+SHOT 03_prayer
+SHOT 04_qibla_islomiy
+SHOT 05_qibla_klassik
+SHOT 06_qibla_zamonaviy
+SHOT 07_tasbeh
+SHOT 08_duas
+SHOT 09_wallpaper
+SHOT 10_home_dark
+SHOT 10b_home_kirill
+SHOT 10c_prayer_kirill
+SHOT 11_quran_list
+SHOT 12_reader
+SHOT 13_mushaf
+SHOT 13b_mushaf_tajvid
+SHOT 14_duas_dark
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
