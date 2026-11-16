@@ -137,10 +137,16 @@ object PlayerViews {
         fun t(x: String) = tr(x, cyr)
         val q = app.quran.value
         if (!st.active) {
-            val last = q?.suras?.getOrNull(s.lastSura - 1)
+            val ls = if (s.lastPlaySura > 0) s.lastPlaySura else s.lastSura
+            val la = if (s.lastPlaySura > 0) s.lastPlayAyah else s.lastAyah
+            val last = q?.suras?.getOrNull(ls - 1)
             return Info(
                 t("Qur'oni Karim"),
-                t(if (last != null) "Davom etish: ${last.uzName}, ${s.lastAyah}-oyat" else "Tilovatni tinglang"),
+                t(when {
+                    last != null -> "▶ Davom etish: ${last.uzName}, $la-oyat"
+                    ls > 0 -> "▶ Davom etish: $ls-sura, $la-oyat"
+                    else -> "▶ Tilovatni boshlash"
+                }),
                 "", 0
             )
         }
@@ -216,9 +222,19 @@ class QuranWidget : AppWidgetProvider() {
                 v.setOnClickPendingIntent(R.id.pl_root, PrayerScheduler.openApp(c, "reader/${st.sura}?ayah=${st.ayah.coerceAtLeast(1)}", 44))
             } else {
                 // Tilovat yo'q: tugmalar ilovani oxirgi o'qilgan surada ochadi
-                val route = if (s.lastSura > 0) "reader/${s.lastSura}?ayah=${s.lastAyah}" else "quran"
+                val route = when {
+                    s.lastPlaySura > 0 -> "reader/${s.lastPlaySura}?ayah=${s.lastPlayAyah}"
+                    s.lastSura > 0 -> "reader/${s.lastSura}?ayah=${s.lastAyah}"
+                    else -> "quran"
+                }
                 val open = PrayerScheduler.openApp(c, route, 44)
-                v.setOnClickPendingIntent(R.id.pl_play, open)
+                // Ijro tugmasi ilovani ochmaydi — tilovat shu yerning o'zida, oxirgi eshitilgan joydan boshlanadi
+                val playLast = PendingIntent.getForegroundService(
+                    c, 46, Intent(c, uz.hijriy.app.notify.QuranAudioService::class.java)
+                        .setAction(uz.hijriy.app.notify.QuranAudioService.ACTION_PLAY_LAST),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+                v.setOnClickPendingIntent(R.id.pl_play, playLast)
                 v.setOnClickPendingIntent(R.id.pl_next, open)
                 v.setOnClickPendingIntent(R.id.pl_prev, open)
                 v.setOnClickPendingIntent(R.id.pl_root, open)

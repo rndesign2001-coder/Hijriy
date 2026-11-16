@@ -67,12 +67,22 @@ class QuranAudioService : Service() {
             QuranAudio.state.collectLatest { st ->
                 if (!st.active) { shutdown(); return@collectLatest }
                 render(st)
+                if (st.ayah > 0) {
+                    val cur = HijriyApp.instance.settings.value
+                    if (cur.lastPlaySura != st.sura || cur.lastPlayAyah != st.ayah)
+                        runCatching { HijriyApp.instance.settings.update { it.copy(lastPlaySura = st.sura, lastPlayAyah = st.ayah) } }
+                }
             }
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForegroundService() chaqirilganda 5 soniya ichida startForeground shart
+        if (intent?.action == ACTION_PLAY_LAST) {
+            val cur = QuranAudio.state.value
+            if (!cur.active) playLast()
+            else if (!cur.playing && !cur.loading) QuranAudio.resume()
+        }
         val st0 = QuranAudio.state.value
         render(st0, fromStart = true)
         if (!st0.active) { shutdown(); return START_NOT_STICKY }
@@ -83,6 +93,16 @@ class QuranAudioService : Service() {
             ACTION_STOP -> QuranAudio.stop()
         }
         return START_NOT_STICKY
+    }
+
+    /** Vidjetdan: oxirgi eshitilgan joydan (bo'lmasa oxirgi o'qilgan suradan) tilovatni boshlaydi. */
+    private fun playLast() {
+        val s = HijriyApp.instance.settings.value
+        val sura = (if (s.lastPlaySura > 0) s.lastPlaySura else s.lastSura).coerceIn(1, 114)
+        val ayah = if (s.lastPlaySura > 0) s.lastPlayAyah else s.lastAyah
+        val count = uz.hijriy.app.data.AyahCounts[sura - 1]
+        val r = uz.hijriy.app.data.Reciters[s.reciter.coerceIn(0, uz.hijriy.app.data.Reciters.lastIndex)]
+        runCatching { QuranAudio.play(sura, ayah.coerceIn(1, count), count, r) }
     }
 
     private fun shutdown() {
@@ -225,6 +245,7 @@ class QuranAudioService : Service() {
         const val ACTION_TOGGLE = "uz.hijriy.app.QURAN_TOGGLE"
         const val ACTION_NEXT = "uz.hijriy.app.QURAN_NEXT"
         const val ACTION_PREV = "uz.hijriy.app.QURAN_PREV"
+        const val ACTION_PLAY_LAST = "uz.hijriy.app.QURAN_PLAY_LAST"
         const val ACTION_STOP = "uz.hijriy.app.QURAN_STOP"
         @Volatile var running = false
         @Volatile private var current: QuranAudioService? = null

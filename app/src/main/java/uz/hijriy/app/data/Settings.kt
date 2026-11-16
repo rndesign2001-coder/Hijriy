@@ -49,6 +49,9 @@ data class Settings(
     val quranMushaf: Boolean = false,
     val lastSura: Int = 0,
     val lastAyah: Int = 1,
+    // Oxirgi eshitilgan tilovat (vidjetdan davom ettirish uchun)
+    val lastPlaySura: Int = 0,
+    val lastPlayAyah: Int = 1,
     /** Mushaf rejimida oxirgi ochilgan sahifa (0 — hali ochilmagan). */
     val mushafPage: Int = 0,
     // Bildirishnoma
@@ -110,7 +113,7 @@ data class Settings(
         })
         put("hijriAdjust", hijriAdjust); put("themeMode", themeMode.name); put("palette", palette)
         put("quranFont", quranFont.toDouble()); put("tajweed", tajweed); put("quranFlow", quranFlow); put("quranMushaf", quranMushaf)
-        put("lastSura", lastSura); put("lastAyah", lastAyah); put("mushafPage", mushafPage)
+        put("lastSura", lastSura); put("lastAyah", lastAyah); put("lastPlaySura", lastPlaySura); put("lastPlayAyah", lastPlayAyah); put("mushafPage", mushafPage)
         put("notifyEnabled", notifyEnabled); put("notifyPrayers", notifyPrayers.joinToString(",") { it.name })
         put("notifyBefore", notifyBefore); put("notifySound", notifySound); put("fridayReminder", fridayReminder)
         put("qiblaStyle", qiblaStyle); put("translation", translation); put("reciter", reciter); put("sysPlayer", sysPlayer); put("script", script); put("quranReading", quranReading); put("duaReading", duaReading)
@@ -150,6 +153,8 @@ data class Settings(
                     quranMushaf = j.optBoolean("quranMushaf", false),
                     lastSura = j.optInt("lastSura", 0),
                     lastAyah = j.optInt("lastAyah", 1),
+                    lastPlaySura = j.optInt("lastPlaySura", 0),
+                    lastPlayAyah = j.optInt("lastPlayAyah", 1),
                     mushafPage = j.optInt("mushafPage", 0),
                     notifyEnabled = j.optBoolean("notifyEnabled", false),
                     notifyPrayers = j.optString("notifyPrayers", "").split(",")
