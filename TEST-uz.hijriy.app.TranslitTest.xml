@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.TranslitTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T00:04:43.433Z" hostname="ip-10-0-128-92" time="1.18">
+  <properties/>
+  <testcase name="parsesWholeQuran" classname="uz.hijriy.app.TranslitTest" time="0.972"/>
+  <testcase name="fatiha" classname="uz.hijriy.app.TranslitTest" time="0.116"/>
+  <testcase name="duas" classname="uz.hijriy.app.TranslitTest" time="0.001"/>
+  <testcase name="shortSuras" classname="uz.hijriy.app.TranslitTest" time="0.09"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

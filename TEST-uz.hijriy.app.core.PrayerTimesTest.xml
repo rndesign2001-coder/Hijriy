@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="uz.hijriy.app.core.PrayerTimesTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T00:04:44.749Z" hostname="ip-10-0-128-92" time="0.052">
+  <properties/>
+  <testcase name="qiblaTashkent" classname="uz.hijriy.app.core.PrayerTimesTest" time="0.004"/>
+  <testcase name="adjustmentsOffsetAndFixed" classname="uz.hijriy.app.core.PrayerTimesTest" time="0.002"/>
+  <testcase name="tashkentOfficial_2026_09_29" classname="uz.hijriy.app.core.PrayerTimesTest" time="0.0"/>
+  <testcase name="tashkentRamadanFajr" classname="uz.hijriy.app.core.PrayerTimesTest" time="0.002"/>
+  <testcase name="wholeYearIsOrderedEverywhere" classname="uz.hijriy.app.core.PrayerTimesTest" time="0.043"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
